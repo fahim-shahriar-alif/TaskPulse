@@ -1,11 +1,36 @@
-import { PlaceholderPage } from '../components/PlaceholderPage'
+import { formatHourLabel } from '../lib/dates'
+import { updateSlot, useStore } from '../context/StoreContext'
 
 export function SchedulePage() {
+  const { day, saveDay, resetSchedule } = useStore()
+
   return (
-    <PlaceholderPage
-      eyebrow="Time"
-      title="Time-Block Scheduler"
-      description="Hourly timeline from 07:30 AM to 11:30 PM with inline editing and a reset-to-defaults action."
-    />
+    <div className="mx-auto max-w-3xl space-y-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="font-mono text-xs tracking-[0.18em] text-indigo-300/80 uppercase">Time</p>
+          <h1 className="mt-1 text-3xl font-semibold text-white">Time-block scheduler</h1>
+        </div>
+        <button
+          type="button"
+          onClick={() => void resetSchedule()}
+          className="min-h-11 rounded-2xl px-4 text-sm text-amber-200 ring-1 ring-amber-400/30"
+        >
+          Reset schedule
+        </button>
+      </div>
+      <div className="space-y-2">
+        {day.schedule.map((slot) => (
+          <div key={slot.id} className="glass grid grid-cols-[7.5rem_1fr] items-center rounded-2xl">
+            <p className="font-mono px-4 text-xs text-indigo-200">{formatHourLabel(slot.time)}</p>
+            <input
+              value={slot.activity}
+              onChange={(event) => void saveDay({ schedule: updateSlot(day.schedule, slot.id, event.target.value) })}
+              className="min-h-14 bg-transparent px-4 text-sm text-white outline-none"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
