@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { StoreProvider } from './context/StoreContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { AppShell } from './components/AppShell'
+import { TaskDetailProvider } from './components/TaskDetailModal'
 import { CalendarPage } from './pages/CalendarPage'
 import { ClassesPage } from './pages/ClassesPage'
 import { FocusPage } from './pages/FocusPage'
@@ -50,8 +51,9 @@ function Gate() {
   return (
     <ScreenError>
       <StoreProvider>
-        <BrowserRouter>
-          <Routes>
+        <TaskDetailProvider>
+          <BrowserRouter>
+            <Routes>
             <Route element={<AppShell />}>
               <Route path="/" element={<MyDayPage />} />
               <Route path="/tasks" element={<TasksPage />} />
@@ -67,8 +69,9 @@ function Gate() {
               <Route path="/more" element={<MorePage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
-          </Routes>
-        </BrowserRouter>
+            </Routes>
+          </BrowserRouter>
+        </TaskDetailProvider>
       </StoreProvider>
     </ScreenError>
   )

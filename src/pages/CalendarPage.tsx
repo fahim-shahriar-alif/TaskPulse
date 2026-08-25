@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
+import { TaskRow } from '../components/TaskRow'
 import { useStore } from '../context/StoreContext'
 import { monthGrid, todayKey } from '../lib/dates'
 import { eyebrowClass, titleClass } from '../lib/ui'
 
 export function CalendarPage() {
-  const { tasks, completeTask } = useStore()
+  const { tasks } = useStore()
   const now = new Date()
   const [cursor, setCursor] = useState({ year: now.getFullYear(), month: now.getMonth() })
   const [selected, setSelected] = useState(todayKey())
@@ -96,15 +97,7 @@ export function CalendarPage() {
       <div className="space-y-2">
         <h2 className="text-sm font-semibold text-fg">Due {selected}</h2>
         {selectedTasks.map((task) => (
-          <label key={task.id} className="glass flex min-h-12 items-center gap-3 rounded-2xl px-4">
-            <input
-              type="checkbox"
-              checked={task.done}
-              onChange={() => void completeTask(task)}
-              className="h-5 w-5 accent-indigo-400"
-            />
-            <span className={task.done ? 'text-faint line-through' : 'text-fg'}>{task.title}</span>
-          </label>
+          <TaskRow key={task.id} task={task} className="glass min-h-12 rounded-2xl" />
         ))}
         {selectedTasks.length === 0 && <p className="text-sm text-muted">Nothing due on this day.</p>}
       </div>

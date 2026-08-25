@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTaskDetail } from './TaskDetailModal'
 import { useStore } from '../context/StoreContext'
 import { fieldClass } from '../lib/ui'
 
 export function CommandPalette() {
   const { tasks, notes, habits, classes } = useStore()
+  const { openTask } = useTaskDetail()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
@@ -27,19 +29,19 @@ export function CommandPalette() {
     const taskHits = tasks
       .filter((item) => item.title.toLowerCase().includes(q))
       .slice(0, 6)
-      .map((item) => ({ id: item.id, label: item.title, to: '/tasks', kind: 'Task' }))
+      .map((item) => ({ id: item.id, label: item.title, to: '/tasks', kind: 'Task' as const, taskId: item.id }))
     const noteHits = notes
       .filter((item) => item.title.toLowerCase().includes(q) || item.body.toLowerCase().includes(q))
       .slice(0, 4)
-      .map((item) => ({ id: item.id, label: item.title, to: '/notes', kind: 'Note' }))
+      .map((item) => ({ id: item.id, label: item.title, to: '/notes', kind: 'Note' as const }))
     const habitHits = habits
       .filter((item) => item.name.toLowerCase().includes(q))
       .slice(0, 4)
-      .map((item) => ({ id: item.id, label: item.name, to: '/habits', kind: 'Habit' }))
+      .map((item) => ({ id: item.id, label: item.name, to: '/habits', kind: 'Habit' as const }))
     const classHits = classes
       .filter((item) => item.name.toLowerCase().includes(q) || item.course.toLowerCase().includes(q))
       .slice(0, 4)
-      .map((item) => ({ id: item.id, label: item.name, to: '/classes', kind: 'Class' }))
+      .map((item) => ({ id: item.id, label: item.name, to: '/classes', kind: 'Class' as const }))
     return [...taskHits, ...noteHits, ...habitHits, ...classHits]
   }, [classes, habits, notes, q, tasks])
 
@@ -62,7 +64,8 @@ export function CommandPalette() {
               key={item.id}
               type="button"
               onClick={() => {
-                navigate(item.to)
+                if (item.kind === 'Task') openTask(item.taskId)
+                else navigate(item.to)
                 setOpen(false)
                 setQuery('')
               }}

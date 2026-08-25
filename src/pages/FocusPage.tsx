@@ -1,5 +1,6 @@
 import { Maximize2, Minimize2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { TaskRow } from '../components/TaskRow'
 import { useStore } from '../context/StoreContext'
 import { todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
@@ -67,6 +68,7 @@ export function FocusPage() {
     [sessions],
   )
   const openTasks = tasks.filter((task) => !task.done)
+  const linkedTask = tasks.find((task) => task.id === taskId)
   const label = mode === 'focus' ? 'Pomodoro' : 'Break'
 
   function Controls({ showFullToggle }: { showFullToggle: boolean }) {
@@ -123,6 +125,7 @@ export function FocusPage() {
           </option>
         ))}
       </select>
+      {linkedTask ? <TaskRow task={linkedTask} className="text-left" /> : null}
       <div className="glass grid grid-cols-2 gap-3 rounded-3xl p-4 text-left">
         <label className="text-sm text-muted">
           Focus minutes

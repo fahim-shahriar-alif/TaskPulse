@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AddTaskModal } from '../components/AddTaskModal'
 import { CompletionRing } from '../components/CompletionRing'
-import { PriorityBadge } from '../components/PriorityBadge'
+import { TaskRow } from '../components/TaskRow'
 import { useAuth } from '../context/AuthContext'
 import { toggleHabitToday, useStore } from '../context/StoreContext'
 import { classesOnDay, formatClassTime } from '../lib/classes'
@@ -18,7 +18,7 @@ function greeting() {
 
 export function MyDayPage() {
   const { user } = useAuth()
-  const { tasks, habits, day, sessions, classes, completeTask, upsertHabit, saveDay } = useStore()
+  const { tasks, habits, day, sessions, classes, upsertHabit, saveDay } = useStore()
   const [addOpen, setAddOpen] = useState(false)
   const today = todayKey()
   const firstName = (user?.displayName || user?.email || 'there').split(' ')[0].split('@')[0]
@@ -92,10 +92,7 @@ export function MyDayPage() {
               <p className="text-sm font-medium text-rose-500">{overdue.length} overdue</p>
               <div className="mt-2 space-y-2">
                 {overdue.map((task) => (
-                  <label key={task.id} className="flex min-h-10 items-center gap-3 text-sm">
-                    <input type="checkbox" checked={false} onChange={() => void completeTask(task)} className="accent-indigo-400" />
-                    <span className="text-fg">{task.title}</span>
-                  </label>
+                  <TaskRow key={task.id} task={task} showPriority={false} className="bg-transparent" />
                 ))}
               </div>
             </div>
@@ -124,21 +121,12 @@ export function MyDayPage() {
             ) : (
               <div className="space-y-2">
                 {todaysTasks.map((task) => (
-                  <label key={task.id} className="flex min-h-14 items-center gap-3 rounded-2xl bg-field px-4 ring-1 ring-line">
-                    <input
-                      type="checkbox"
-                      checked={task.done}
-                      onChange={() => void completeTask(task)}
-                      className="h-5 w-5 accent-indigo-400"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className={`block text-sm ${task.done ? 'text-faint line-through' : 'text-fg'}`}>
-                        {task.title}
-                      </span>
-                      <span className="mt-0.5 block text-[11px] text-faint">{task.project}</span>
-                    </span>
-                    <PriorityBadge priority={task.priority} />
-                  </label>
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    subtitle={task.project}
+                    className="min-h-14"
+                  />
                 ))}
               </div>
             )}
@@ -148,10 +136,12 @@ export function MyDayPage() {
             <div className="glass space-y-3 rounded-3xl p-4">
               <h2 className="text-sm font-semibold text-fg">Coming up</h2>
               {upcoming.map((task) => (
-                <div key={task.id} className="flex min-h-12 items-center justify-between rounded-2xl bg-field px-4 ring-1 ring-line">
-                  <span className="text-sm text-fg">{task.title}</span>
-                  <span className="font-mono text-[11px] text-faint">{task.dueDate}</span>
-                </div>
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  showPriority={false}
+                  subtitle={task.dueDate}
+                />
               ))}
             </div>
           )}

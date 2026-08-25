@@ -85,6 +85,11 @@ export type Settings = {
   breakMinutes: number
 }
 
+export const TASK_STATUSES: { id: Status; label: string }[] = [
+  { id: 'todo', label: 'To do' },
+  { id: 'inprog', label: 'In progress' },
+  { id: 'completed', label: 'Done' },
+]
 export const PROJECTS = ['Work', 'Study', 'Personal', 'Health'] as const
 export const NOTE_TAGS = ['Ideas', 'Bookmarks', 'Exam', 'DevOps'] as const
 export const TASK_TAGS = ['deep', 'quick', 'waiting', 'home'] as const
