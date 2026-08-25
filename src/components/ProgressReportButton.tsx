@@ -9,34 +9,25 @@ type ProgressReportButtonProps = {
 
 export function ProgressReportButton({ variant = 'card' }: ProgressReportButtonProps) {
   const { user } = useAuth()
-  const { tasks, habits, notes, sessions, day } = useStore()
+  const { tasks, classes, day } = useStore()
 
   function run() {
     try {
       printProgressPdf({
         name: user?.displayName || 'TaskyPulse user',
         email: user?.email || '',
-        joined: user?.metadata.creationTime
-          ? new Date(user.metadata.creationTime).toLocaleDateString(undefined, {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })
-          : '—',
         tasks: tasks ?? [],
-        habits: habits ?? [],
-        notes: notes ?? [],
-        sessions: sessions ?? [],
+        classes: classes ?? [],
         day,
       })
     } catch {
-      window.alert('Could not build the progress report.')
+      window.alert('Could not build the daily plan PDF.')
     }
   }
 
   if (variant === 'icon') {
     return (
-      <button type="button" onClick={run} className="grid h-11 w-11 place-items-center text-muted" aria-label="Progress report">
+      <button type="button" onClick={run} className="grid h-11 w-11 place-items-center text-muted" aria-label="Print today’s plan">
         <FileText className="h-5 w-5" />
       </button>
     )
@@ -50,7 +41,7 @@ export function ProgressReportButton({ variant = 'card' }: ProgressReportButtonP
         className="flex min-h-11 w-full items-center gap-2 rounded-2xl bg-field px-3 text-left text-sm text-fg ring-1 ring-line"
       >
         <FileText className="h-4 w-4 text-indigo-400" />
-        Progress report
+        Today’s PDF
       </button>
     )
   }
@@ -61,7 +52,7 @@ export function ProgressReportButton({ variant = 'card' }: ProgressReportButtonP
       onClick={run}
       className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-indigo-500 px-4 text-sm font-medium text-white"
     >
-      <span>Progress report</span>
+      <span>Print today’s plan</span>
       <FileText className="h-4 w-4" />
     </button>
   )
