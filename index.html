@@ -11,6 +11,8 @@
         'dark',
         localStorage.getItem('taskpulse-theme') !== 'light',
       )
+      document.documentElement.dataset.theme =
+        localStorage.getItem('taskpulse-theme') === 'light' ? 'light' : 'dark'
     </script>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
