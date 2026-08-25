@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'TaskPulse Pro',
-        short_name: 'TaskPulse',
+        name: 'TaskyPulse',
+        short_name: 'TaskyPulse',
         description: 'Personal task and productivity suite',
         theme_color: '#020617',
         background_color: '#020617',

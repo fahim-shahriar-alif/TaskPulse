@@ -43,7 +43,8 @@ export type Note = {
 
 export type ScheduleSlot = {
   id: string
-  time: string
+  from: string
+  to: string
   activity: string
 }
 

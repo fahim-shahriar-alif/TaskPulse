@@ -1,7 +1,7 @@
-# 📋 Project Specification: Personal Task & Productivity Suite (TaskPulse Pro)
+# 📋 Project Specification: Personal Task & Productivity Suite (TaskyPulse)
 
 ## 📌 1. Project Overview & Vision
-A sleek, modern, offline-first personal productivity and task management web application (desktop & tablet-optimized for Mac / iPad). The app balances high-level goal tracking with granular daily execution (time-blocking, Kanban board, habit tracking, and quick scratchpad).
+A sleek, modern, offline-first personal productivity and task management web application (desktop & tablet-optimized for Mac / iPad). The app balances high-level goal tracking with granular daily execution (from–to scheduling, Kanban board, habit tracking, and quick scratchpad).
 
 ---
 

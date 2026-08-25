@@ -63,8 +63,8 @@ export function AppShell() {
                 <LayoutDashboard className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-semibold tracking-tight text-fg">TaskPulse</p>
-                <p className="font-mono text-[11px] text-faint">Pro</p>
+                <p className="text-sm font-semibold tracking-tight text-fg">TaskyPulse</p>
+                <p className="font-mono text-[11px] text-faint">Focus · Execute</p>
               </div>
             </div>
             <ThemeToggle />
@@ -97,7 +97,7 @@ export function AppShell() {
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="glass sticky top-0 z-20 flex items-center justify-between border-x-0 border-t-0 px-4 py-3 lg:hidden">
             <div>
-              <p className="text-sm font-semibold text-fg">TaskPulse</p>
+              <p className="text-sm font-semibold text-fg">TaskyPulse</p>
               <p className="font-mono text-[10px] text-faint">Focus · Execute · Repeat</p>
             </div>
             <div className="flex items-center gap-1">

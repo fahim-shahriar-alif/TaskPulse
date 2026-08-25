@@ -1,4 +1,4 @@
-# TaskPulse Pro
+# TaskyPulse
 
 Offline-first personal task and productivity web app.
 

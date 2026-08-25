@@ -31,7 +31,7 @@ export function LoginPage() {
         <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-400/30">
           <span className="text-lg font-semibold">T</span>
         </div>
-        <p className="font-mono text-xs tracking-[0.18em] text-indigo-400 uppercase">TaskPulse Pro</p>
+        <p className="font-mono text-xs tracking-[0.18em] text-indigo-400 uppercase">TaskyPulse</p>
         <h1 className="mt-2 text-3xl font-semibold text-fg">Sign in to continue</h1>
         <p className="mt-3 text-sm leading-6 text-muted">
           Use email and password. Create an account the first time, then sign in on every device.

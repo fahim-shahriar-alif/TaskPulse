@@ -1,4 +1,4 @@
-import { addDays, habitStreak, startOfWeek, todayKey } from './dates'
+import { addDays, formatHourLabel, habitStreak, startOfWeek, todayKey } from './dates'
 import type { DayDoc, FocusSession, Habit, Note, Task } from '../types'
 
 export type ProgressReportInput = {
@@ -158,7 +158,7 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>TaskPulse progress ${today}</title>
+  <title>TaskyPulse progress ${today}</title>
   <style>
     @page { size: A4; margin: 14mm; }
     * { box-sizing: border-box; }
@@ -196,7 +196,7 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
   </style>
 </head>
 <body>
-  <h1>TaskPulse progress report</h1>
+  <h1>TaskyPulse progress report</h1>
   <p class="meta">${escapeHtml(input.name)} · ${escapeHtml(input.email)} · Joined ${escapeHtml(input.joined)}</p>
   <p class="meta">Generated ${escapeHtml(generated)}</p>
   <div class="kpis">
@@ -219,8 +219,12 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
   ${
     scheduleFilled.length
       ? `<h2>Today’s schedule</h2>${table(
-          ['Time', 'Activity'],
-          scheduleFilled.map((slot) => [escapeHtml(slot.time), escapeHtml(slot.activity)]),
+          ['From', 'To', 'Activity'],
+          scheduleFilled.map((slot) => [
+            escapeHtml(formatHourLabel(slot.from)),
+            escapeHtml(formatHourLabel(slot.to)),
+            escapeHtml(slot.activity),
+          ]),
         )}`
       : ''
   }
@@ -259,7 +263,7 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
 
 export function printProgressPdf(input: ProgressReportInput) {
   const html = buildProgressReportHtml(input)
-  const win = window.open('', 'taskpulse-report')
+  const win = window.open('', 'taskypulse-report')
   if (!win) {
     window.alert('Allow popups to print your progress report, then try again.')
     return

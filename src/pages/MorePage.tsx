@@ -4,7 +4,7 @@ import { eyebrowClass, titleClass } from '../lib/ui'
 
 const links = [
   { to: '/profile', label: 'Profile', hint: 'Account, theme, and sign out' },
-  { to: '/schedule', label: 'Schedule', hint: 'Hourly time blocks' },
+  { to: '/schedule', label: 'Schedule', hint: 'From–to time ranges' },
   { to: '/habits', label: 'Habits', hint: 'Streaks and daily check-ins' },
   { to: '/notes', label: 'Notes', hint: 'Scratchpad and snippets' },
   { to: '/matrix', label: 'Matrix', hint: 'Eisenhower quadrants' },

@@ -14,7 +14,7 @@ export function ProgressReportButton({ variant = 'card' }: ProgressReportButtonP
   function run() {
     try {
       printProgressPdf({
-        name: user?.displayName || 'TaskPulse user',
+        name: user?.displayName || 'TaskyPulse user',
         email: user?.email || '',
         joined: user?.metadata.creationTime
           ? new Date(user.metadata.creationTime).toLocaleDateString(undefined, {

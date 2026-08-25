@@ -41,7 +41,7 @@ function Gate() {
   if (loading) {
     return (
       <div className="bg-app grid min-h-dvh place-items-center text-muted">
-        Loading TaskPulse…
+        Loading TaskyPulse…
       </div>
     )
   }

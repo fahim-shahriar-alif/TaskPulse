@@ -43,7 +43,7 @@ export function ProfilePage() {
           {initial}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-lg font-semibold text-fg">{user?.displayName || 'TaskPulse user'}</p>
+          <p className="truncate text-lg font-semibold text-fg">{user?.displayName || 'TaskyPulse user'}</p>
           <p className="truncate text-sm text-muted">{user?.email}</p>
           <p className="font-mono mt-1 text-[11px] text-faint">Joined {joined}</p>
         </div>

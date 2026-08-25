@@ -9,9 +9,10 @@ import {
   type ReactNode,
 } from 'react'
 import { nextDue, todayKey } from '../lib/dates'
-import { DEFAULT_HABITS, defaultSchedule } from '../lib/defaults'
+import { DEFAULT_HABITS } from '../lib/defaults'
 import { getFirebase } from '../lib/firebase'
-import type { DayDoc, FocusSession, Habit, Note, ScheduleSlot, Settings, Task } from '../types'
+import { defaultSchedule, normalizeSchedule } from '../lib/schedule'
+import type { DayDoc, FocusSession, Habit, Note, Settings, Task } from '../types'
 import { DEFAULT_SETTINGS } from '../types'
 import { useAuth } from './AuthContext'
 import { useTheme } from './ThemeContext'
@@ -155,7 +156,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ...base,
       ...found,
       big3: [big3[0] || '', big3[1] || '', big3[2] || ''] as [string, string, string],
-      schedule: Array.isArray(found.schedule) && found.schedule.length ? found.schedule : base.schedule,
+      schedule: normalizeSchedule(found.schedule),
     }
   }, [date, days])
 
@@ -179,7 +180,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const saveDay = useCallback(
     async (patch: Partial<DayDoc>) => {
-      const next = { ...day, ...patch, date }
+      const next = { ...day, ...patch, date, schedule: normalizeSchedule(patch.schedule ?? day.schedule) }
+      setDays((prev) => [...prev.filter((item) => item.date !== date), next])
       await write(['days', date], next)
     },
     [date, day, write],
@@ -241,7 +243,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addSession: (session) => write(['sessions', session.id], session),
       saveDay,
       saveSettings,
-      resetSchedule: () => saveDay({ schedule: defaultSchedule() }),
+      resetSchedule: () => saveDay({ schedule: [] }),
     }),
     [
       completeTask,
@@ -295,8 +297,4 @@ export function toggleHabitToday(habit: Habit): Habit {
     ...habit,
     completions: { ...habit.completions, [key]: !habit.completions[key] },
   }
-}
-
-export function updateSlot(schedule: ScheduleSlot[], id: string, activity: string) {
-  return schedule.map((slot) => (slot.id === id ? { ...slot, activity } : slot))
 }

@@ -33,10 +33,18 @@ export function formatDayLabel(date = new Date()) {
 }
 
 export function formatHourLabel(time: string) {
+  if (!time) return '—'
   const [h, m] = time.split(':').map(Number)
   const date = new Date()
-  date.setHours(h, m, 0, 0)
+  date.setHours(h || 0, m || 0, 0, 0)
   return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+}
+
+export function addHour(time: string) {
+  const [h, m] = time.split(':').map(Number)
+  const date = new Date()
+  date.setHours((h || 0) + 1, m || 0, 0, 0)
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 }
 
 export function habitStreak(completions: Record<string, boolean>, from = new Date()) {
