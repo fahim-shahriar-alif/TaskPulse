@@ -21,17 +21,19 @@
 html.dark {
   color-scheme: dark;
   --canvas: #020617;
-  --card: rgb(15 23 42 / 0.8);
-  --fg: #f8fafc;
-  --muted: #94a3b8;
-  --faint: #64748b;
-  --line: rgb(255 255 255 / 0.1);
-  --field: rgb(2 6 23 / 0.55);
+  --card: rgb(15 23 42 / 0.92);
+  --fg: #ffffff;
+  --muted: #cbd5e1;
+  --faint: #94a3b8;
+  --line: rgb(255 255 255 / 0.16);
+  --field: rgb(15 23 42 / 0.85);
   --overlay: rgb(2 6 23 / 0.72);
-  --glass-border: rgb(255 255 255 / 0.08);
+  --glass-border: rgb(255 255 255 / 0.12);
   --glow-a: rgb(99 102 241 / 0.18);
   --glow-b: rgb(16 185 129 / 0.1);
   --glow-c: rgb(245 158 11 / 0.08);
+  --color-indigo-300: #c7d2fe;
+  --color-indigo-400: #a5b4fc;
 }
 
 html.light {
@@ -70,6 +72,11 @@ body {
   color: var(--fg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html.dark body {
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
 }
 
 * {

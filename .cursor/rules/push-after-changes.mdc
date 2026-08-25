@@ -1,0 +1,13 @@
+---
+description: Commit and push to GitHub after every completed change
+alwaysApply: true
+---
+
+# Push after every change
+
+When a code or UI change is finished, commit it and `git push origin HEAD` in the same turn. Do not wait for the user to ask.
+
+- Commit message: 1–2 sentences, why not what, match recent style
+- Never commit `.env` or secrets
+- Never force-push or skip hooks
+- If there is nothing to commit, skip
