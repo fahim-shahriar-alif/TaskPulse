@@ -9,7 +9,9 @@ npm install
 npm run dev
 ```
 
-Copy `.env.example` to `.env` and fill in Firebase keys when wiring authentication.
+Copy `.env.example` to `.env` and paste your Firebase web app keys. Enable Google sign-in and Firestore in the Firebase console, then deploy `firestore.rules`.
+
+Netlify: connect this GitHub repo, set build command `npm run build`, publish directory `dist`, and add the same `VITE_FIREBASE_*` environment variables.
 
 ## Build
 
