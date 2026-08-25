@@ -85,7 +85,7 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
       escapeHtml(`${formatHourLabel(slot.from)} – ${formatHourLabel(slot.to)}`),
       escapeHtml(slot.activity.trim() || 'Untitled'),
     ]),
-    10,
+    14,
   )
   const habitRows = clip(
     habits.map((habit) => [
@@ -144,8 +144,14 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
       min-height: 0;
       display: grid;
       grid-template-columns: 1.15fr 0.95fr;
-      grid-template-rows: 1fr 1fr 1fr;
       gap: 10px;
+      align-items: stretch;
+    }
+    .col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
     }
     .card {
       border: 1px solid #dbeafe;
@@ -153,7 +159,8 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
       padding: 10px 12px;
       overflow: hidden;
     }
-    .tasks { grid-row: 1 / 4; }
+    .fill { flex: 1 1 auto; }
+    .habits { flex: 1 1 42%; }
     h2 {
       font-size: 11px;
       letter-spacing: 0.08em;
@@ -176,6 +183,7 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
     }
     @media print {
       body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .card, .col { break-inside: avoid; page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -197,22 +205,26 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
     </header>
 
     <div class="grid">
-      <section class="card tasks">
-        <h2>Today’s tasks <small>${doneN}/${dayTasks.length} done</small></h2>
-        ${table(['', 'Task', 'Status', 'List'], taskRows)}
-      </section>
-      <section class="card">
-        <h2>Classes <small>${todayClasses.length}</small></h2>
-        ${table(['Time', 'Class', 'Room'], classRows)}
-      </section>
-      <section class="card">
-        <h2>Time schedule <small>${schedule.filter((slot) => slot.done).length}/${schedule.length} done</small></h2>
-        ${table(['', 'Time', 'Activity'], scheduleRows)}
-      </section>
-      <section class="card">
-        <h2>Habits <small>${habitsDone}/${habits.length} done</small></h2>
-        ${table(['', 'Habit', 'Streak'], habitRows)}
-      </section>
+      <div class="col">
+        <section class="card">
+          <h2>Today’s tasks <small>${doneN}/${dayTasks.length} done</small></h2>
+          ${table(['', 'Task', 'Status', 'List'], taskRows)}
+        </section>
+        <section class="card habits">
+          <h2>Habits <small>${habitsDone}/${habits.length} done</small></h2>
+          ${table(['', 'Habit', 'Streak'], habitRows)}
+        </section>
+      </div>
+      <div class="col">
+        <section class="card">
+          <h2>Classes <small>${todayClasses.length}</small></h2>
+          ${table(['Time', 'Class', 'Room'], classRows)}
+        </section>
+        <section class="card fill">
+          <h2>Time schedule <small>${schedule.filter((slot) => slot.done).length}/${schedule.length} done</small></h2>
+          ${table(['', 'Time', 'Activity'], scheduleRows)}
+        </section>
+      </div>
     </div>
     <footer>TaskyPulse · one-page daily plan · ${escapeHtml(dateLabel)}</footer>
   </div>
