@@ -2,15 +2,25 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AddTaskModal } from '../components/AddTaskModal'
 import { CompletionRing } from '../components/CompletionRing'
+import { DeadlineModal } from '../components/DeadlineModal'
 import { TaskRow } from '../components/TaskRow'
 import { useAuth } from '../context/AuthContext'
 import { toggleHabitToday, useStore } from '../context/StoreContext'
-import { classesOnDay, formatClassTime } from '../lib/classes'
+import {
+  classMoment,
+  classesOnDay,
+  formatClassCountdown,
+  formatClassTime,
+  nextClassToday,
+  nowMinutes,
+} from '../lib/classes'
+import { deadlineKindLabel, daysUntil, formatDaysLeft, upcomingDeadlines } from '../lib/deadlines'
 import { formatDayLabel, formatHourLabel, habitStreak, todayKey } from '../lib/dates'
+import { useNow } from '../lib/now'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
 
-function greeting() {
-  const hour = new Date().getHours()
+function greeting(date = new Date()) {
+  const hour = date.getHours()
   if (hour < 12) return 'Good morning'
   if (hour < 17) return 'Good afternoon'
   return 'Good evening'
@@ -18,9 +28,12 @@ function greeting() {
 
 export function MyDayPage() {
   const { user } = useAuth()
-  const { tasks, habits, day, sessions, classes, upsertHabit, saveDay } = useStore()
+  const { tasks, habits, day, sessions, classes, deadlines, upsertHabit, saveDay } = useStore()
   const [addOpen, setAddOpen] = useState(false)
-  const today = todayKey()
+  const [deadlineOpen, setDeadlineOpen] = useState(false)
+  const now = useNow()
+  const today = todayKey(now)
+  const minutes = nowMinutes(now)
   const firstName = (user?.displayName || user?.email || 'there').split(' ')[0].split('@')[0]
 
   const todaysTasks = useMemo(
@@ -47,6 +60,8 @@ export function MyDayPage() {
   const habitsDone = habits.filter((habit) => habit.completions[today]).length
   const schedule = [...day.schedule].sort((a, b) => a.from.localeCompare(b.from))
   const todayClasses = useMemo(() => classesOnDay(classes, today), [classes, today])
+  const nextClass = useMemo(() => nextClassToday(classes, today, minutes), [classes, minutes, today])
+  const pinned = useMemo(() => upcomingDeadlines(deadlines, today).slice(0, 4), [deadlines, today])
 
   const stats = [
     ['Open today', String(openToday)],
@@ -59,11 +74,54 @@ export function MyDayPage() {
     <div className="mx-auto max-w-6xl space-y-5">
       <div>
         <p className={eyebrowClass}>My Day</p>
-        <h1 className={titleClass}>{formatDayLabel()}</h1>
+        <h1 className={titleClass}>{formatDayLabel(now)}</h1>
         <p className="mt-2 text-sm text-muted">
-          {greeting()}, {firstName}. Here’s your day at a glance.
+          {greeting(now)}, {firstName}. Here’s your day at a glance.
         </p>
       </div>
+
+      {nextClass && (
+        <Link
+          to="/classes"
+          className="hero-card glass flex min-h-20 items-center justify-between gap-4 rounded-3xl px-5"
+        >
+          <div className="min-w-0">
+            <p className="text-[11px] uppercase tracking-wide text-indigo-400">
+              {classMoment(nextClass, minutes) === 'live' ? 'Happening now' : 'Next class'}
+            </p>
+            <p className="mt-1 truncate text-lg font-semibold text-fg">{nextClass.name}</p>
+            <p className="mt-0.5 truncate text-sm text-muted">
+              {formatClassTime(nextClass)}
+              {nextClass.location ? ` · ${nextClass.location}` : ''}
+            </p>
+          </div>
+          <p className="font-mono shrink-0 text-right text-sm font-semibold text-indigo-400">
+            {formatClassCountdown(nextClass, minutes)}
+          </p>
+        </Link>
+      )}
+
+      {todayClasses.length > 0 && !nextClass && (
+        <div className="glass rounded-3xl px-5 py-4">
+          <p className="text-sm text-muted">Classes are done for today.</p>
+        </div>
+      )}
+
+      {pinned.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {pinned.map((item) => {
+            const n = daysUntil(item.date, today)
+            const tone = n <= 0 ? 'text-rose-400' : n <= 3 ? 'text-amber-500' : 'text-indigo-400'
+            return (
+              <Link key={item.id} to="/deadlines" className="glass rounded-3xl p-4">
+                <p className="text-[11px] uppercase tracking-wide text-muted">{deadlineKindLabel(item.kind)}</p>
+                <p className="mt-1 truncate text-sm font-medium text-fg">{item.title}</p>
+                <p className={`font-mono mt-2 text-2xl font-semibold ${tone}`}>{formatDaysLeft(item.date, today)}</p>
+              </Link>
+            )
+          })}
+        </div>
+      )}
 
       <div className="kpi-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(([label, value]) => (
@@ -106,6 +164,7 @@ export function MyDayPage() {
             Add task
           </button>
           <AddTaskModal open={addOpen} initialDueDate={today} onClose={() => setAddOpen(false)} />
+          <DeadlineModal open={deadlineOpen} onClose={() => setDeadlineOpen(false)} />
 
           <div className="glass space-y-3 rounded-3xl p-4">
             <div className="flex items-center justify-between px-1">
@@ -179,14 +238,74 @@ export function MyDayPage() {
               {todayClasses.length === 0 ? (
                 <p className="text-sm text-muted">No university classes today. Add them in Classes.</p>
               ) : (
-                todayClasses.map((item) => (
-                  <div key={item.id} className="rounded-2xl bg-field px-4 py-3 ring-1 ring-line">
-                    <p className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</p>
-                    <p className="mt-1 text-sm font-medium text-fg">{item.name}</p>
-                    {item.location ? <p className="text-xs text-muted">{item.location}</p> : null}
-                  </div>
-                ))
+                todayClasses.map((item) => {
+                  const moment = classMoment(item, minutes)
+                  const featured = nextClass?.id === item.id
+                  return (
+                    <div
+                      key={item.id}
+                      className={`rounded-2xl bg-field px-4 py-3 ring-1 ${
+                        featured ? 'ring-indigo-400/50' : 'ring-line'
+                      } ${moment === 'done' ? 'opacity-55' : ''}`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</p>
+                        {moment === 'live' && (
+                          <span className="rounded-full bg-indigo-500/15 px-2 py-0.5 text-[10px] font-medium text-indigo-400">
+                            Live
+                          </span>
+                        )}
+                        {moment === 'upcoming' && featured && (
+                          <span className="rounded-full bg-indigo-500/15 px-2 py-0.5 text-[10px] font-medium text-indigo-400">
+                            {formatClassCountdown(item, minutes)}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-sm font-medium text-fg">{item.name}</p>
+                      {item.location ? <p className="text-xs text-muted">{item.location}</p> : null}
+                    </div>
+                  )
+                })
               )}
+            </div>
+          </div>
+
+          <div className="glass rounded-3xl p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-fg">Exams & deadlines</h2>
+              <Link to="/deadlines" className="text-xs text-indigo-400">
+                All dates
+              </Link>
+            </div>
+            <div className="mt-4 space-y-2">
+              {pinned.length === 0 ? (
+                <p className="text-sm text-muted">Pin a midterm or assignment so the countdown stays here.</p>
+              ) : (
+                pinned.map((item) => {
+                  const n = daysUntil(item.date, today)
+                  const tone = n <= 0 ? 'text-rose-400' : n <= 3 ? 'text-amber-500' : 'text-indigo-400'
+                  return (
+                    <Link
+                      key={item.id}
+                      to="/deadlines"
+                      className="flex min-h-12 items-center justify-between rounded-2xl bg-field px-4 ring-1 ring-line"
+                    >
+                      <span>
+                        <span className="block text-sm text-fg">{item.title}</span>
+                        <span className="text-[11px] text-faint">{deadlineKindLabel(item.kind)}</span>
+                      </span>
+                      <span className={`font-mono text-xs font-semibold ${tone}`}>{formatDaysLeft(item.date, today)}</span>
+                    </Link>
+                  )
+                })
+              )}
+              <button
+                type="button"
+                onClick={() => setDeadlineOpen(true)}
+                className="flex min-h-11 w-full items-center justify-center rounded-2xl text-sm text-indigo-400 ring-1 ring-line"
+              >
+                Pin a date
+              </button>
             </div>
           </div>
 

@@ -80,3 +80,48 @@ export function classesOnDay(classes: UniClass[], key: string) {
     .filter((item) => classMeetsOn(item, key))
     .sort((a, b) => a.from.localeCompare(b.from) || a.name.localeCompare(b.name))
 }
+
+export function timeToMinutes(time: string) {
+  const [h, m] = time.split(':').map(Number)
+  return (h || 0) * 60 + (m || 0)
+}
+
+export function nowMinutes(date = new Date()) {
+  return date.getHours() * 60 + date.getMinutes()
+}
+
+export type ClassMoment = 'upcoming' | 'live' | 'done'
+
+export function classMoment(item: UniClass, minutes: number): ClassMoment {
+  const from = timeToMinutes(item.from)
+  const to = Math.max(from + 1, timeToMinutes(item.to))
+  if (minutes < from) return 'upcoming'
+  if (minutes < to) return 'live'
+  return 'done'
+}
+
+export function nextClassToday(classes: UniClass[], key: string, minutes: number) {
+  return classesOnDay(classes, key).find((item) => classMoment(item, minutes) !== 'done') ?? null
+}
+
+function formatSpan(mins: number) {
+  if (mins < 60) return `${mins} min`
+  const hours = Math.floor(mins / 60)
+  const rest = mins % 60
+  if (rest === 0) return `${hours}h`
+  return `${hours}h ${rest}m`
+}
+
+export function formatClassCountdown(item: UniClass, minutes: number) {
+  const from = timeToMinutes(item.from)
+  const to = Math.max(from + 1, timeToMinutes(item.to))
+  const moment = classMoment(item, minutes)
+  if (moment === 'live') {
+    const left = to - minutes
+    if (left <= 1) return 'ending now'
+    return `ends in ${formatSpan(left)}`
+  }
+  const wait = from - minutes
+  if (wait <= 0) return 'starting now'
+  return `in ${formatSpan(wait)}`
+}

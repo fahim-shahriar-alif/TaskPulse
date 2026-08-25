@@ -6,7 +6,7 @@ import { fieldClass, eyebrowClass, titleClass } from '../lib/ui'
 
 export function ProfilePage() {
   const { user, logout, updateName } = useAuth()
-  const { tasks, habits, notes, sessions, classes, saveSettings } = useStore()
+  const { tasks, habits, notes, sessions, classes, deadlines, saveSettings } = useStore()
   const { theme, toggleTheme } = useTheme()
   const [name, setName] = useState(user?.displayName ?? '')
   const [saved, setSaved] = useState(false)
@@ -67,11 +67,12 @@ export function ProfilePage() {
         </button>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {[
           ['Tasks', tasks.length],
           ['Habits', habits.length],
           ['Classes', classes.length],
+          ['Exams', deadlines.length],
           ['Notes', notes.length],
           ['Focus sessions', sessions.length],
         ].map(([label, value]) => (

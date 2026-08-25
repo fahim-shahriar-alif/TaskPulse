@@ -5,7 +5,7 @@ import { useStore } from '../context/StoreContext'
 import { fieldClass } from '../lib/ui'
 
 export function CommandPalette() {
-  const { tasks, notes, habits, classes } = useStore()
+  const { tasks, notes, habits, classes, deadlines } = useStore()
   const { openTask } = useTaskDetail()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -42,8 +42,12 @@ export function CommandPalette() {
       .filter((item) => item.name.toLowerCase().includes(q) || item.course.toLowerCase().includes(q))
       .slice(0, 4)
       .map((item) => ({ id: item.id, label: item.name, to: '/classes', kind: 'Class' as const }))
-    return [...taskHits, ...noteHits, ...habitHits, ...classHits]
-  }, [classes, habits, notes, q, tasks])
+    const deadlineHits = deadlines
+      .filter((item) => item.title.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((item) => ({ id: item.id, label: item.title, to: '/deadlines', kind: 'Exam' as const }))
+    return [...taskHits, ...noteHits, ...habitHits, ...classHits, ...deadlineHits]
+  }, [classes, deadlines, habits, notes, q, tasks])
 
   if (!open) return null
 
@@ -55,7 +59,7 @@ export function CommandPalette() {
           autoFocus
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search tasks, notes, habits, classes"
+          placeholder="Search tasks, notes, habits, classes, exams"
           className={fieldClass + ' min-h-12 w-full'}
         />
         <div className="mt-2 max-h-72 overflow-auto">

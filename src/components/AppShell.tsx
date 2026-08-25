@@ -3,6 +3,7 @@ import {
   CalendarClock,
   CalendarDays,
   GraduationCap,
+  Flag,
   Flame,
   LayoutDashboard,
   LayoutGrid,
@@ -29,6 +30,7 @@ const desktopNav = [
   { to: '/schedule', label: 'Schedule', icon: CalendarClock },
   { to: '/habits', label: 'Habits', icon: Flame },
   { to: '/classes', label: 'Classes', icon: GraduationCap },
+  { to: '/deadlines', label: 'Exams', icon: Flag },
   { to: '/notes', label: 'Notes', icon: StickyNote },
   { to: '/profile', label: 'Profile', icon: UserRound },
 ] as const

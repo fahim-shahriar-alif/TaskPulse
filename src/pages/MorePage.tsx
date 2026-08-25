@@ -7,6 +7,7 @@ const links = [
   { to: '/schedule', label: 'Schedule', hint: 'From–to time ranges' },
   { to: '/habits', label: 'Habits', hint: 'Streaks and daily check-ins' },
   { to: '/classes', label: 'Classes', hint: 'University timetable' },
+  { to: '/deadlines', label: 'Exams', hint: 'Countdowns for tests and due dates' },
   { to: '/notes', label: 'Notes', hint: 'Scratchpad and snippets' },
   { to: '/matrix', label: 'Matrix', hint: 'Eisenhower quadrants' },
   { to: '/stats', label: 'Stats', hint: 'Weekly productivity' },

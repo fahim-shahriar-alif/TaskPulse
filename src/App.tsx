@@ -7,6 +7,7 @@ import { AppShell } from './components/AppShell'
 import { TaskDetailProvider } from './components/TaskDetailModal'
 import { CalendarPage } from './pages/CalendarPage'
 import { ClassesPage } from './pages/ClassesPage'
+import { DeadlinesPage } from './pages/DeadlinesPage'
 import { FocusPage } from './pages/FocusPage'
 import { HabitsPage } from './pages/HabitsPage'
 import { LoginPage } from './pages/LoginPage'
@@ -64,6 +65,7 @@ function Gate() {
               <Route path="/schedule" element={<SchedulePage />} />
               <Route path="/habits" element={<HabitsPage />} />
               <Route path="/classes" element={<ClassesPage />} />
+              <Route path="/deadlines" element={<DeadlinesPage />} />
               <Route path="/notes" element={<NotesPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/more" element={<MorePage />} />

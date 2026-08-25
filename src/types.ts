@@ -79,6 +79,16 @@ export type UniClass = {
   createdAt: number
 }
 
+export type DeadlineKind = 'exam' | 'assignment' | 'other'
+
+export type Deadline = {
+  id: string
+  title: string
+  date: string
+  kind: DeadlineKind
+  createdAt: number
+}
+
 export type Settings = {
   theme: ThemeName
   pomoMinutes: number
@@ -93,6 +103,11 @@ export const TASK_STATUSES: { id: Status; label: string }[] = [
 export const PROJECTS = ['Work', 'Study', 'Personal', 'Health'] as const
 export const NOTE_TAGS = ['Ideas', 'Bookmarks', 'Exam', 'DevOps'] as const
 export const TASK_TAGS = ['deep', 'quick', 'waiting', 'home'] as const
+export const DEADLINE_KINDS: { id: DeadlineKind; label: string }[] = [
+  { id: 'exam', label: 'Exam' },
+  { id: 'assignment', label: 'Assignment' },
+  { id: 'other', label: 'Deadline' },
+]
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'dark',
