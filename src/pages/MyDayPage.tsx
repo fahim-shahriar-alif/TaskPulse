@@ -18,7 +18,7 @@ import {
 import { deadlineDetail, deadlineHeadline, daysUntil, formatDaysLeft, upcomingDeadlines } from '../lib/deadlines'
 import { formatDayLabel, formatHourLabel, habitStreak, todayKey } from '../lib/dates'
 import { useNow } from '../lib/now'
-import { updateSlot } from '../lib/schedule'
+import { updateSlot, conflictNote } from '../lib/schedule'
 import { eyebrowClass, fieldClass } from '../lib/ui'
 
 function greeting(date = new Date()) {
@@ -272,15 +272,26 @@ export function MyDayPage() {
               Edit
             </Link>
           </div>
+          {schedule.some((slot) => conflictNote(slot, classes, day.schedule, today)) ? (
+            <p className="mt-2 text-xs text-amber-500">A block overlaps a class or another range. Amber edge marks the clash.</p>
+          ) : null}
           <div className="mt-4 space-y-2">
             {schedule.length === 0 ? (
               <p className="text-sm text-muted">No ranges yet. Add from–to times on the Schedule page.</p>
             ) : (
-              schedule.map((slot) => (
+              schedule.map((slot) => {
+                const clash = conflictNote(slot, classes, day.schedule, today)
+                return (
                 <label
                   key={slot.id}
-                  className={`flex cursor-pointer items-start gap-3 rounded-2xl bg-field px-4 py-3 ring-1 ring-line ${
-                    slot.done ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-transparent'
+                  className={`flex cursor-pointer items-start gap-3 rounded-2xl bg-field px-4 py-3 ring-1 ${
+                    clash ? 'ring-amber-400/50' : 'ring-line'
+                  } ${
+                    slot.done
+                      ? 'border-l-4 border-l-emerald-500'
+                      : clash
+                        ? 'border-l-4 border-l-amber-500'
+                        : 'border-l-4 border-l-transparent'
                   }`}
                 >
                   <input
@@ -298,9 +309,11 @@ export function MyDayPage() {
                     <span className={`mt-1 block text-sm ${slot.done ? 'text-faint line-through' : 'text-fg'}`}>
                       {slot.activity || 'Untitled'}
                     </span>
+                    {clash ? <span className="mt-1 block text-[11px] text-amber-500">{clash}</span> : null}
                   </span>
                 </label>
-              ))
+                )
+              })
             )}
           </div>
         </div>

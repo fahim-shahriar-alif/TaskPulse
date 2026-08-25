@@ -26,7 +26,7 @@ Home screen for “what is happening today.”
 - **Big 3 non-negotiables** — three free-text goals for this date only (not linked to the kanban)
 - **Today’s classes** — name, room, time, Live / countdown tags
 - **Exams & deadlines** — class name, kind, syllabus snippet, days left; pin a new exam from here
-- **Today’s schedule** — from–to blocks. Check a block done: green tick, green left border, struck-through title. Saved with that day
+- **Today’s schedule** — from–to blocks. Check a block done: green tick, green left border, struck-through title. Saved with that day. An **amber** edge and “Overlaps …” line appear if a block collides with a class or another range
 - Habit quick-check and a shortcut into Focus
 - Layout is paired cards on a wide screen so the page does not dump everything down one column
 
@@ -74,6 +74,7 @@ Custom from–to ranges for the current day (study blocks, meals, sleep — what
 
 - Add range, edit times and activity, delete, or reset the whole day
 - Done checkmarks are toggled on My Day and stored on the same day document
+- Conflict warning if a range overlaps a class that meets today, or another personal block
 
 ### Habits (`/habits`)
 

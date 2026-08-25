@@ -1,4 +1,5 @@
-import type { ScheduleSlot } from '../types'
+import type { ScheduleSlot, UniClass } from '../types'
+import { classesOnDay, formatClassTime, timeToMinutes } from './classes'
 import { addHour } from './dates'
 
 export function defaultSchedule(): ScheduleSlot[] {
@@ -47,4 +48,35 @@ export function nextRange(schedule: ScheduleSlot[]) {
   const last = [...schedule].sort((a, b) => a.from.localeCompare(b.from)).at(-1)!
   const from = last.to || last.from
   return { from, to: addHour(from) }
+}
+
+function span(from: string, to: string) {
+  const start = timeToMinutes(from)
+  const end = Math.max(start + 1, timeToMinutes(to))
+  return { start, end }
+}
+
+export function timesOverlap(aFrom: string, aTo: string, bFrom: string, bTo: string) {
+  const a = span(aFrom, aTo)
+  const b = span(bFrom, bTo)
+  return a.start < b.end && b.start < a.end
+}
+
+export function classConflictsForSlot(slot: ScheduleSlot, classes: UniClass[], key: string) {
+  return classesOnDay(classes, key).filter((item) => timesOverlap(slot.from, slot.to, item.from, item.to))
+}
+
+export function slotConflictsForSlot(slot: ScheduleSlot, schedule: ScheduleSlot[]) {
+  return schedule.filter((item) => item.id !== slot.id && timesOverlap(slot.from, slot.to, item.from, item.to))
+}
+
+export function conflictNote(slot: ScheduleSlot, classes: UniClass[], schedule: ScheduleSlot[], key: string) {
+  const hits = classConflictsForSlot(slot, classes, key)
+  const others = slotConflictsForSlot(slot, schedule)
+  if (!hits.length && !others.length) return ''
+  const parts = [
+    ...hits.map((item) => `${item.name} (${formatClassTime(item)})`),
+    ...others.map((item) => item.activity.trim() || 'another block'),
+  ]
+  return `Overlaps ${parts.join(' · ')}`
 }
