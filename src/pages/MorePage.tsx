@@ -6,6 +6,7 @@ const links = [
   { to: '/profile', label: 'Profile', hint: 'Account, theme, and sign out' },
   { to: '/schedule', label: 'Schedule', hint: 'From–to time ranges' },
   { to: '/habits', label: 'Habits', hint: 'Streaks and daily check-ins' },
+  { to: '/classes', label: 'Classes', hint: 'University timetable' },
   { to: '/notes', label: 'Notes', hint: 'Scratchpad and snippets' },
   { to: '/matrix', label: 'Matrix', hint: 'Eisenhower quadrants' },
   { to: '/stats', label: 'Stats', hint: 'Weekly productivity' },

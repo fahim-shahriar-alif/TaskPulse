@@ -2,6 +2,7 @@ import {
   BarChart3,
   CalendarClock,
   CalendarDays,
+  GraduationCap,
   Flame,
   LayoutDashboard,
   LayoutGrid,
@@ -27,6 +28,7 @@ const desktopNav = [
   { to: '/stats', label: 'Stats', icon: BarChart3 },
   { to: '/schedule', label: 'Schedule', icon: CalendarClock },
   { to: '/habits', label: 'Habits', icon: Flame },
+  { to: '/classes', label: 'Classes', icon: GraduationCap },
   { to: '/notes', label: 'Notes', icon: StickyNote },
   { to: '/profile', label: 'Profile', icon: UserRound },
 ] as const

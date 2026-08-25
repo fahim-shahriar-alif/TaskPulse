@@ -12,7 +12,8 @@ import { nextDue, todayKey } from '../lib/dates'
 import { DEFAULT_HABITS } from '../lib/defaults'
 import { getFirebase } from '../lib/firebase'
 import { defaultSchedule, normalizeSchedule } from '../lib/schedule'
-import type { DayDoc, FocusSession, Habit, Note, Settings, Task } from '../types'
+import { normalizeClass } from '../lib/classes'
+import type { DayDoc, FocusSession, Habit, Note, Settings, Task, UniClass } from '../types'
 import { DEFAULT_SETTINGS } from '../types'
 import { useAuth } from './AuthContext'
 import { useTheme } from './ThemeContext'
@@ -23,6 +24,7 @@ type StoreContextValue = {
   habits: Habit[]
   notes: Note[]
   sessions: FocusSession[]
+  classes: UniClass[]
   settings: Settings
   day: DayDoc
   upsertTask: (task: Task) => Promise<void>
@@ -33,6 +35,8 @@ type StoreContextValue = {
   upsertNote: (note: Note) => Promise<void>
   removeNote: (id: string) => Promise<void>
   addSession: (session: FocusSession) => Promise<void>
+  upsertClass: (item: UniClass) => Promise<void>
+  removeClass: (id: string) => Promise<void>
   saveDay: (patch: Partial<DayDoc>) => Promise<void>
   saveSettings: (patch: Partial<Settings>) => Promise<void>
   resetSchedule: () => Promise<void>
@@ -72,6 +76,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [habits, setHabits] = useState<Habit[]>([])
   const [notes, setNotes] = useState<Note[]>([])
   const [sessions, setSessions] = useState<FocusSession[]>([])
+  const [classes, setClasses] = useState<UniClass[]>([])
   const [settings, setSettings] = useState<Settings>({ ...DEFAULT_SETTINGS, theme })
   const [days, setDays] = useState<DayDoc[]>([])
 
@@ -130,6 +135,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const unsubSessions = onSnapshot(collection(db, 'users', uid, 'sessions'), (snap) => {
       setSessions(snap.docs.map((item) => item.data() as FocusSession))
     })
+    const unsubClasses = onSnapshot(collection(db, 'users', uid, 'classes'), (snap) => {
+      setClasses(snap.docs.map((item) => normalizeClass(item.data() as UniClass)))
+    })
     const unsubSettings = onSnapshot(doc(db, 'users', uid, 'settings', 'app'), (snap) => {
       if (snap.exists()) {
         const next = { ...DEFAULT_SETTINGS, ...(snap.data() as Settings) }
@@ -143,6 +151,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       unsubNotes()
       unsubDays()
       unsubSessions()
+      unsubClasses()
       unsubSettings()
     }
   }, [setTheme, uid])
@@ -231,6 +240,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       habits,
       notes,
       sessions,
+      classes,
       settings,
       day,
       upsertTask,
@@ -241,12 +251,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       upsertNote: (note) => write(['notes', note.id], note),
       removeNote: (id) => remove(['notes', id]),
       addSession: (session) => write(['sessions', session.id], session),
+      upsertClass: (item) => write(['classes', item.id], normalizeClass(item)),
+      removeClass: (id) => remove(['classes', id]),
       saveDay,
       saveSettings,
       resetSchedule: () => saveDay({ schedule: [] }),
     }),
     [
       completeTask,
+      classes,
       day,
       habits,
       notes,

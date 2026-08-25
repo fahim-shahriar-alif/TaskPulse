@@ -62,6 +62,23 @@ export type FocusSession = {
   createdAt: number
 }
 
+export type RepeatRule = 'weekly' | 'biweekly' | 'once'
+export type WeekDay = 'sat' | 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri'
+
+export type UniClass = {
+  id: string
+  name: string
+  course: string
+  location: string
+  days: WeekDay[]
+  from: string
+  to: string
+  repeat: RepeatRule
+  startDate: string
+  notes: string
+  createdAt: number
+}
+
 export type Settings = {
   theme: ThemeName
   pomoMinutes: number

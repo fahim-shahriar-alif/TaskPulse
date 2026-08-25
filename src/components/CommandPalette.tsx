@@ -4,7 +4,7 @@ import { useStore } from '../context/StoreContext'
 import { fieldClass } from '../lib/ui'
 
 export function CommandPalette() {
-  const { tasks, notes, habits } = useStore()
+  const { tasks, notes, habits, classes } = useStore()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
@@ -36,8 +36,12 @@ export function CommandPalette() {
       .filter((item) => item.name.toLowerCase().includes(q))
       .slice(0, 4)
       .map((item) => ({ id: item.id, label: item.name, to: '/habits', kind: 'Habit' }))
-    return [...taskHits, ...noteHits, ...habitHits]
-  }, [habits, notes, q, tasks])
+    const classHits = classes
+      .filter((item) => item.name.toLowerCase().includes(q) || item.course.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((item) => ({ id: item.id, label: item.name, to: '/classes', kind: 'Class' }))
+    return [...taskHits, ...noteHits, ...habitHits, ...classHits]
+  }, [classes, habits, notes, q, tasks])
 
   if (!open) return null
 
@@ -49,7 +53,7 @@ export function CommandPalette() {
           autoFocus
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search tasks, notes, habits"
+          placeholder="Search tasks, notes, habits, classes"
           className={fieldClass + ' min-h-12 w-full'}
         />
         <div className="mt-2 max-h-72 overflow-auto">

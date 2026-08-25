@@ -5,6 +5,7 @@ import { CompletionRing } from '../components/CompletionRing'
 import { PriorityBadge } from '../components/PriorityBadge'
 import { useAuth } from '../context/AuthContext'
 import { toggleHabitToday, useStore } from '../context/StoreContext'
+import { classesOnDay, formatClassTime } from '../lib/classes'
 import { formatDayLabel, formatHourLabel, habitStreak, todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
 
@@ -17,7 +18,7 @@ function greeting() {
 
 export function MyDayPage() {
   const { user } = useAuth()
-  const { tasks, habits, day, sessions, completeTask, upsertHabit, saveDay } = useStore()
+  const { tasks, habits, day, sessions, classes, completeTask, upsertHabit, saveDay } = useStore()
   const [addOpen, setAddOpen] = useState(false)
   const today = todayKey()
   const firstName = (user?.displayName || user?.email || 'there').split(' ')[0].split('@')[0]
@@ -45,6 +46,7 @@ export function MyDayPage() {
   const focusToday = sessions.filter((item) => item.date === today).reduce((sum, item) => sum + item.minutes, 0)
   const habitsDone = habits.filter((habit) => habit.completions[today]).length
   const schedule = [...day.schedule].sort((a, b) => a.from.localeCompare(b.from))
+  const todayClasses = useMemo(() => classesOnDay(classes, today), [classes, today])
 
   const stats = [
     ['Open today', String(openToday)],
@@ -173,6 +175,28 @@ export function MyDayPage() {
                   className={fieldClass + ' w-full'}
                 />
               ))}
+            </div>
+          </div>
+
+          <div className="glass rounded-3xl p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-fg">Today’s classes</h2>
+              <Link to="/classes" className="text-xs text-indigo-400">
+                All classes
+              </Link>
+            </div>
+            <div className="mt-4 space-y-2">
+              {todayClasses.length === 0 ? (
+                <p className="text-sm text-muted">No university classes today. Add them in Classes.</p>
+              ) : (
+                todayClasses.map((item) => (
+                  <div key={item.id} className="rounded-2xl bg-field px-4 py-3 ring-1 ring-line">
+                    <p className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</p>
+                    <p className="mt-1 text-sm font-medium text-fg">{item.name}</p>
+                    {item.location ? <p className="text-xs text-muted">{item.location}</p> : null}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

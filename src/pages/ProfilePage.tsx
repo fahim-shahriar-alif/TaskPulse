@@ -6,7 +6,7 @@ import { fieldClass, eyebrowClass, titleClass } from '../lib/ui'
 
 export function ProfilePage() {
   const { user, logout, updateName } = useAuth()
-  const { tasks, habits, notes, sessions, saveSettings } = useStore()
+  const { tasks, habits, notes, sessions, classes, saveSettings } = useStore()
   const { theme, toggleTheme } = useTheme()
   const [name, setName] = useState(user?.displayName ?? '')
   const [saved, setSaved] = useState(false)
@@ -71,6 +71,7 @@ export function ProfilePage() {
         {[
           ['Tasks', tasks.length],
           ['Habits', habits.length],
+          ['Classes', classes.length],
           ['Notes', notes.length],
           ['Focus sessions', sessions.length],
         ].map(([label, value]) => (
