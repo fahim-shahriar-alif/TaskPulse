@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { TaskRow } from '../components/TaskRow'
 import { useStore } from '../context/StoreContext'
 import { classMeetsOn, classesOnDay, formatClassTime } from '../lib/classes'
-import { deadlineKindLabel } from '../lib/deadlines'
+import { deadlineDetail, deadlineHeadline } from '../lib/deadlines'
 import { monthGrid, parseKey, todayKey } from '../lib/dates'
 import { eyebrowClass, titleClass } from '../lib/ui'
 
@@ -62,8 +62,11 @@ export function CalendarPage() {
   )
   const selectedClasses = useMemo(() => classesOnDay(classes, selected), [classes, selected])
   const selectedExams = useMemo(
-    () => deadlines.filter((item) => item.date === selected).sort((a, b) => a.title.localeCompare(b.title)),
-    [deadlines, selected],
+    () =>
+      deadlines
+        .filter((item) => item.date === selected)
+        .sort((a, b) => deadlineHeadline(a, classes).localeCompare(deadlineHeadline(b, classes))),
+    [classes, deadlines, selected],
   )
   const empty = selectedTasks.length === 0 && selectedClasses.length === 0 && selectedExams.length === 0
 
@@ -189,8 +192,10 @@ export function CalendarPage() {
                 to="/deadlines"
                 className="glass flex min-h-12 items-center justify-between gap-3 rounded-2xl px-4"
               >
-                <span className="text-sm text-fg">{item.title}</span>
-                <span className="text-[11px] text-faint">{deadlineKindLabel(item.kind)}</span>
+                <span>
+                  <span className="block text-sm text-fg">{deadlineHeadline(item, classes)}</span>
+                  <span className="text-[11px] text-faint">{deadlineDetail(item, classes)}</span>
+                </span>
               </Link>
             ))}
           </section>

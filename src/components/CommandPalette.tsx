@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTaskDetail } from './TaskDetailModal'
 import { useStore } from '../context/StoreContext'
+import { deadlineHeadline } from '../lib/deadlines'
 import { fieldClass } from '../lib/ui'
 
 export function CommandPalette() {
@@ -43,9 +44,17 @@ export function CommandPalette() {
       .slice(0, 4)
       .map((item) => ({ id: item.id, label: item.name, to: '/classes', kind: 'Class' as const }))
     const deadlineHits = deadlines
-      .filter((item) => item.title.toLowerCase().includes(q))
+      .filter((item) => {
+        const label = deadlineHeadline(item, classes).toLowerCase()
+        return label.includes(q) || item.title.toLowerCase().includes(q)
+      })
       .slice(0, 4)
-      .map((item) => ({ id: item.id, label: item.title, to: '/deadlines', kind: 'Exam' as const }))
+      .map((item) => ({
+        id: item.id,
+        label: deadlineHeadline(item, classes),
+        to: '/deadlines',
+        kind: 'Exam' as const,
+      }))
     return [...taskHits, ...noteHits, ...habitHits, ...classHits, ...deadlineHits]
   }, [classes, deadlines, habits, notes, q, tasks])
 

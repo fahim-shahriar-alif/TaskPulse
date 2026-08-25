@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { DeadlineModal } from '../components/DeadlineModal'
 import { Modal } from '../components/Modal'
 import { useStore } from '../context/StoreContext'
 import {
@@ -9,14 +10,16 @@ import {
   formatClassTime,
   formatDays,
 } from '../lib/classes'
+import { examsForClass, formatDaysLeft } from '../lib/deadlines'
 import { todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
 import type { UniClass, WeekDay } from '../types'
 
 export function ClassesPage() {
-  const { classes, upsertClass, removeClass } = useStore()
+  const { classes, deadlines, upsertClass, removeClass } = useStore()
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState<UniClass>(emptyClass)
+  const [examClassId, setExamClassId] = useState<string | null>(null)
   const today = todayKey()
   const todayClasses = useMemo(() => classes.filter((item) => classMeetsOn(item, today)), [classes, today])
 
@@ -65,7 +68,9 @@ export function ClassesPage() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {classes.map((item) => (
+        {classes.map((item) => {
+          const upcoming = examsForClass(deadlines, item.id, today).slice(0, 3)
+          return (
           <article key={item.id} className="glass rounded-3xl p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -82,15 +87,35 @@ export function ClassesPage() {
               {REPEAT_OPTIONS.find((option) => option.id === item.repeat)?.label}
               {item.location ? ` · ${item.location}` : ''}
             </p>
-            <button
-              type="button"
-              onClick={() => edit(item)}
-              className="mt-4 min-h-11 w-full rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
-            >
-              Edit
-            </button>
+            {upcoming.length > 0 && (
+              <div className="mt-3 space-y-1">
+                {upcoming.map((exam) => (
+                  <p key={exam.id} className="text-xs text-amber-500">
+                    {exam.date} · {formatDaysLeft(exam.date, today)}
+                    {exam.title.trim() ? ` · ${exam.title.trim()}` : ''}
+                  </p>
+                ))}
+              </div>
+            )}
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() => edit(item)}
+                className="min-h-11 flex-1 rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => setExamClassId(item.id)}
+                className="min-h-11 flex-1 rounded-2xl bg-indigo-500 text-sm font-medium text-white"
+              >
+                Add exam
+              </button>
+            </div>
           </article>
-        ))}
+          )
+        })}
       </div>
 
       {classes.length === 0 && (
@@ -208,6 +233,12 @@ export function ClassesPage() {
           </button>
         </form>
       </Modal>
+
+      <DeadlineModal
+        open={Boolean(examClassId)}
+        classId={examClassId ?? ''}
+        onClose={() => setExamClassId(null)}
+      />
     </div>
   )
 }

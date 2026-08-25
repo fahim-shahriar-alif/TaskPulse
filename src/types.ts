@@ -86,6 +86,7 @@ export type Deadline = {
   title: string
   date: string
   kind: DeadlineKind
+  classId: string
   createdAt: number
 }
 

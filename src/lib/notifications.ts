@@ -1,6 +1,6 @@
 import { classMeetsOn, formatClassTime, nowMinutes, timeToMinutes } from './classes'
 import { addDays, formatHourLabel, todayKey } from './dates'
-import { deadlineKindLabel } from './deadlines'
+import { deadlineHeadline, deadlineKindLabel } from './deadlines'
 import type { Deadline, Settings, Task, UniClass } from '../types'
 
 export type Notice = {
@@ -120,11 +120,12 @@ export function collectDueNotices(input: {
     const tomorrow = addDays(today, 1)
     for (const item of input.deadlines) {
       const kind = deadlineKindLabel(item.kind)
+      const body = deadlineHeadline(item, input.classes)
       if (item.date === today) {
         notices.push({
           tag: `${prefix}:deadline-today:${item.id}:${today}`,
           title: `${kind} today`,
-          body: item.title,
+          body,
           url: '/deadlines',
         })
       }
@@ -132,7 +133,7 @@ export function collectDueNotices(input: {
         notices.push({
           tag: `${prefix}:deadline-soon:${item.id}:${today}`,
           title: `${kind} tomorrow`,
-          body: item.title,
+          body,
           url: '/deadlines',
         })
       }

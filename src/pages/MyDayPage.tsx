@@ -15,7 +15,7 @@ import {
   nextClassToday,
   nowMinutes,
 } from '../lib/classes'
-import { deadlineKindLabel, daysUntil, formatDaysLeft, upcomingDeadlines } from '../lib/deadlines'
+import { deadlineDetail, deadlineHeadline, daysUntil, formatDaysLeft, upcomingDeadlines } from '../lib/deadlines'
 import { formatDayLabel, formatHourLabel, habitStreak, todayKey } from '../lib/dates'
 import { useNow } from '../lib/now'
 import { eyebrowClass, fieldClass } from '../lib/ui'
@@ -118,8 +118,8 @@ export function MyDayPage() {
             const tone = n <= 0 ? 'text-rose-400' : n <= 3 ? 'text-amber-500' : 'text-indigo-400'
             return (
               <Link key={item.id} to="/deadlines" className="glass rounded-3xl p-4">
-                <p className="text-[11px] uppercase tracking-wide text-muted">{deadlineKindLabel(item.kind)}</p>
-                <p className="mt-1 truncate text-sm font-medium text-fg">{item.title}</p>
+                <p className="text-[11px] uppercase tracking-wide text-muted">{deadlineDetail(item, classes)}</p>
+                <p className="mt-1 truncate text-sm font-medium text-fg">{deadlineHeadline(item, classes)}</p>
                 <p className={`font-mono mt-2 text-2xl font-semibold ${tone}`}>{formatDaysLeft(item.date, today)}</p>
               </Link>
             )
@@ -283,7 +283,7 @@ export function MyDayPage() {
             </div>
             <div className="mt-4 space-y-2">
               {pinned.length === 0 ? (
-                <p className="text-sm text-muted">Pin a midterm or assignment so the countdown stays here.</p>
+                <p className="text-sm text-muted">Add an exam against a class so the countdown stays here.</p>
               ) : (
                 pinned.map((item) => {
                   const n = daysUntil(item.date, today)
@@ -295,8 +295,8 @@ export function MyDayPage() {
                       className="flex min-h-12 items-center justify-between rounded-2xl bg-field px-4 ring-1 ring-line"
                     >
                       <span>
-                        <span className="block text-sm text-fg">{item.title}</span>
-                        <span className="text-[11px] text-faint">{deadlineKindLabel(item.kind)}</span>
+                        <span className="block text-sm text-fg">{deadlineHeadline(item, classes)}</span>
+                        <span className="text-[11px] text-faint">{deadlineDetail(item, classes)}</span>
                       </span>
                       <span className={`font-mono text-xs font-semibold ${tone}`}>{formatDaysLeft(item.date, today)}</span>
                     </Link>
@@ -308,7 +308,7 @@ export function MyDayPage() {
                 onClick={() => setDeadlineOpen(true)}
                 className="flex min-h-11 w-full items-center justify-center rounded-2xl text-sm text-indigo-400 ring-1 ring-line"
               >
-                Pin a date
+                Pin an exam
               </button>
             </div>
           </div>

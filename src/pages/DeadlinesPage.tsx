@@ -2,23 +2,26 @@ import { useState } from 'react'
 import { DeadlineModal } from '../components/DeadlineModal'
 import { useStore } from '../context/StoreContext'
 import {
-  deadlineKindLabel,
+  deadlineDetail,
+  deadlineHeadline,
   formatDaysLeft,
   pastDeadlines,
   upcomingDeadlines,
 } from '../lib/deadlines'
 import { todayKey } from '../lib/dates'
 import { eyebrowClass, titleClass } from '../lib/ui'
-import type { Deadline } from '../types'
+import type { Deadline, UniClass } from '../types'
 
 function Row({
   item,
   today,
+  classes,
   onEdit,
   onRemove,
 }: {
   item: Deadline
   today: string
+  classes: UniClass[]
   onEdit: (item: Deadline) => void
   onRemove: (id: string) => void
 }) {
@@ -28,8 +31,8 @@ function Row({
     <article className="glass rounded-3xl p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-indigo-400">{deadlineKindLabel(item.kind)}</p>
-          <h2 className="mt-1 text-lg font-semibold text-fg">{item.title}</h2>
+          <p className="text-[11px] uppercase tracking-wide text-indigo-400">{deadlineDetail(item, classes)}</p>
+          <h2 className="mt-1 text-lg font-semibold text-fg">{deadlineHeadline(item, classes)}</h2>
           <p className="font-mono mt-1 text-xs text-faint">{item.date}</p>
         </div>
         <p className={`font-mono text-sm font-semibold ${soon ? 'text-rose-400' : 'text-fg'}`}>{left}</p>
@@ -51,7 +54,7 @@ function Row({
 }
 
 export function DeadlinesPage() {
-  const { deadlines, removeDeadline } = useStore()
+  const { classes, deadlines, removeDeadline } = useStore()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Deadline | null>(null)
   const today = todayKey()
@@ -69,14 +72,14 @@ export function DeadlinesPage() {
         <div>
           <p className={eyebrowClass}>University</p>
           <h1 className={titleClass}>Exams & deadlines</h1>
-          <p className="mt-2 text-sm text-muted">Pin a few dates so My Day always shows how many days are left.</p>
+          <p className="mt-2 text-sm text-muted">Add an exam against a class — AI, ML, or any course — on any date.</p>
         </div>
         <button
           type="button"
           onClick={() => edit()}
           className="min-h-11 rounded-2xl bg-indigo-500 px-4 text-sm font-medium text-white"
         >
-          Pin a date
+          Add exam
         </button>
       </div>
 
@@ -87,6 +90,7 @@ export function DeadlinesPage() {
               key={item.id}
               item={item}
               today={today}
+              classes={classes}
               onEdit={edit}
               onRemove={(id) => void removeDeadline(id)}
             />
@@ -96,7 +100,7 @@ export function DeadlinesPage() {
 
       {upcoming.length === 0 && (
         <div className="glass rounded-3xl p-6 text-center">
-          <p className="text-sm text-muted">No upcoming exams or deadlines. Pin a midterm or assignment date.</p>
+          <p className="text-sm text-muted">No upcoming exams. Add one against a class for any date.</p>
         </div>
       )}
 
@@ -109,6 +113,7 @@ export function DeadlinesPage() {
                 key={item.id}
                 item={item}
                 today={today}
+                classes={classes}
                 onEdit={edit}
                 onRemove={(id) => void removeDeadline(id)}
               />
