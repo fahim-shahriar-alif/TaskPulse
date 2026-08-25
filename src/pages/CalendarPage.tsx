@@ -1,29 +1,80 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { TaskRow } from '../components/TaskRow'
 import { useStore } from '../context/StoreContext'
-import { monthGrid, todayKey } from '../lib/dates'
+import { classMeetsOn, classesOnDay, formatClassTime } from '../lib/classes'
+import { deadlineKindLabel } from '../lib/deadlines'
+import { monthGrid, parseKey, todayKey } from '../lib/dates'
 import { eyebrowClass, titleClass } from '../lib/ui'
 
+type Marks = { tasks: number; classes: number; exams: number }
+
+const emptyMarks = (): Marks => ({ tasks: 0, classes: 0, exams: 0 })
+
+function DayDots({ marks, on }: { marks: Marks; on: boolean }) {
+  const dots = [
+    marks.tasks > 0 ? (on ? 'bg-white' : 'bg-indigo-400') : null,
+    marks.classes > 0 ? (on ? 'bg-cyan-100' : 'bg-cyan-400') : null,
+    marks.exams > 0 ? (on ? 'bg-amber-200' : 'bg-amber-400') : null,
+  ].filter(Boolean) as string[]
+  if (!dots.length) return null
+  return (
+    <span className="mt-2 flex gap-0.5">
+      {dots.map((tone) => (
+        <span key={tone} className={`h-1.5 w-1.5 rounded-full ${tone}`} />
+      ))}
+    </span>
+  )
+}
+
 export function CalendarPage() {
-  const { tasks } = useStore()
+  const { tasks, classes, deadlines } = useStore()
   const now = new Date()
   const [cursor, setCursor] = useState({ year: now.getFullYear(), month: now.getMonth() })
   const [selected, setSelected] = useState(todayKey())
   const days = useMemo(() => monthGrid(cursor.year, cursor.month), [cursor])
   const today = todayKey()
-  const selectedTasks = tasks.filter((task) => task.dueDate === selected)
-  const counts = useMemo(() => {
-    const map = new Map<string, number>()
-    tasks.forEach((task) => {
-      if (!task.dueDate || task.done) return
-      map.set(task.dueDate, (map.get(task.dueDate) || 0) + 1)
-    })
+
+  const marks = useMemo(() => {
+    const map = new Map<string, Marks>()
+    function bump(key: string, field: keyof Marks) {
+      if (!key) return
+      const current = map.get(key) ?? emptyMarks()
+      current[field] += 1
+      map.set(key, current)
+    }
+    for (const task of tasks) bump(task.dueDate, 'tasks')
+    for (const item of deadlines) bump(item.date, 'exams')
+    for (const key of days) {
+      for (const item of classes) {
+        if (classMeetsOn(item, key)) bump(key, 'classes')
+      }
+    }
     return map
-  }, [tasks])
+  }, [classes, days, deadlines, tasks])
+
+  const selectedTasks = useMemo(
+    () =>
+      tasks
+        .filter((task) => task.dueDate === selected)
+        .sort((a, b) => Number(a.done) - Number(b.done) || a.createdAt - b.createdAt),
+    [selected, tasks],
+  )
+  const selectedClasses = useMemo(() => classesOnDay(classes, selected), [classes, selected])
+  const selectedExams = useMemo(
+    () => deadlines.filter((item) => item.date === selected).sort((a, b) => a.title.localeCompare(b.title)),
+    [deadlines, selected],
+  )
+  const empty = selectedTasks.length === 0 && selectedClasses.length === 0 && selectedExams.length === 0
 
   const label = new Date(cursor.year, cursor.month, 1).toLocaleDateString(undefined, {
     month: 'long',
     year: 'numeric',
+  })
+  const selectedLabel = parseKey(selected).toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
   })
 
   return (
@@ -48,7 +99,10 @@ export function CalendarPage() {
           <button
             type="button"
             className="min-h-11 rounded-2xl px-4 text-sm text-muted ring-1 ring-line"
-            onClick={() => setCursor({ year: now.getFullYear(), month: now.getMonth() })}
+            onClick={() => {
+              setCursor({ year: now.getFullYear(), month: now.getMonth() })
+              setSelected(today)
+            }}
           >
             Today
           </button>
@@ -73,7 +127,7 @@ export function CalendarPage() {
         ))}
         {days.map((key) => {
           const inMonth = key.startsWith(`${cursor.year}-${String(cursor.month + 1).padStart(2, '0')}`)
-          const count = counts.get(key) || 0
+          const dayMarks = marks.get(key) ?? emptyMarks()
           return (
             <button
               key={key}
@@ -87,19 +141,71 @@ export function CalendarPage() {
               ].join(' ')}
             >
               <span className="font-mono text-xs">{key.slice(-2)}</span>
-              {count > 0 && (
-                <span className={`mt-2 block h-1.5 w-1.5 rounded-full ${selected === key ? 'bg-white' : 'bg-indigo-400'}`} />
-              )}
+              <DayDots marks={dayMarks} on={selected === key} />
             </button>
           )
         })}
       </div>
-      <div className="space-y-2">
-        <h2 className="text-sm font-semibold text-fg">Due {selected}</h2>
-        {selectedTasks.map((task) => (
-          <TaskRow key={task.id} task={task} className="glass min-h-12 rounded-2xl" />
-        ))}
-        {selectedTasks.length === 0 && <p className="text-sm text-muted">Nothing due on this day.</p>}
+      <div className="flex flex-wrap gap-3 px-1 text-[11px] text-muted">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" /> Tasks
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" /> Classes
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Exams
+        </span>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-sm font-semibold text-fg">{selectedLabel}</h2>
+
+        {selectedClasses.length > 0 && (
+          <section className="space-y-2">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-cyan-500">Classes</h3>
+            {selectedClasses.map((item) => (
+              <Link
+                key={item.id}
+                to="/classes"
+                className="glass flex min-h-12 items-center justify-between gap-3 rounded-2xl px-4"
+              >
+                <span>
+                  <span className="block text-sm text-fg">{item.name}</span>
+                  {item.location ? <span className="text-[11px] text-faint">{item.location}</span> : null}
+                </span>
+                <span className="font-mono shrink-0 text-xs text-indigo-400">{formatClassTime(item)}</span>
+              </Link>
+            ))}
+          </section>
+        )}
+
+        {selectedExams.length > 0 && (
+          <section className="space-y-2">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-amber-500">Exams & deadlines</h3>
+            {selectedExams.map((item) => (
+              <Link
+                key={item.id}
+                to="/deadlines"
+                className="glass flex min-h-12 items-center justify-between gap-3 rounded-2xl px-4"
+              >
+                <span className="text-sm text-fg">{item.title}</span>
+                <span className="text-[11px] text-faint">{deadlineKindLabel(item.kind)}</span>
+              </Link>
+            ))}
+          </section>
+        )}
+
+        {selectedTasks.length > 0 && (
+          <section className="space-y-2">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-indigo-400">Tasks</h3>
+            {selectedTasks.map((task) => (
+              <TaskRow key={task.id} task={task} className="glass min-h-12 rounded-2xl" />
+            ))}
+          </section>
+        )}
+
+        {empty && <p className="text-sm text-muted">Nothing on this day.</p>}
       </div>
     </div>
   )
