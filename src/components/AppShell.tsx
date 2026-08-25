@@ -1,11 +1,17 @@
 import {
   CalendarClock,
+  Database,
   Flame,
   LayoutDashboard,
   ListChecks,
+  LogOut,
   StickyNote,
 } from 'lucide-react'
+import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { DataPanel } from './DataPanel'
+import { Modal } from './Modal'
 
 const nav = [
   { to: '/', label: 'My Day', icon: LayoutDashboard },
@@ -26,6 +32,9 @@ function linkClass(active: boolean) {
 }
 
 export function AppShell() {
+  const { user, logout } = useAuth()
+  const [dataOpen, setDataOpen] = useState(false)
+
   return (
     <div className="bg-app min-h-dvh text-slate-100">
       <div className="mx-auto flex min-h-dvh max-w-7xl">
@@ -52,9 +61,15 @@ export function AppShell() {
               </NavLink>
             ))}
           </nav>
-          <p className="px-1 font-mono text-[10px] tracking-wide text-slate-600">
-            OFFLINE-READY SHELL
-          </p>
+          <div className="space-y-3">
+            <DataPanel />
+            <div className="flex items-center justify-between gap-2 px-1">
+              <p className="truncate text-xs text-slate-500">{user?.email}</p>
+              <button type="button" onClick={() => void logout()} className="text-slate-500 hover:text-white" aria-label="Sign out">
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -62,6 +77,24 @@ export function AppShell() {
             <div>
               <p className="text-sm font-semibold text-white">TaskPulse</p>
               <p className="font-mono text-[10px] text-slate-500">Focus · Execute · Repeat</p>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setDataOpen(true)}
+                className="grid h-11 w-11 place-items-center text-slate-300"
+                aria-label="Data"
+              >
+                <Database className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="grid h-11 w-11 place-items-center text-slate-300"
+                aria-label="Sign out"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
             </div>
           </header>
 
@@ -89,6 +122,9 @@ export function AppShell() {
           </nav>
         </div>
       </div>
+      <Modal open={dataOpen} title="Data" onClose={() => setDataOpen(false)}>
+        <DataPanel />
+      </Modal>
     </div>
   )
 }
