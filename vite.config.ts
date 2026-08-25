@@ -14,6 +14,7 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
+        importScripts: ['/notifications-sw.js'],
       },
       manifest: {
         name: 'TaskyPulse',

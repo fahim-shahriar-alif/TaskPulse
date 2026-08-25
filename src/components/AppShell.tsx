@@ -17,6 +17,7 @@ import {
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { CommandPalette } from './CommandPalette'
+import { NotificationWatch } from './NotificationWatch'
 import { ProgressReportButton } from './ProgressReportButton'
 import { ThemeToggle } from './ThemeToggle'
 
@@ -59,6 +60,7 @@ export function AppShell() {
   return (
     <div className="bg-app min-h-dvh text-fg">
       <CommandPalette />
+      <NotificationWatch />
       <div className="mx-auto flex min-h-dvh max-w-7xl">
         <aside className="glass sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-y-0 border-l-0 p-5 lg:flex">
           <div className="mb-8 flex items-center justify-between gap-3 px-1">

@@ -2,15 +2,29 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useStore } from '../context/StoreContext'
 import { useTheme } from '../context/ThemeContext'
+import {
+  notificationPermission,
+  requestNotificationPermission,
+  showNotice,
+} from '../lib/notifications'
 import { fieldClass, eyebrowClass, titleClass } from '../lib/ui'
+
+const LEAD_MINS = [5, 10, 15, 30] as const
+
+function isiPadLike() {
+  if (typeof navigator === 'undefined') return false
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
 
 export function ProfilePage() {
   const { user, logout, updateName } = useAuth()
-  const { tasks, habits, notes, sessions, classes, deadlines, saveSettings } = useStore()
+  const { tasks, habits, notes, sessions, classes, deadlines, settings, saveSettings } = useStore()
   const { theme, toggleTheme } = useTheme()
   const [name, setName] = useState(user?.displayName ?? '')
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [notifyHint, setNotifyHint] = useState('')
+  const permission = notificationPermission()
   const initial = (user?.displayName || user?.email || 'T').slice(0, 1).toUpperCase()
   const joined = user?.metadata.creationTime
     ? new Date(user.metadata.creationTime).toLocaleDateString(undefined, {
@@ -81,6 +95,94 @@ export function ProfilePage() {
             <p className="font-mono mt-1 text-2xl text-fg">{value}</p>
           </div>
         ))}
+      </section>
+
+      <section className="glass space-y-3 rounded-3xl p-5">
+        <h2 className="text-sm font-semibold text-fg">Reminders</h2>
+        <p className="text-xs text-muted">
+          Get alerts before class, the day an exam is due, and when tasks slip. On iPad, add TaskyPulse to the Home
+          Screen first, then allow notifications.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            const active = settings.notifyEnabled && permission === 'granted'
+            if (active) {
+              setNotifyHint('')
+              void saveSettings({ notifyEnabled: false })
+              return
+            }
+            void requestNotificationPermission().then((perm) => {
+              if (perm !== 'granted') {
+                setNotifyHint(
+                  perm === 'denied'
+                    ? 'Notifications are blocked. Allow them in iPad Settings → Notifications, then try again.'
+                    : 'Notifications are not available in this browser.',
+                )
+                return
+              }
+              setNotifyHint(isiPadLike() ? 'Allowed. Keep the app on your Home Screen so reminders can appear.' : '')
+              void saveSettings({ notifyEnabled: true })
+            })
+          }}
+          className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-field px-4 text-sm text-fg ring-1 ring-line"
+        >
+          <span>Enable reminders</span>
+          <span className="text-muted">{settings.notifyEnabled && permission === 'granted' ? 'On' : 'Off'}</span>
+        </button>
+        {notifyHint ? <p className="text-xs text-amber-500">{notifyHint}</p> : null}
+        {settings.notifyEnabled && permission === 'granted' && (
+          <>
+            <button
+              type="button"
+              onClick={() =>
+                void showNotice({
+                  tag: `test-${Date.now()}`,
+                  title: 'TaskyPulse',
+                  body: 'Reminders are working. You’ll get class, exam, and overdue alerts.',
+                  url: '/',
+                })
+              }
+              className="min-h-11 w-full rounded-2xl text-sm text-indigo-400 ring-1 ring-line"
+            >
+              Send a test notification
+            </button>
+            {(
+              [
+                ['notifyClasses', 'Classes'],
+                ['notifyDeadlines', 'Exams & deadlines'],
+                ['notifyTasks', 'Overdue tasks'],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => void saveSettings({ [key]: !settings[key] })}
+                className="flex min-h-11 w-full items-center justify-between rounded-2xl bg-field px-4 text-sm text-fg ring-1 ring-line"
+              >
+                <span>{label}</span>
+                <span className="text-muted">{settings[key] ? 'On' : 'Off'}</span>
+              </button>
+            ))}
+            <div>
+              <p className="mb-2 text-xs text-muted">Warn me before class</p>
+              <div className="flex flex-wrap gap-2">
+                {LEAD_MINS.map((mins) => (
+                  <button
+                    key={mins}
+                    type="button"
+                    onClick={() => void saveSettings({ classLeadMins: mins })}
+                    className={`min-h-10 rounded-full px-3 text-xs ${
+                      settings.classLeadMins === mins ? 'bg-indigo-500 text-white' : 'bg-field text-muted ring-1 ring-line'
+                    }`}
+                  >
+                    {mins} min
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </section>
 
       <section className="glass space-y-3 rounded-3xl p-5">

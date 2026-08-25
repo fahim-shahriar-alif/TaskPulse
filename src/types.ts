@@ -93,6 +93,11 @@ export type Settings = {
   theme: ThemeName
   pomoMinutes: number
   breakMinutes: number
+  notifyEnabled: boolean
+  notifyClasses: boolean
+  notifyDeadlines: boolean
+  notifyTasks: boolean
+  classLeadMins: number
 }
 
 export const TASK_STATUSES: { id: Status; label: string }[] = [
@@ -113,4 +118,9 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'dark',
   pomoMinutes: 25,
   breakMinutes: 5,
+  notifyEnabled: false,
+  notifyClasses: true,
+  notifyDeadlines: true,
+  notifyTasks: true,
+  classLeadMins: 15,
 }
