@@ -18,6 +18,7 @@ import {
 import { deadlineDetail, deadlineHeadline, daysUntil, formatDaysLeft, upcomingDeadlines } from '../lib/deadlines'
 import { formatDayLabel, formatHourLabel, habitStreak, todayKey } from '../lib/dates'
 import { useNow } from '../lib/now'
+import { updateSlot } from '../lib/schedule'
 import { eyebrowClass, fieldClass } from '../lib/ui'
 
 function greeting(date = new Date()) {
@@ -276,12 +277,29 @@ export function MyDayPage() {
               <p className="text-sm text-muted">No ranges yet. Add from–to times on the Schedule page.</p>
             ) : (
               schedule.map((slot) => (
-                <div key={slot.id} className="rounded-2xl bg-field px-4 py-3 ring-1 ring-line">
-                  <p className="font-mono text-xs text-indigo-400">
-                    {formatHourLabel(slot.from)} – {formatHourLabel(slot.to)}
-                  </p>
-                  <p className="mt-1 text-sm text-fg">{slot.activity || 'Untitled'}</p>
-                </div>
+                <label
+                  key={slot.id}
+                  className={`flex cursor-pointer items-start gap-3 rounded-2xl bg-field px-4 py-3 ring-1 ring-line ${
+                    slot.done ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-transparent'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={slot.done}
+                    aria-label={`Mark ${slot.activity || 'schedule block'} done`}
+                    onChange={() => void saveDay({ schedule: updateSlot(day.schedule, slot.id, { done: !slot.done }) })}
+                    className="mt-1 h-5 w-5 shrink-0"
+                    style={{ accentColor: '#10b981' }}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className={`font-mono block text-xs ${slot.done ? 'text-emerald-500' : 'text-indigo-400'}`}>
+                      {formatHourLabel(slot.from)} – {formatHourLabel(slot.to)}
+                    </span>
+                    <span className={`mt-1 block text-sm ${slot.done ? 'text-faint line-through' : 'text-fg'}`}>
+                      {slot.activity || 'Untitled'}
+                    </span>
+                  </span>
+                </label>
               ))
             )}
           </div>

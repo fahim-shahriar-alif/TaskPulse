@@ -16,6 +16,7 @@ export function newScheduleSlot(from = '09:00', to = '10:00'): ScheduleSlot {
     from: padTime(from),
     to: padTime(to),
     activity: '',
+    done: false,
   }
 }
 
@@ -28,6 +29,7 @@ export function normalizeScheduleSlot(
     from,
     to: padTime(raw.to || addHour(from)),
     activity: raw.activity || '',
+    done: Boolean(raw.done),
   }
 }
 
