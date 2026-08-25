@@ -189,11 +189,7 @@ export function ProfilePage() {
         <h2 className="text-sm font-semibold text-fg">Appearance</h2>
         <button
           type="button"
-          onClick={() => {
-            const next = theme === 'dark' ? 'light' : 'dark'
-            toggleTheme()
-            void saveSettings({ theme: next })
-          }}
+          onClick={toggleTheme}
           className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-field px-4 text-sm text-fg ring-1 ring-line"
         >
           <span>Theme</span>

@@ -72,7 +72,7 @@ export function normalizeTask(raw: Partial<Task> & Pick<Task, 'id' | 'title'>): 
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const { theme, setTheme } = useTheme()
+  const { theme } = useTheme()
   const uid = user?.uid
   const date = todayKey()
   const [ready, setReady] = useState(false)
@@ -148,9 +148,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     })
     const unsubSettings = onSnapshot(doc(db, 'users', uid, 'settings', 'app'), (snap) => {
       if (snap.exists()) {
-        const next = { ...DEFAULT_SETTINGS, ...(snap.data() as Settings) }
-        setSettings(next)
-        if (next.theme) setTheme(next.theme)
+        const incoming = snap.data() as Settings
+        setSettings((prev) => ({
+          ...DEFAULT_SETTINGS,
+          ...incoming,
+          theme: prev.theme,
+        }))
       }
     })
     return () => {
@@ -163,7 +166,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       unsubDeadlines()
       unsubSettings()
     }
-  }, [setTheme, uid])
+  }, [uid])
 
   const day = useMemo(() => {
     const found = days.find((item) => item.date === date)
@@ -209,10 +212,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     async (patch: Partial<Settings>) => {
       const next = { ...settings, ...patch }
       setSettings(next)
-      if (patch.theme) setTheme(patch.theme)
       await write(['settings', 'app'], next)
     },
-    [setTheme, settings, write],
+    [settings, write],
   )
 
   const upsertTask = useCallback((task: Task) => write(['tasks', task.id], normalizeTask(task)), [write])
