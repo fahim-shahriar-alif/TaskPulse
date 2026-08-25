@@ -10,6 +10,7 @@ export function normalizeDeadline(raw: Partial<Deadline> & Pick<Deadline, 'id'>)
     date: raw.date || todayKey(),
     kind,
     classId: typeof raw.classId === 'string' ? raw.classId : '',
+    syllabus: typeof raw.syllabus === 'string' ? raw.syllabus.trim() : '',
     createdAt: raw.createdAt || Date.now(),
   }
 }
@@ -21,6 +22,7 @@ export function emptyDeadline(classId = ''): Deadline {
     date: todayKey(),
     kind: 'exam',
     classId,
+    syllabus: '',
     createdAt: Date.now(),
   }
 }

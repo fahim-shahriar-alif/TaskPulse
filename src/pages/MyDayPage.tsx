@@ -292,11 +292,14 @@ export function MyDayPage() {
                     <Link
                       key={item.id}
                       to="/deadlines"
-                      className="flex min-h-12 items-center justify-between rounded-2xl bg-field px-4 ring-1 ring-line"
+                      className="flex min-h-12 items-center justify-between rounded-2xl bg-field px-4 py-3 ring-1 ring-line"
                     >
                       <span>
                         <span className="block text-sm text-fg">{deadlineHeadline(item, classes)}</span>
                         <span className="text-[11px] text-faint">{deadlineDetail(item, classes)}</span>
+                        {item.syllabus ? (
+                          <span className="mt-0.5 block line-clamp-2 text-[11px] text-muted">{item.syllabus}</span>
+                        ) : null}
                       </span>
                       <span className={`font-mono text-xs font-semibold ${tone}`}>{formatDaysLeft(item.date, today)}</span>
                     </Link>

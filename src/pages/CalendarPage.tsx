@@ -190,11 +190,14 @@ export function CalendarPage() {
               <Link
                 key={item.id}
                 to="/deadlines"
-                className="glass flex min-h-12 items-center justify-between gap-3 rounded-2xl px-4"
+                className="glass flex min-h-12 items-center justify-between gap-3 rounded-2xl px-4 py-3"
               >
                 <span>
                   <span className="block text-sm text-fg">{deadlineHeadline(item, classes)}</span>
                   <span className="text-[11px] text-faint">{deadlineDetail(item, classes)}</span>
+                  {item.syllabus ? (
+                    <span className="mt-1 block line-clamp-2 text-[11px] text-muted">{item.syllabus}</span>
+                  ) : null}
                 </span>
               </Link>
             ))}

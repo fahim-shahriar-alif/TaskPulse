@@ -46,7 +46,7 @@ export function CommandPalette() {
     const deadlineHits = deadlines
       .filter((item) => {
         const label = deadlineHeadline(item, classes).toLowerCase()
-        return label.includes(q) || item.title.toLowerCase().includes(q)
+        return label.includes(q) || item.title.toLowerCase().includes(q) || item.syllabus.toLowerCase().includes(q)
       })
       .slice(0, 4)
       .map((item) => ({

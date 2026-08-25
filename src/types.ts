@@ -87,6 +87,7 @@ export type Deadline = {
   date: string
   kind: DeadlineKind
   classId: string
+  syllabus: string
   createdAt: number
 }
 

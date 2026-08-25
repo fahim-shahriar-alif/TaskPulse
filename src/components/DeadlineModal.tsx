@@ -38,7 +38,7 @@ export function DeadlineModal({
         onSubmit={(event) => {
           event.preventDefault()
           if (!canSave) return
-          void upsertDeadline(normalizeDeadline({ ...draft, title: draft.title.trim() }))
+          void upsertDeadline(normalizeDeadline({ ...draft, title: draft.title.trim(), syllabus: draft.syllabus.trim() }))
           onClose()
         }}
       >
@@ -84,6 +84,18 @@ export function DeadlineModal({
           placeholder="Midterm, quiz, final… (optional)"
           className={`${fieldClass} w-full`}
         />
+        {draft.kind === 'exam' && (
+          <label className="block text-xs text-muted">
+            Syllabus
+            <textarea
+              value={draft.syllabus}
+              onChange={(event) => setDraft({ ...draft, syllabus: event.target.value })}
+              placeholder="Topics, chapters, labs… what this exam covers"
+              rows={4}
+              className={`${fieldClass} mt-1 w-full py-3`}
+            />
+          </label>
+        )}
         <div className="flex flex-wrap gap-2">
           {DEADLINE_KINDS.map((item) => (
             <button

@@ -34,6 +34,9 @@ function Row({
           <p className="text-[11px] uppercase tracking-wide text-indigo-400">{deadlineDetail(item, classes)}</p>
           <h2 className="mt-1 text-lg font-semibold text-fg">{deadlineHeadline(item, classes)}</h2>
           <p className="font-mono mt-1 text-xs text-faint">{item.date}</p>
+          {item.kind === 'exam' && item.syllabus ? (
+            <p className="mt-3 whitespace-pre-wrap text-sm text-muted">{item.syllabus}</p>
+          ) : null}
         </div>
         <p className={`font-mono text-sm font-semibold ${soon ? 'text-rose-400' : 'text-fg'}`}>{left}</p>
       </div>
