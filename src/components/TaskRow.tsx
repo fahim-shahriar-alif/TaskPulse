@@ -1,18 +1,17 @@
 import type { ReactNode } from 'react'
 import { useStore } from '../context/StoreContext'
+import { STATUS_SIGNAL, statusLabel } from '../lib/status'
 import type { Status, Task } from '../types'
 import { PriorityBadge } from './PriorityBadge'
-import { statusLabel, useTaskDetail } from './TaskDetailModal'
+import { useTaskDetail } from './TaskDetailModal'
 
 export function StatusChip({ status }: { status: Status }) {
-  const tone =
-    status === 'completed'
-      ? 'bg-indigo-500/15 text-indigo-400'
-      : status === 'inprog'
-        ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-300'
-        : 'bg-field text-muted ring-1 ring-line'
+  const tone = STATUS_SIGNAL[status]
   return (
-    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${tone}`}>{statusLabel(status)}</span>
+    <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium ${tone.chip}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+      {statusLabel(status)}
+    </span>
   )
 }
 

@@ -5,6 +5,7 @@ import { StatusChip, TaskRow } from '../components/TaskRow'
 import { useTaskDetail } from '../components/TaskDetailModal'
 import { useStore } from '../context/StoreContext'
 import { addDays, todayKey } from '../lib/dates'
+import { STATUS_SIGNAL } from '../lib/status'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
 import type { Status, Task } from '../types'
 import { PROJECTS, TASK_STATUSES } from '../types'
@@ -152,7 +153,10 @@ export function TasksPage() {
                 if (task) moveTask(task, column.id)
               }}
             >
-              <h2 className="px-2 pb-3 text-sm font-semibold text-fg">{column.label}</h2>
+              <h2 className="flex items-center gap-2 px-2 pb-3 text-sm font-semibold text-fg">
+                <span className={`h-2.5 w-2.5 rounded-full ${STATUS_SIGNAL[column.id].dot}`} />
+                {column.label}
+              </h2>
               <div className="space-y-2">
                 {filtered
                   .filter((task) => task.status === column.id)

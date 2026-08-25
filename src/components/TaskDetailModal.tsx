@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { useStore } from '../context/StoreContext'
+import { STATUS_SIGNAL } from '../lib/status'
 import { fieldClass } from '../lib/ui'
 import type { Priority, Recurrence, Status, Task } from '../types'
 import { PROJECTS, TASK_STATUSES, TASK_TAGS } from '../types'
@@ -27,10 +28,6 @@ export function useTaskDetail() {
   const ctx = useContext(TaskDetailContext)
   if (!ctx) throw new Error('useTaskDetail must be used inside TaskDetailProvider')
   return ctx
-}
-
-export function statusLabel(status: Status) {
-  return TASK_STATUSES.find((item) => item.id === status)?.label ?? status
 }
 
 function TaskDetailModal({ task, onClose }: { task: Task | null; onClose: () => void }) {
@@ -84,15 +81,17 @@ function TaskDetailModal({ task, onClose }: { task: Task | null; onClose: () => 
             <div className="grid grid-cols-3 gap-2">
               {TASK_STATUSES.map((item) => {
                 const on = task.status === item.id
+                const tone = STATUS_SIGNAL[item.id]
                 return (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => setStatus(item.id)}
-                    className={`min-h-12 rounded-2xl px-2 text-xs font-medium ${
-                      on ? 'bg-indigo-500 text-white' : 'bg-field text-muted ring-1 ring-line'
+                    className={`flex min-h-12 items-center justify-center gap-1.5 rounded-2xl px-2 text-xs font-medium ${
+                      on ? tone.solid : 'bg-field text-muted ring-1 ring-line'
                     }`}
                   >
+                    <span className={`h-2 w-2 rounded-full ${on ? 'bg-white' : tone.dot}`} />
                     {item.label}
                   </button>
                 )
