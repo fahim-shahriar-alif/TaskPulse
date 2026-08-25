@@ -17,6 +17,7 @@ import {
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { CommandPalette } from './CommandPalette'
+import { LiveClock } from './LiveClock'
 import { NotificationWatch } from './NotificationWatch'
 import { ProgressReportButton } from './ProgressReportButton'
 import { ThemeToggle } from './ThemeToggle'
@@ -99,15 +100,16 @@ export function AppShell() {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
+          <header className="glass sticky top-0 z-20 hidden items-center justify-end border-x-0 border-t-0 px-8 py-3 lg:flex">
+            <LiveClock className="text-xl font-semibold text-fg" />
+          </header>
           <header className="glass sticky top-0 z-20 flex items-center justify-between border-x-0 border-t-0 px-4 py-3 lg:hidden">
-            <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="" className="h-9 w-9 rounded-xl" />
-              <div>
-                <p className="text-sm font-semibold text-fg">TaskyPulse</p>
-                <p className="font-mono text-[10px] text-faint">Focus · Execute · Repeat</p>
-              </div>
+            <div className="flex min-w-0 items-center gap-3">
+              <img src="/logo.png" alt="" className="h-9 w-9 shrink-0 rounded-xl" />
+              <p className="truncate text-sm font-semibold text-fg">TaskyPulse</p>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              <LiveClock className="pr-1 text-sm font-semibold text-fg" />
               <ThemeToggle />
               <ProgressReportButton variant="icon" />
               <button
