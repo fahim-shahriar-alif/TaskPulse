@@ -29,7 +29,7 @@ export function StatsPage() {
         <p className={eyebrowClass}>Pro</p>
         <h1 className={titleClass}>Productivity</h1>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="kpi-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           ['Open today', String(openToday)],
           ['Done this week', String(completedWeek)],

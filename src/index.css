@@ -15,7 +15,7 @@
   --color-field: var(--field);
   --color-overlay: var(--overlay);
   --color-peach: #ffe8c2;
-  --color-brand: #7b61ff;
+  --color-brand: #0ea5e9;
 }
 
 html.dark {
@@ -38,23 +38,23 @@ html.dark {
 
 html.light {
   color-scheme: light;
-  --canvas: #f0f2f8;
+  --canvas: #eef7fd;
   --card: #ffffff;
-  --fg: #111827;
-  --muted: #6b7280;
-  --faint: #9ca3af;
-  --line: rgb(17 24 39 / 0.08);
-  --field: #f7f8fc;
-  --overlay: rgb(17 24 39 / 0.4);
-  --glass-border: rgb(17 24 39 / 0.06);
-  --glow-a: transparent;
-  --glow-b: transparent;
-  --glow-c: transparent;
-  --color-indigo-300: #7b61ff;
-  --color-indigo-400: #7b61ff;
-  --color-indigo-500: #7b61ff;
-  --color-emerald-400: #34d399;
-  --color-amber-400: #f5c16c;
+  --fg: #1e293b;
+  --muted: #64748b;
+  --faint: #94a3b8;
+  --line: rgb(14 165 233 / 0.14);
+  --field: #f0f9ff;
+  --overlay: rgb(15 23 42 / 0.36);
+  --glass-border: rgb(14 165 233 / 0.1);
+  --glow-a: rgb(14 165 233 / 0.22);
+  --glow-b: rgb(56 189 248 / 0.18);
+  --glow-c: rgb(165 180 252 / 0.2);
+  --color-indigo-300: #7dd3fc;
+  --color-indigo-400: #0ea5e9;
+  --color-indigo-500: #0284c7;
+  --color-emerald-400: #10b981;
+  --color-amber-400: #f59e0b;
   --color-rose-400: #f43f5e;
 }
 
@@ -92,45 +92,61 @@ html.dark body {
 
 html.light .glass {
   backdrop-filter: none;
-  box-shadow: 0 8px 28px rgb(17 24 39 / 0.06);
+  box-shadow: 0 10px 28px -6px rgb(14 116 144 / 0.12);
 }
 
 html.light .hero-card {
-  background: #0c0e14;
-  border-color: transparent;
-  box-shadow: 0 18px 40px rgb(12 14 20 / 0.18);
-}
-
-html.light .hero-card .text-fg {
-  color: #ffffff;
-}
-
-html.light .hero-card .text-muted {
-  color: #a1a1aa;
+  background: #ffffff;
+  border-color: rgb(14 165 233 / 0.12);
+  box-shadow: 0 12px 32px -8px rgb(14 116 144 / 0.16);
 }
 
 html.light .hero-card .stroke-line {
-  stroke: rgb(255 255 255 / 0.12);
+  stroke: rgb(14 165 233 / 0.16);
 }
 
 html.light .stat-grid > :nth-child(5n + 1) .stat-bar {
-  background: #7bdff2;
+  background: #0369a1;
 }
 
 html.light .stat-grid > :nth-child(5n + 2) .stat-bar {
-  background: #93c5fd;
+  background: #0284c7;
 }
 
 html.light .stat-grid > :nth-child(5n + 3) .stat-bar {
-  background: #c4b5fd;
+  background: #0ea5e9;
 }
 
 html.light .stat-grid > :nth-child(5n + 4) .stat-bar {
-  background: #fdba74;
+  background: #38bdf8;
 }
 
 html.light .stat-grid > :nth-child(5n + 5) .stat-bar {
-  background: #7b61ff;
+  background: #7dd3fc;
+}
+
+html.light .kpi-grid > :nth-child(4n + 1) {
+  background: #e0f2fe;
+  border-color: transparent;
+}
+
+html.light .kpi-grid > :nth-child(4n + 2) {
+  background: #d1fae5;
+  border-color: transparent;
+}
+
+html.light .kpi-grid > :nth-child(4n + 3) {
+  background: #fef3c7;
+  border-color: transparent;
+}
+
+html.light .kpi-grid > :nth-child(4n + 4) {
+  background: #ede9fe;
+  border-color: transparent;
+}
+
+html.light input[type='checkbox'] {
+  accent-color: #0ea5e9;
 }
 
 .bg-app {
@@ -142,5 +158,9 @@ html.light .stat-grid > :nth-child(5n + 5) .stat-bar {
 }
 
 html.light .bg-app {
-  background: var(--canvas);
+  background:
+    radial-gradient(920px 520px at 100% -8%, var(--glow-a), transparent 52%),
+    radial-gradient(760px 460px at -8% 108%, var(--glow-b), transparent 50%),
+    radial-gradient(640px 380px at 78% 88%, var(--glow-c), transparent 46%),
+    linear-gradient(180deg, #e4f4fc 0%, #f4faff 42%, #ffffff 100%);
 }

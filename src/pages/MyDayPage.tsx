@@ -65,7 +65,7 @@ export function MyDayPage() {
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="kpi-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(([label, value]) => (
           <div key={label} className="glass rounded-3xl p-4">
             <p className="text-xs text-muted">{label}</p>

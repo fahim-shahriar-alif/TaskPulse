@@ -46,7 +46,7 @@ function linkClass(active: boolean) {
     'flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium transition',
     'min-h-11 touch-manipulation',
     active
-      ? 'bg-indigo-500/15 text-indigo-400 ring-1 ring-indigo-400/30 light:bg-peach light:text-fg light:ring-0'
+      ? 'bg-indigo-500/15 text-indigo-400 ring-1 ring-indigo-400/30'
       : 'text-muted hover:bg-field hover:text-fg',
   ].join(' ')
 }
@@ -130,7 +130,7 @@ export function AppShell() {
                 className={({ isActive }) =>
                   [
                     'flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-medium touch-manipulation',
-                    isActive ? 'text-indigo-400 light:text-brand' : 'text-faint',
+                    isActive ? 'text-indigo-400' : 'text-faint',
                   ].join(' ')
                 }
               >

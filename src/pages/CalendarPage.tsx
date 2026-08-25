@@ -80,10 +80,10 @@ export function CalendarPage() {
               type="button"
               onClick={() => setSelected(key)}
               className={[
-                'min-h-16 rounded-2xl p-2 text-left text-sm',
-                selected === key ? 'bg-indigo-500 text-white' : 'hover:bg-field',
+                'min-h-16 rounded-2xl p-2 text-left text-sm transition',
+                selected === key ? 'bg-indigo-500 text-white shadow-md shadow-sky-500/25' : 'hover:bg-field',
                 !inMonth && selected !== key ? 'text-faint' : selected === key ? '' : 'text-fg',
-                key === today && selected !== key ? 'ring-1 ring-indigo-400/50' : '',
+                key === today && selected !== key ? 'ring-2 ring-indigo-400/60' : '',
               ].join(' ')}
             >
               <span className="font-mono text-xs">{key.slice(-2)}</span>
