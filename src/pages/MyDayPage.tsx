@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { AddTaskModal } from '../components/AddTaskModal'
 import { CompletionRing } from '../components/CompletionRing'
 import { DeadlineModal } from '../components/DeadlineModal'
+import { LiveClock } from '../components/LiveClock'
 import { TaskRow } from '../components/TaskRow'
 import { useAuth } from '../context/AuthContext'
 import { toggleHabitToday, useStore } from '../context/StoreContext'
@@ -17,7 +18,7 @@ import {
 import { deadlineKindLabel, daysUntil, formatDaysLeft, upcomingDeadlines } from '../lib/deadlines'
 import { formatDayLabel, formatHourLabel, habitStreak, todayKey } from '../lib/dates'
 import { useNow } from '../lib/now'
-import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
+import { eyebrowClass, fieldClass } from '../lib/ui'
 
 function greeting(date = new Date()) {
   const hour = date.getHours()
@@ -74,7 +75,10 @@ export function MyDayPage() {
     <div className="mx-auto max-w-6xl space-y-5">
       <div>
         <p className={eyebrowClass}>My Day</p>
-        <h1 className={titleClass}>{formatDayLabel(now)}</h1>
+        <div className="mt-1 flex items-baseline justify-between gap-4">
+          <h1 className="min-w-0 text-3xl font-semibold text-fg">{formatDayLabel(now)}</h1>
+          <LiveClock className="shrink-0 text-2xl font-semibold text-fg sm:text-3xl" />
+        </div>
         <p className="mt-2 text-sm text-muted">
           {greeting(now)}, {firstName}. Here’s your day at a glance.
         </p>
