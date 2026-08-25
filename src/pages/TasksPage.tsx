@@ -15,7 +15,7 @@ const SMART = ['all', 'today', 'tomorrow', 'week', 'inbox', 'overdue', 'done'] a
 export function TasksPage() {
   const { tasks, upsertTask, removeTask } = useStore()
   const { openTask } = useTaskDetail()
-  const [view, setView] = useState<'list' | 'kanban'>('list')
+  const [view, setView] = useState<'list' | 'kanban'>('kanban')
   const [smart, setSmart] = useState<(typeof SMART)[number]>('all')
   const [query, setQuery] = useState('')
   const [project, setProject] = useState('all')
