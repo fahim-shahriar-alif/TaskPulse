@@ -9,7 +9,7 @@ type ProgressReportButtonProps = {
 
 export function ProgressReportButton({ variant = 'card' }: ProgressReportButtonProps) {
   const { user } = useAuth()
-  const { tasks, classes, day } = useStore()
+  const { tasks, habits, classes, day } = useStore()
 
   function run() {
     try {
@@ -17,6 +17,7 @@ export function ProgressReportButton({ variant = 'card' }: ProgressReportButtonP
         name: user?.displayName || 'TaskyPulse user',
         email: user?.email || '',
         tasks: tasks ?? [],
+        habits: habits ?? [],
         classes: classes ?? [],
         day,
       })

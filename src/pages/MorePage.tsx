@@ -38,7 +38,7 @@ export function MorePage() {
       <div className="glass space-y-3 rounded-3xl p-4">
         <div>
           <h2 className="text-sm font-semibold text-fg">Today’s PDF</h2>
-          <p className="mt-1 text-xs text-muted">One page with today’s tasks, classes, and time schedule.</p>
+          <p className="mt-1 text-xs text-muted">One page with today’s tasks, classes, schedule, and habits.</p>
         </div>
         <ProgressReportButton />
       </div>

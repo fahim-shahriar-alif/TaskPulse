@@ -1,12 +1,13 @@
 import { classesOnDay, formatClassTime } from './classes'
-import { formatHourLabel, todayKey } from './dates'
+import { formatHourLabel, habitStreak, todayKey } from './dates'
 import { statusLabel } from './status'
-import type { DayDoc, Task, UniClass } from '../types'
+import type { DayDoc, Habit, Task, UniClass } from '../types'
 
 export type ProgressReportInput = {
   name: string
   email: string
   tasks: Task[]
+  habits: Habit[]
   classes: UniClass[]
   day: DayDoc
   logoUrl: string
@@ -56,6 +57,9 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
     .sort((a, b) => Number(isDone(a)) - Number(isDone(b)) || a.createdAt - b.createdAt)
   const todayClasses = classesOnDay(input.classes, today)
   const schedule = [...(input.day.schedule || [])].sort((a, b) => a.from.localeCompare(b.from))
+  const habits = [...(input.habits || [])].sort((a, b) => a.name.localeCompare(b.name))
+  const asOf = new Date(y, (m || 1) - 1, d || 1)
+  const habitsDone = habits.filter((habit) => habit.completions[today]).length
   const doneN = dayTasks.filter(isDone).length
 
   const taskRows = clip(
@@ -81,7 +85,15 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
       escapeHtml(`${formatHourLabel(slot.from)} – ${formatHourLabel(slot.to)}`),
       escapeHtml(slot.activity.trim() || 'Untitled'),
     ]),
-    14,
+    10,
+  )
+  const habitRows = clip(
+    habits.map((habit) => [
+      habit.completions[today] ? '✓' : '○',
+      escapeHtml(habit.name),
+      `${habitStreak(habit.completions, asOf)}d`,
+    ]),
+    10,
   )
 
   return `<!doctype html>
@@ -132,7 +144,7 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
       min-height: 0;
       display: grid;
       grid-template-columns: 1.15fr 0.95fr;
-      grid-template-rows: 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
       gap: 10px;
     }
     .card {
@@ -141,7 +153,7 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
       padding: 10px 12px;
       overflow: hidden;
     }
-    .tasks { grid-row: 1 / 3; }
+    .tasks { grid-row: 1 / 4; }
     h2 {
       font-size: 11px;
       letter-spacing: 0.08em;
@@ -196,6 +208,10 @@ export function buildProgressReportHtml(input: ProgressReportInput) {
       <section class="card">
         <h2>Time schedule <small>${schedule.filter((slot) => slot.done).length}/${schedule.length} done</small></h2>
         ${table(['', 'Time', 'Activity'], scheduleRows)}
+      </section>
+      <section class="card">
+        <h2>Habits <small>${habitsDone}/${habits.length} done</small></h2>
+        ${table(['', 'Habit', 'Streak'], habitRows)}
       </section>
     </div>
     <footer>TaskyPulse · one-page daily plan · ${escapeHtml(dateLabel)}</footer>
