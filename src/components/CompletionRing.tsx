@@ -25,8 +25,8 @@ export function CompletionRing({ value, label }: CompletionRingProps) {
         />
         <defs>
           <linearGradient id="ring" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#818cf8" />
-            <stop offset="100%" stopColor="#34d399" />
+            <stop offset="0%" stopColor="#818cf8" className="light:[stop-color:#f5c16c]" />
+            <stop offset="100%" stopColor="#34d399" className="light:[stop-color:#ffe8c2]" />
           </linearGradient>
         </defs>
       </svg>

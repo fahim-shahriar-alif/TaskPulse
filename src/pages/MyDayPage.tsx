@@ -30,7 +30,7 @@ export function MyDayPage() {
           <p className={eyebrowClass}>My Day</p>
           <h1 className={titleClass}>{formatDayLabel()}</h1>
         </div>
-        <div className="glass rounded-3xl p-5">
+        <div className="hero-card glass rounded-3xl p-5">
           <CompletionRing
             value={pct}
             label={

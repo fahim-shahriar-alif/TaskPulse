@@ -44,7 +44,7 @@ function linkClass(active: boolean) {
     'flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium transition',
     'min-h-11 touch-manipulation',
     active
-      ? 'bg-indigo-500/15 text-indigo-400 ring-1 ring-indigo-400/30'
+      ? 'bg-indigo-500/15 text-indigo-400 ring-1 ring-indigo-400/30 light:bg-peach light:text-fg light:ring-0'
       : 'text-muted hover:bg-field hover:text-fg',
   ].join(' ')
 }
@@ -59,7 +59,7 @@ export function AppShell() {
         <aside className="glass sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-y-0 border-l-0 p-5 lg:flex">
           <div className="mb-8 flex items-center justify-between gap-3 px-1">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-400/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-400/30 light:bg-brand light:text-white light:ring-0">
                 <LayoutDashboard className="h-5 w-5" />
               </div>
               <div>
@@ -127,7 +127,7 @@ export function AppShell() {
                 className={({ isActive }) =>
                   [
                     'flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-medium touch-manipulation',
-                    isActive ? 'text-indigo-400' : 'text-faint',
+                    isActive ? 'text-indigo-400 light:text-brand' : 'text-faint',
                   ].join(' ')
                 }
               >

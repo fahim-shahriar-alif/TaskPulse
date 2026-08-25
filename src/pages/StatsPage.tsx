@@ -44,14 +44,14 @@ export function StatsPage() {
       </div>
       <div className="glass rounded-3xl p-5">
         <h2 className="text-sm font-semibold text-fg">Last 14 days</h2>
-        <div className="mt-4 grid grid-cols-[repeat(14,minmax(0,1fr))] gap-2">
+        <div className="stat-grid mt-4 grid grid-cols-[repeat(14,minmax(0,1fr))] gap-2">
           {days.map((day) => {
             const count = doneByDay.get(day) || 0
             const opacity = count === 0 ? 0.15 : Math.min(1, 0.25 + count * 0.2)
             return (
               <div key={day} className="text-center">
                 <div
-                  className="mx-auto h-10 w-full rounded-lg bg-indigo-500"
+                  className="stat-bar mx-auto h-10 w-full rounded-lg bg-indigo-500"
                   style={{ opacity }}
                   title={`${day}: ${count}`}
                 />

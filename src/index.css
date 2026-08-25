@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
 
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
@@ -13,6 +14,8 @@
   --color-line: var(--line);
   --color-field: var(--field);
   --color-overlay: var(--overlay);
+  --color-peach: #ffe8c2;
+  --color-brand: #7b61ff;
 }
 
 html.dark {
@@ -33,23 +36,24 @@ html.dark {
 
 html.light {
   color-scheme: light;
-  --canvas: #efe8ff;
-  --card: rgb(255 255 255 / 0.72);
-  --fg: #2c2758;
-  --muted: #5b5488;
-  --faint: #8a82b8;
-  --line: rgb(99 102 241 / 0.2);
-  --field: rgb(255 255 255 / 0.78);
-  --overlay: rgb(76 61 139 / 0.28);
-  --glass-border: rgb(129 140 248 / 0.32);
-  --glow-a: rgb(99 102 241 / 0.42);
-  --glow-b: rgb(45 212 191 / 0.3);
-  --glow-c: rgb(251 146 60 / 0.28);
-  --color-indigo-400: #4f46e5;
-  --color-indigo-300: #6366f1;
-  --color-emerald-400: #059669;
-  --color-amber-400: #d97706;
-  --color-rose-400: #e11d48;
+  --canvas: #f0f2f8;
+  --card: #ffffff;
+  --fg: #111827;
+  --muted: #6b7280;
+  --faint: #9ca3af;
+  --line: rgb(17 24 39 / 0.08);
+  --field: #f7f8fc;
+  --overlay: rgb(17 24 39 / 0.4);
+  --glass-border: rgb(17 24 39 / 0.06);
+  --glow-a: transparent;
+  --glow-b: transparent;
+  --glow-c: transparent;
+  --color-indigo-300: #7b61ff;
+  --color-indigo-400: #7b61ff;
+  --color-indigo-500: #7b61ff;
+  --color-emerald-400: #34d399;
+  --color-amber-400: #f5c16c;
+  --color-rose-400: #f43f5e;
 }
 
 html,
@@ -80,18 +84,46 @@ body {
 }
 
 html.light .glass {
-  box-shadow:
-    0 12px 36px rgb(99 102 241 / 0.14),
-    0 4px 16px rgb(244 114 182 / 0.1);
+  backdrop-filter: none;
+  box-shadow: 0 8px 28px rgb(17 24 39 / 0.06);
 }
 
-html.light .bg-app {
-  background:
-    radial-gradient(920px 540px at 8% -12%, rgb(99 102 241 / 0.4), transparent 58%),
-    radial-gradient(760px 480px at 100% 0%, rgb(34 211 238 / 0.28), transparent 52%),
-    radial-gradient(680px 420px at 90% 108%, rgb(251 146 60 / 0.3), transparent 48%),
-    radial-gradient(520px 360px at 30% 90%, rgb(244 114 182 / 0.22), transparent 50%),
-    var(--canvas);
+html.light .hero-card {
+  background: #0c0e14;
+  border-color: transparent;
+  box-shadow: 0 18px 40px rgb(12 14 20 / 0.18);
+}
+
+html.light .hero-card .text-fg {
+  color: #ffffff;
+}
+
+html.light .hero-card .text-muted {
+  color: #a1a1aa;
+}
+
+html.light .hero-card .stroke-line {
+  stroke: rgb(255 255 255 / 0.12);
+}
+
+html.light .stat-grid > :nth-child(5n + 1) .stat-bar {
+  background: #7bdff2;
+}
+
+html.light .stat-grid > :nth-child(5n + 2) .stat-bar {
+  background: #93c5fd;
+}
+
+html.light .stat-grid > :nth-child(5n + 3) .stat-bar {
+  background: #c4b5fd;
+}
+
+html.light .stat-grid > :nth-child(5n + 4) .stat-bar {
+  background: #fdba74;
+}
+
+html.light .stat-grid > :nth-child(5n + 5) .stat-bar {
+  background: #7b61ff;
 }
 
 .bg-app {
@@ -100,4 +132,8 @@ html.light .bg-app {
     radial-gradient(720px 420px at 100% 0%, var(--glow-b), transparent 50%),
     radial-gradient(640px 360px at 80% 110%, var(--glow-c), transparent 45%),
     var(--canvas);
+}
+
+html.light .bg-app {
+  background: var(--canvas);
 }

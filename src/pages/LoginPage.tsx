@@ -28,7 +28,7 @@ export function LoginPage() {
         >
           {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
-        <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-400/30">
+        <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-400/30 light:bg-brand light:text-white light:ring-0">
           <span className="text-lg font-semibold">T</span>
         </div>
         <p className="font-mono text-xs tracking-[0.18em] text-indigo-400 uppercase">TaskyPulse</p>
