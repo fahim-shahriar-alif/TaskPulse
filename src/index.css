@@ -33,18 +33,23 @@ html.dark {
 
 html.light {
   color-scheme: light;
-  --canvas: #dfe4ee;
-  --card: rgb(232 237 246 / 0.82);
-  --fg: #4a5568;
-  --muted: #6b778c;
-  --faint: #8b95a8;
-  --line: rgb(71 85 105 / 0.12);
-  --field: rgb(228 233 242 / 0.95);
-  --overlay: rgb(71 85 105 / 0.35);
-  --glass-border: rgb(71 85 105 / 0.1);
-  --glow-a: rgb(129 140 248 / 0.14);
-  --glow-b: rgb(110 231 183 / 0.1);
-  --glow-c: rgb(253 186 116 / 0.08);
+  --canvas: #efe8ff;
+  --card: rgb(255 255 255 / 0.72);
+  --fg: #2c2758;
+  --muted: #5b5488;
+  --faint: #8a82b8;
+  --line: rgb(99 102 241 / 0.2);
+  --field: rgb(255 255 255 / 0.78);
+  --overlay: rgb(76 61 139 / 0.28);
+  --glass-border: rgb(129 140 248 / 0.32);
+  --glow-a: rgb(99 102 241 / 0.42);
+  --glow-b: rgb(45 212 191 / 0.3);
+  --glow-c: rgb(251 146 60 / 0.28);
+  --color-indigo-400: #4f46e5;
+  --color-indigo-300: #6366f1;
+  --color-emerald-400: #059669;
+  --color-amber-400: #d97706;
+  --color-rose-400: #e11d48;
 }
 
 html,
@@ -75,7 +80,18 @@ body {
 }
 
 html.light .glass {
-  box-shadow: 0 10px 28px rgb(71 85 105 / 0.08);
+  box-shadow:
+    0 12px 36px rgb(99 102 241 / 0.14),
+    0 4px 16px rgb(244 114 182 / 0.1);
+}
+
+html.light .bg-app {
+  background:
+    radial-gradient(920px 540px at 8% -12%, rgb(99 102 241 / 0.4), transparent 58%),
+    radial-gradient(760px 480px at 100% 0%, rgb(34 211 238 / 0.28), transparent 52%),
+    radial-gradient(680px 420px at 90% 108%, rgb(251 146 60 / 0.3), transparent 48%),
+    radial-gradient(520px 360px at 30% 90%, rgb(244 114 182 / 0.22), transparent 50%),
+    var(--canvas);
 }
 
 .bg-app {
