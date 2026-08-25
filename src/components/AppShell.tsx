@@ -59,9 +59,7 @@ export function AppShell() {
         <aside className="glass sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-y-0 border-l-0 p-5 lg:flex">
           <div className="mb-8 flex items-center justify-between gap-3 px-1">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-400/30 light:bg-brand light:text-white light:ring-0">
-                <LayoutDashboard className="h-5 w-5" />
-              </div>
+              <img src="/logo.png" alt="" className="h-10 w-10 rounded-2xl" />
               <div>
                 <p className="text-sm font-semibold tracking-tight text-fg">TaskyPulse</p>
                 <p className="font-mono text-[11px] text-faint">Focus · Execute</p>
@@ -96,9 +94,12 @@ export function AppShell() {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="glass sticky top-0 z-20 flex items-center justify-between border-x-0 border-t-0 px-4 py-3 lg:hidden">
-            <div>
-              <p className="text-sm font-semibold text-fg">TaskyPulse</p>
-              <p className="font-mono text-[10px] text-faint">Focus · Execute · Repeat</p>
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="" className="h-9 w-9 rounded-xl" />
+              <div>
+                <p className="text-sm font-semibold text-fg">TaskyPulse</p>
+                <p className="font-mono text-[10px] text-faint">Focus · Execute · Repeat</p>
+              </div>
             </div>
             <div className="flex items-center gap-1">
               <ThemeToggle />
