@@ -91,7 +91,7 @@ function TaskDetailModal({ task, onClose }: { task: Task | null; onClose: () => 
                       on ? tone.solid : 'bg-field text-muted ring-1 ring-line'
                     }`}
                   >
-                    <span className={`h-2 w-2 rounded-full ${on ? 'bg-white' : tone.dot}`} />
+                    <span className={`h-2 w-2 rounded-full ${on ? tone.dotOn : tone.dot}`} />
                     {item.label}
                   </button>
                 )
