@@ -12,7 +12,7 @@ export function CompletionRing({ value, label }: CompletionRingProps) {
   return (
     <div className="flex items-center gap-4">
       <svg viewBox="0 0 100 100" className="h-28 w-28 -rotate-90">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="rgb(51 65 85)" strokeWidth="10" />
+        <circle cx="50" cy="50" r={r} fill="none" className="stroke-line" strokeWidth="10" />
         <circle
           cx="50"
           cy="50"
@@ -31,8 +31,8 @@ export function CompletionRing({ value, label }: CompletionRingProps) {
         </defs>
       </svg>
       <div>
-        <p className="font-mono text-3xl font-semibold text-white">{pct}%</p>
-        <p className="text-sm text-slate-400">{label}</p>
+        <p className="font-mono text-3xl font-semibold text-fg">{pct}%</p>
+        <p className="text-sm text-muted">{label}</p>
       </div>
     </div>
   )

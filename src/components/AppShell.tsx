@@ -1,24 +1,42 @@
 import {
+  BarChart3,
   CalendarClock,
-  Database,
+  CalendarDays,
   Flame,
   LayoutDashboard,
+  LayoutGrid,
   ListChecks,
   LogOut,
+  MoreHorizontal,
   StickyNote,
+  Timer,
+  UserRound,
 } from 'lucide-react'
-import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { DataPanel } from './DataPanel'
-import { Modal } from './Modal'
+import { CommandPalette } from './CommandPalette'
+import { ProgressReportButton } from './ProgressReportButton'
+import { ThemeToggle } from './ThemeToggle'
 
-const nav = [
+const desktopNav = [
   { to: '/', label: 'My Day', icon: LayoutDashboard },
   { to: '/tasks', label: 'Tasks', icon: ListChecks },
+  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
+  { to: '/focus', label: 'Focus', icon: Timer },
+  { to: '/matrix', label: 'Matrix', icon: LayoutGrid },
+  { to: '/stats', label: 'Stats', icon: BarChart3 },
   { to: '/schedule', label: 'Schedule', icon: CalendarClock },
   { to: '/habits', label: 'Habits', icon: Flame },
   { to: '/notes', label: 'Notes', icon: StickyNote },
+  { to: '/profile', label: 'Profile', icon: UserRound },
+] as const
+
+const mobileNav = [
+  { to: '/', label: 'Today', icon: LayoutDashboard },
+  { to: '/tasks', label: 'Tasks', icon: ListChecks },
+  { to: '/calendar', label: 'Cal', icon: CalendarDays },
+  { to: '/focus', label: 'Focus', icon: Timer },
+  { to: '/more', label: 'More', icon: MoreHorizontal },
 ] as const
 
 function linkClass(active: boolean) {
@@ -26,30 +44,33 @@ function linkClass(active: boolean) {
     'flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium transition',
     'min-h-11 touch-manipulation',
     active
-      ? 'bg-indigo-500/15 text-indigo-200 ring-1 ring-indigo-400/30'
-      : 'text-slate-400 hover:bg-white/5 hover:text-slate-100',
+      ? 'bg-indigo-500/15 text-indigo-400 ring-1 ring-indigo-400/30'
+      : 'text-muted hover:bg-field hover:text-fg',
   ].join(' ')
 }
 
 export function AppShell() {
   const { user, logout } = useAuth()
-  const [dataOpen, setDataOpen] = useState(false)
 
   return (
-    <div className="bg-app min-h-dvh text-slate-100">
+    <div className="bg-app min-h-dvh text-fg">
+      <CommandPalette />
       <div className="mx-auto flex min-h-dvh max-w-7xl">
         <aside className="glass sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-y-0 border-l-0 p-5 lg:flex">
-          <div className="mb-8 flex items-center gap-3 px-1">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-400/30">
-              <LayoutDashboard className="h-5 w-5" />
+          <div className="mb-8 flex items-center justify-between gap-3 px-1">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-400/30">
+                <LayoutDashboard className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold tracking-tight text-fg">TaskPulse</p>
+                <p className="font-mono text-[11px] text-faint">Pro</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold tracking-tight text-white">TaskPulse</p>
-              <p className="font-mono text-[11px] text-slate-500">Pro</p>
-            </div>
+            <ThemeToggle />
           </div>
-          <nav className="flex flex-1 flex-col gap-1.5">
-            {nav.map((item) => (
+          <nav className="flex flex-1 flex-col gap-1 overflow-auto">
+            {desktopNav.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -62,10 +83,11 @@ export function AppShell() {
             ))}
           </nav>
           <div className="space-y-3">
-            <DataPanel />
+            <p className="px-1 font-mono text-[10px] text-faint">⌘K search</p>
+            <ProgressReportButton variant="sidebar" />
             <div className="flex items-center justify-between gap-2 px-1">
-              <p className="truncate text-xs text-slate-500">{user?.email}</p>
-              <button type="button" onClick={() => void logout()} className="text-slate-500 hover:text-white" aria-label="Sign out">
+              <p className="truncate text-xs text-faint">{user?.email}</p>
+              <button type="button" onClick={() => void logout()} className="text-faint hover:text-fg" aria-label="Sign out">
                 <LogOut className="h-4 w-4" />
               </button>
             </div>
@@ -75,22 +97,16 @@ export function AppShell() {
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="glass sticky top-0 z-20 flex items-center justify-between border-x-0 border-t-0 px-4 py-3 lg:hidden">
             <div>
-              <p className="text-sm font-semibold text-white">TaskPulse</p>
-              <p className="font-mono text-[10px] text-slate-500">Focus · Execute · Repeat</p>
+              <p className="text-sm font-semibold text-fg">TaskPulse</p>
+              <p className="font-mono text-[10px] text-faint">Focus · Execute · Repeat</p>
             </div>
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setDataOpen(true)}
-                className="grid h-11 w-11 place-items-center text-slate-300"
-                aria-label="Data"
-              >
-                <Database className="h-5 w-5" />
-              </button>
+              <ThemeToggle />
+              <ProgressReportButton variant="icon" />
               <button
                 type="button"
                 onClick={() => void logout()}
-                className="grid h-11 w-11 place-items-center text-slate-300"
+                className="grid h-11 w-11 place-items-center text-muted"
                 aria-label="Sign out"
               >
                 <LogOut className="h-5 w-5" />
@@ -103,7 +119,7 @@ export function AppShell() {
           </main>
 
           <nav className="glass fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-x-0 border-b-0 px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1 lg:hidden">
-            {nav.map((item) => (
+            {mobileNav.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -111,7 +127,7 @@ export function AppShell() {
                 className={({ isActive }) =>
                   [
                     'flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-medium touch-manipulation',
-                    isActive ? 'text-indigo-300' : 'text-slate-500',
+                    isActive ? 'text-indigo-400' : 'text-faint',
                   ].join(' ')
                 }
               >
@@ -122,9 +138,6 @@ export function AppShell() {
           </nav>
         </div>
       </div>
-      <Modal open={dataOpen} title="Data" onClose={() => setDataOpen(false)}>
-        <DataPanel />
-      </Modal>
     </div>
   )
 }

@@ -1,5 +1,13 @@
 export type Priority = 'high' | 'medium' | 'low'
 export type Status = 'todo' | 'inprog' | 'completed'
+export type Recurrence = 'none' | 'daily' | 'weekly' | 'weekdays'
+export type ThemeName = 'dark' | 'light'
+
+export type Subtask = {
+  id: string
+  title: string
+  done: boolean
+}
 
 export type Task = {
   id: string
@@ -10,6 +18,10 @@ export type Task = {
   status: Status
   done: boolean
   notes: string
+  tags: string[]
+  subtasks: Subtask[]
+  recurrence: Recurrence
+  pomodoros: number
   createdAt: number
 }
 
@@ -41,14 +53,26 @@ export type DayDoc = {
   schedule: ScheduleSlot[]
 }
 
-export type BackupPayload = {
-  version: 1
-  exportedAt: string
-  tasks: Task[]
-  habits: Habit[]
-  notes: Note[]
-  days: DayDoc[]
+export type FocusSession = {
+  id: string
+  date: string
+  minutes: number
+  taskId?: string
+  createdAt: number
+}
+
+export type Settings = {
+  theme: ThemeName
+  pomoMinutes: number
+  breakMinutes: number
 }
 
 export const PROJECTS = ['Work', 'Study', 'Personal', 'Health'] as const
 export const NOTE_TAGS = ['Ideas', 'Bookmarks', 'Exam', 'DevOps'] as const
+export const TASK_TAGS = ['deep', 'quick', 'waiting', 'home'] as const
+
+export const DEFAULT_SETTINGS: Settings = {
+  theme: 'dark',
+  pomoMinutes: 25,
+  breakMinutes: 5,
+}

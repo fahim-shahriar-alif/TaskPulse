@@ -1,9 +1,9 @@
 import type { Priority } from '../types'
 
 const styles: Record<Priority, string> = {
-  high: 'bg-rose-500/15 text-rose-200 ring-rose-400/30',
-  medium: 'bg-amber-500/15 text-amber-200 ring-amber-400/30',
-  low: 'bg-emerald-500/15 text-emerald-200 ring-emerald-400/30',
+  high: 'bg-rose-500/15 text-rose-600 ring-rose-400/30 dark:text-rose-200',
+  medium: 'bg-amber-500/15 text-amber-700 ring-amber-400/30 dark:text-amber-200',
+  low: 'bg-emerald-500/15 text-emerald-700 ring-emerald-400/30 dark:text-emerald-200',
 }
 
 export function PriorityBadge({ priority }: { priority: Priority }) {

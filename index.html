@@ -1,7 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      document.documentElement.classList.toggle(
+        'light',
+        localStorage.getItem('taskpulse-theme') === 'light',
+      )
+      document.documentElement.classList.toggle(
+        'dark',
+        localStorage.getItem('taskpulse-theme') !== 'light',
+      )
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta

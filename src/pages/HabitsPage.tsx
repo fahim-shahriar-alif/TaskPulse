@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Modal } from '../components/Modal'
 import { toggleHabitToday, useStore } from '../context/StoreContext'
 import { habitStreak, todayKey } from '../lib/dates'
+import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
 
 export function HabitsPage() {
   const { habits, upsertHabit, removeHabit } = useStore()
@@ -13,8 +14,8 @@ export function HabitsPage() {
     <div className="mx-auto max-w-4xl space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-xs tracking-[0.18em] text-indigo-300/80 uppercase">Consistency</p>
-          <h1 className="mt-1 text-3xl font-semibold text-white">Habit tracker</h1>
+          <p className={eyebrowClass}>Consistency</p>
+          <h1 className={titleClass}>Habit tracker</h1>
         </div>
         <button
           type="button"
@@ -31,14 +32,10 @@ export function HabitsPage() {
             <article key={habit.id} className="glass rounded-3xl p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-white">{habit.name}</h2>
-                  <p className="font-mono mt-1 text-xs text-slate-500">{habitStreak(habit.completions)} day streak</p>
+                  <h2 className="text-lg font-semibold text-fg">{habit.name}</h2>
+                  <p className="font-mono mt-1 text-xs text-faint">{habitStreak(habit.completions)} day streak</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => void removeHabit(habit.id)}
-                  className="text-xs text-rose-300"
-                >
+                <button type="button" onClick={() => void removeHabit(habit.id)} className="text-xs text-rose-400">
                   Delete
                 </button>
               </div>
@@ -46,7 +43,9 @@ export function HabitsPage() {
                 type="button"
                 onClick={() => void upsertHabit(toggleHabitToday(habit))}
                 className={`mt-5 min-h-12 w-full rounded-2xl text-sm font-medium ${
-                  done ? 'bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/30' : 'bg-slate-950/50 text-slate-200 ring-1 ring-white/10'
+                  done
+                    ? 'bg-emerald-500/15 text-emerald-600 ring-1 ring-emerald-400/30 dark:text-emerald-200'
+                    : 'bg-field text-fg ring-1 ring-line'
                 }`}
               >
                 {done ? 'Done today' : 'Mark complete'}
@@ -76,7 +75,7 @@ export function HabitsPage() {
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Habit name"
-            className="min-h-11 w-full rounded-2xl bg-slate-950/60 px-4 text-sm outline-none ring-1 ring-white/10"
+            className={`${fieldClass} w-full`}
           />
           <button type="submit" className="min-h-11 w-full rounded-2xl bg-indigo-500 text-sm font-medium text-white">
             Save habit

@@ -1,10 +1,10 @@
+import { FirebaseError } from 'firebase/app'
 import {
-  GoogleAuthProvider,
-  getRedirectResult,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
-  signInWithPopup,
-  signInWithRedirect,
+  signInWithEmailAndPassword,
   signOut,
+  updateProfile,
   type User,
 } from 'firebase/auth'
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
@@ -14,17 +14,43 @@ type AuthContextValue = {
   configured: boolean
   user: User | null
   loading: boolean
+  busy: boolean
   error: string | null
-  signIn: () => Promise<void>
+  signIn: (email: string, password: string) => Promise<void>
+  register: (email: string, password: string) => Promise<void>
+  updateName: (name: string) => Promise<void>
   logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+function errorMessage(err: unknown) {
+  if (err instanceof FirebaseError) {
+    switch (err.code) {
+      case 'auth/invalid-email':
+        return 'Enter a valid email address.'
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        return 'Email or password is incorrect.'
+      case 'auth/email-already-in-use':
+        return 'That email already has an account. Sign in instead.'
+      case 'auth/weak-password':
+        return 'Password must be at least 6 characters.'
+      case 'auth/operation-not-allowed':
+        return 'Email/password sign-in is not enabled in the Firebase console.'
+      default:
+        return err.message
+    }
+  }
+  return err instanceof Error ? err.message : 'Sign-in failed'
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const configured = isFirebaseConfigured()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(configured)
+  const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -33,9 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
       return
     }
-    const { auth } = firebase
-    getRedirectResult(auth).catch(() => undefined)
-    return onAuthStateChanged(auth, (next) => {
+    return onAuthStateChanged(firebase.auth, (next) => {
       setUser(next)
       setLoading(false)
     })
@@ -46,21 +70,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       configured,
       user,
       loading,
+      busy,
       error,
-      signIn: async () => {
+      signIn: async (email, password) => {
         const firebase = getFirebase()
         if (!firebase) return
         setError(null)
-        const provider = new GoogleAuthProvider()
+        setBusy(true)
         try {
-          await signInWithPopup(firebase.auth, provider)
-        } catch {
-          try {
-            await signInWithRedirect(firebase.auth, provider)
-          } catch (err) {
-            setError(err instanceof Error ? err.message : 'Google sign-in failed')
-          }
+          await signInWithEmailAndPassword(firebase.auth, email, password)
+        } catch (err) {
+          setError(errorMessage(err))
+        } finally {
+          setBusy(false)
         }
+      },
+      register: async (email, password) => {
+        const firebase = getFirebase()
+        if (!firebase) return
+        setError(null)
+        setBusy(true)
+        try {
+          await createUserWithEmailAndPassword(firebase.auth, email, password)
+        } catch (err) {
+          setError(errorMessage(err))
+        } finally {
+          setBusy(false)
+        }
+      },
+      updateName: async (name) => {
+        const firebase = getFirebase()
+        if (!firebase?.auth.currentUser) return
+        await updateProfile(firebase.auth.currentUser, { displayName: name.trim() })
+        setUser(firebase.auth.currentUser)
       },
       logout: async () => {
         const firebase = getFirebase()
@@ -68,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await signOut(firebase.auth)
       },
     }),
-    [configured, error, user, loading],
+    [busy, configured, error, loading, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

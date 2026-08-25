@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../context/StoreContext'
+import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
 import { NOTE_TAGS } from '../types'
 
 function looksLikeCode(body: string, tags: string[]) {
@@ -35,8 +36,8 @@ export function NotesPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-5">
       <div>
-        <p className="font-mono text-xs tracking-[0.18em] text-indigo-300/80 uppercase">Scratchpad</p>
-        <h1 className="mt-1 text-3xl font-semibold text-white">Quick notes</h1>
+        <p className={eyebrowClass}>Scratchpad</p>
+        <h1 className={titleClass}>Quick notes</h1>
       </div>
       <form
         className="glass space-y-3 rounded-3xl p-4"
@@ -50,13 +51,9 @@ export function NotesPage() {
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Note title"
-            className="min-h-11 rounded-2xl bg-slate-950/50 px-4 text-sm outline-none ring-1 ring-white/10"
+            className={fieldClass}
           />
-          <select
-            value={tag}
-            onChange={(event) => setTag(event.target.value)}
-            className="min-h-11 rounded-2xl bg-slate-950/50 px-3 text-sm outline-none ring-1 ring-white/10"
-          >
+          <select value={tag} onChange={(event) => setTag(event.target.value)} className={fieldClass}>
             {NOTE_TAGS.map((item) => (
               <option key={item} value={item}>
                 #{item}
@@ -68,7 +65,7 @@ export function NotesPage() {
           value={body}
           onChange={(event) => setBody(event.target.value)}
           placeholder="Meeting notes, commands, or a random idea"
-          className="font-mono min-h-28 w-full rounded-2xl bg-slate-950/50 p-4 text-sm outline-none ring-1 ring-white/10"
+          className={`${fieldClass} font-mono min-h-28 w-full py-3`}
         />
         <button type="submit" className="min-h-11 rounded-2xl bg-indigo-500 px-5 text-sm font-medium text-white">
           Save note
@@ -78,7 +75,7 @@ export function NotesPage() {
         <button
           type="button"
           onClick={() => setFilter('all')}
-          className={`min-h-10 rounded-full px-3 text-xs ${filter === 'all' ? 'bg-indigo-500 text-white' : 'bg-slate-900 text-slate-400'}`}
+          className={`min-h-10 rounded-full px-3 text-xs ${filter === 'all' ? 'bg-indigo-500 text-white' : 'bg-field text-muted ring-1 ring-line'}`}
         >
           All
         </button>
@@ -87,7 +84,7 @@ export function NotesPage() {
             key={item}
             type="button"
             onClick={() => setFilter(item)}
-            className={`min-h-10 rounded-full px-3 text-xs ${filter === item ? 'bg-indigo-500 text-white' : 'bg-slate-900 text-slate-400'}`}
+            className={`min-h-10 rounded-full px-3 text-xs ${filter === item ? 'bg-indigo-500 text-white' : 'bg-field text-muted ring-1 ring-line'}`}
           >
             #{item}
           </button>
@@ -98,17 +95,17 @@ export function NotesPage() {
           <article key={note.id} className="glass rounded-3xl p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-base font-semibold text-white">{note.title}</h2>
-                <p className="font-mono mt-1 text-[11px] text-indigo-300">
+                <h2 className="text-base font-semibold text-fg">{note.title}</h2>
+                <p className="font-mono mt-1 text-[11px] text-indigo-400">
                   {note.tags.map((item) => `#${item}`).join(' ')}
                 </p>
               </div>
-              <button type="button" onClick={() => void removeNote(note.id)} className="text-xs text-rose-300">
+              <button type="button" onClick={() => void removeNote(note.id)} className="text-xs text-rose-400">
                 Delete
               </button>
             </div>
             <pre
-              className={`mt-3 whitespace-pre-wrap text-sm text-slate-300 ${looksLikeCode(note.body, note.tags) ? 'font-mono rounded-2xl bg-slate-950/60 p-3' : ''}`}
+              className={`mt-3 whitespace-pre-wrap text-sm text-muted ${looksLikeCode(note.body, note.tags) ? 'font-mono rounded-2xl bg-field p-3' : ''}`}
             >
               {note.body}
             </pre>

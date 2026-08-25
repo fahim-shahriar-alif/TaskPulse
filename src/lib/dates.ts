@@ -5,6 +5,25 @@ export function todayKey(date = new Date()) {
   return `${y}-${m}-${d}`
 }
 
+export function parseKey(key: string) {
+  const [y, m, d] = key.split('-').map(Number)
+  return new Date(y, (m || 1) - 1, d || 1)
+}
+
+export function addDays(key: string, days: number) {
+  const date = parseKey(key)
+  date.setDate(date.getDate() + days)
+  return todayKey(date)
+}
+
+export function nextDue(key: string, recurrence: 'daily' | 'weekly' | 'weekdays') {
+  if (recurrence === 'daily') return addDays(key || todayKey(), 1)
+  if (recurrence === 'weekly') return addDays(key || todayKey(), 7)
+  let cursor = addDays(key || todayKey(), 1)
+  while ([0, 6].includes(parseKey(cursor).getDay())) cursor = addDays(cursor, 1)
+  return cursor
+}
+
 export function formatDayLabel(date = new Date()) {
   return date.toLocaleDateString(undefined, {
     weekday: 'long',
@@ -37,4 +56,22 @@ export function habitStreak(completions: Record<string, boolean>, from = new Dat
     break
   }
   return streak
+}
+
+export function startOfWeek(date = new Date()) {
+  const next = new Date(date)
+  const day = next.getDay() || 7
+  next.setDate(next.getDate() - day + 1)
+  return todayKey(next)
+}
+
+export function monthGrid(year: number, month: number) {
+  const first = new Date(year, month, 1)
+  const start = new Date(first)
+  start.setDate(1 - ((first.getDay() + 6) % 7))
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(start)
+    date.setDate(start.getDate() + index)
+    return todayKey(date)
+  })
 }
