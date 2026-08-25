@@ -7,7 +7,7 @@ import { statusLabel, useTaskDetail } from './TaskDetailModal'
 export function StatusChip({ status }: { status: Status }) {
   const tone =
     status === 'completed'
-      ? 'bg-indigo-500/15 text-indigo-500'
+      ? 'bg-indigo-500/15 text-indigo-400'
       : status === 'inprog'
         ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-300'
         : 'bg-field text-muted ring-1 ring-line'

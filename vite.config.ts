@@ -19,8 +19,8 @@ export default defineConfig({
         name: 'TaskyPulse',
         short_name: 'TaskyPulse',
         description: 'Personal task and productivity suite',
-        theme_color: '#020617',
-        background_color: '#020617',
+        theme_color: '#07111f',
+        background_color: '#07111f',
         display: 'standalone',
         start_url: '/',
         icons: [

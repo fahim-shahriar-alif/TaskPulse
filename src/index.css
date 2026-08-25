@@ -21,18 +21,18 @@
 html.dark,
 html[data-theme='dark'] {
   color-scheme: dark;
-  --canvas: #020617;
-  --card: rgb(15 23 42 / 0.92);
+  --canvas: #07111f;
+  --card: rgb(12 28 48 / 0.88);
   --fg: #ffffff;
   --muted: #cbd5e1;
   --faint: #94a3b8;
-  --line: rgb(255 255 255 / 0.16);
-  --field: rgb(15 23 42 / 0.85);
-  --overlay: rgb(2 6 23 / 0.72);
-  --glass-border: rgb(255 255 255 / 0.12);
-  --glow-a: rgb(99 102 241 / 0.18);
-  --glow-b: rgb(16 185 129 / 0.1);
-  --glow-c: rgb(245 158 11 / 0.08);
+  --line: rgb(56 189 248 / 0.18);
+  --field: #0c2236;
+  --overlay: rgb(2 8 18 / 0.72);
+  --glass-border: rgb(56 189 248 / 0.16);
+  --glow-a: rgb(14 165 233 / 0.32);
+  --glow-b: rgb(56 189 248 / 0.22);
+  --glow-c: rgb(167 139 250 / 0.2);
 }
 
 html.light,
@@ -55,23 +55,28 @@ html[data-theme='light'] {
 /* Tailwind v4 keeps default indigo on :root inside @layer theme. Override in the same layer. */
 @layer theme {
   html.light,
-  html[data-theme='light'] {
+  html[data-theme='light'],
+  html.dark,
+  html[data-theme='dark'] {
     --color-indigo-300: #7dd3fc;
-    --color-indigo-400: #0ea5e9;
     --color-indigo-500: #0ea5e9;
     --color-indigo-600: #0284c7;
-    --color-emerald-400: #10b981;
+    --color-emerald-400: #34d399;
     --color-amber-400: #f59e0b;
-    --color-rose-400: #f43f5e;
-    --color-peach: #dbeafe;
+    --color-rose-400: #fb7185;
     --color-brand: #0ea5e9;
+  }
+
+  html.light,
+  html[data-theme='light'] {
+    --color-indigo-400: #0ea5e9;
+    --color-peach: #dbeafe;
   }
 
   html.dark,
   html[data-theme='dark'] {
-    --color-indigo-300: #c7d2fe;
-    --color-indigo-400: #a5b4fc;
-    --color-indigo-500: #6366f1;
+    --color-indigo-400: #38bdf8;
+    --color-peach: #0c4a6e;
   }
 }
 
@@ -114,6 +119,12 @@ html[data-theme='light'] .glass {
   box-shadow: 0 10px 28px -6px rgb(14 116 144 / 0.14);
 }
 
+html.dark .glass,
+html[data-theme='dark'] .glass {
+  background: rgb(12 28 48 / 0.9);
+  box-shadow: 0 16px 40px rgb(2 8 18 / 0.35);
+}
+
 html.light .hero-card,
 html[data-theme='light'] .hero-card {
   background: #ffffff;
@@ -121,24 +132,41 @@ html[data-theme='light'] .hero-card {
   box-shadow: 0 12px 32px -8px rgb(14 116 144 / 0.18);
 }
 
+html.dark .hero-card,
+html[data-theme='dark'] .hero-card {
+  background: rgb(8 36 56 / 0.95);
+  border-color: rgb(56 189 248 / 0.22);
+  box-shadow: 0 16px 40px rgb(2 8 18 / 0.4);
+}
+
 html.light .hero-card .stroke-line,
 html[data-theme='light'] .hero-card .stroke-line {
   stroke: rgb(14 165 233 / 0.18);
 }
 
-html.light .stat-grid > :nth-child(5n + 1) .stat-bar {
+html.dark .hero-card .stroke-line,
+html[data-theme='dark'] .hero-card .stroke-line {
+  stroke: rgb(56 189 248 / 0.22);
+}
+
+html.light .stat-grid > :nth-child(5n + 1) .stat-bar,
+html.dark .stat-grid > :nth-child(5n + 1) .stat-bar {
   background: #0369a1;
 }
-html.light .stat-grid > :nth-child(5n + 2) .stat-bar {
+html.light .stat-grid > :nth-child(5n + 2) .stat-bar,
+html.dark .stat-grid > :nth-child(5n + 2) .stat-bar {
   background: #0284c7;
 }
-html.light .stat-grid > :nth-child(5n + 3) .stat-bar {
+html.light .stat-grid > :nth-child(5n + 3) .stat-bar,
+html.dark .stat-grid > :nth-child(5n + 3) .stat-bar {
   background: #0ea5e9;
 }
-html.light .stat-grid > :nth-child(5n + 4) .stat-bar {
+html.light .stat-grid > :nth-child(5n + 4) .stat-bar,
+html.dark .stat-grid > :nth-child(5n + 4) .stat-bar {
   background: #38bdf8;
 }
-html.light .stat-grid > :nth-child(5n + 5) .stat-bar {
+html.light .stat-grid > :nth-child(5n + 5) .stat-bar,
+html.dark .stat-grid > :nth-child(5n + 5) .stat-bar {
   background: #7dd3fc;
 }
 
@@ -159,7 +187,25 @@ html.light .kpi-grid > :nth-child(4n + 4) {
   border-color: transparent;
 }
 
-html.light input[type='checkbox'] {
+html.dark .kpi-grid > :nth-child(4n + 1) {
+  background: rgb(14 165 233 / 0.22);
+  border-color: transparent;
+}
+html.dark .kpi-grid > :nth-child(4n + 2) {
+  background: rgb(16 185 129 / 0.2);
+  border-color: transparent;
+}
+html.dark .kpi-grid > :nth-child(4n + 3) {
+  background: rgb(245 158 11 / 0.2);
+  border-color: transparent;
+}
+html.dark .kpi-grid > :nth-child(4n + 4) {
+  background: rgb(139 92 246 / 0.24);
+  border-color: transparent;
+}
+
+html.light input[type='checkbox'],
+html.dark input[type='checkbox'] {
   accent-color: #0ea5e9;
 }
 
@@ -182,40 +228,79 @@ html[data-theme='light'] body {
     linear-gradient(180deg, #cfe9f8 0%, #e7f5fd 40%, #f7fbff 100%);
 }
 
+html.dark .bg-app,
+html[data-theme='dark'] .bg-app,
+html.dark body,
+html[data-theme='dark'] body {
+  background:
+    radial-gradient(920px 560px at 100% -8%, rgb(14 165 233 / 0.28), transparent 52%),
+    radial-gradient(760px 480px at -8% 108%, rgb(56 189 248 / 0.2), transparent 50%),
+    radial-gradient(640px 400px at 78% 88%, rgb(167 139 250 / 0.18), transparent 46%),
+    linear-gradient(180deg, #06101c 0%, #071526 42%, #0a1a2e 100%);
+}
+
 /* Force accent utilities — opacity variants are sometimes inlined as purple hex. */
 html.light .bg-indigo-500,
-html[data-theme='light'] .bg-indigo-500 {
+html[data-theme='light'] .bg-indigo-500,
+html.dark .bg-indigo-500,
+html[data-theme='dark'] .bg-indigo-500 {
   background-color: #0ea5e9;
 }
 html.light .hover\:bg-indigo-400:hover,
-html[data-theme='light'] .hover\:bg-indigo-400:hover {
+html[data-theme='light'] .hover\:bg-indigo-400:hover,
+html.dark .hover\:bg-indigo-400:hover,
+html[data-theme='dark'] .hover\:bg-indigo-400:hover {
   background-color: #38bdf8;
 }
 html.light .text-indigo-400,
 html[data-theme='light'] .text-indigo-400 {
   color: #0284c7;
 }
+html.dark .text-indigo-400,
+html[data-theme='dark'] .text-indigo-400 {
+  color: #38bdf8;
+}
 html.light .text-indigo-500,
-html[data-theme='light'] .text-indigo-500 {
+html[data-theme='light'] .text-indigo-500,
+html.dark .text-indigo-500,
+html[data-theme='dark'] .text-indigo-500 {
   color: #0ea5e9;
 }
 html.light .bg-indigo-500\/15,
 html[data-theme='light'] .bg-indigo-500\/15 {
   background-color: rgb(14 165 233 / 0.16);
 }
+html.dark .bg-indigo-500\/15,
+html[data-theme='dark'] .bg-indigo-500\/15 {
+  background-color: rgb(14 165 233 / 0.2);
+}
 html.light .ring-indigo-400\/30,
-html[data-theme='light'] .ring-indigo-400\/30 {
+html[data-theme='light'] .ring-indigo-400\/30,
+html.dark .ring-indigo-400\/30,
+html[data-theme='dark'] .ring-indigo-400\/30 {
   --tw-ring-color: rgb(14 165 233 / 0.35);
 }
 html.light .ring-indigo-400\/50,
-html[data-theme='light'] .ring-indigo-400\/50 {
-  --tw-ring-color: rgb(14 165 233 / 0.5);
+html[data-theme='light'] .ring-indigo-400\/50,
+html.dark .ring-indigo-400\/50,
+html[data-theme='dark'] .ring-indigo-400\/50 {
+  --tw-ring-color: rgb(56 189 248 / 0.5);
 }
 html.light .accent-indigo-400,
-html[data-theme='light'] .accent-indigo-400 {
+html[data-theme='light'] .accent-indigo-400,
+html.dark .accent-indigo-400,
+html[data-theme='dark'] .accent-indigo-400 {
   accent-color: #0ea5e9;
 }
 html.light .bg-peach,
 html[data-theme='light'] .bg-peach {
   background-color: #e0f2fe;
+}
+html.dark .bg-peach,
+html[data-theme='dark'] .bg-peach {
+  background-color: rgb(14 165 233 / 0.2);
+}
+html.dark .shadow-sky-500\/25,
+html[data-theme='dark'] .shadow-sky-500\/25 {
+  --tw-shadow-color: rgb(14 165 233 / 0.35);
 }
