@@ -2,17 +2,17 @@ import { useRef, useState } from 'react'
 import { Camera, ImagePlus, Trash2, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useStore } from '../context/StoreContext'
-import { buildClassNote, classNotesOn } from '../lib/classNotes'
-import { formatDayLabel, parseKey } from '../lib/dates'
+import { buildClassNote, groupClassNotesByDate, notesForClass } from '../lib/classNotes'
+import { formatDayLabel, parseKey, todayKey } from '../lib/dates'
+import { nowDate } from '../lib/clock'
 import type { UniClass } from '../types'
 
 type ClassNotesSheetProps = {
   item: UniClass
-  date: string
   onClose: () => void
 }
 
-export function ClassNotesSheet({ item, date, onClose }: ClassNotesSheetProps) {
+export function ClassNotesSheet({ item, onClose }: ClassNotesSheetProps) {
   const { user } = useAuth()
   const { classNotes, upsertClassNote, removeClassNote } = useStore()
   const [busy, setBusy] = useState(false)
@@ -20,8 +20,8 @@ export function ClassNotesSheet({ item, date, onClose }: ClassNotesSheetProps) {
   const [preview, setPreview] = useState<string | null>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
   const libraryRef = useRef<HTMLInputElement>(null)
-  const shots = classNotesOn(classNotes, item.id, date)
-  const dayLabel = formatDayLabel(parseKey(date))
+  const shots = notesForClass(classNotes, item.id)
+  const groups = groupClassNotesByDate(shots)
 
   async function addFiles(list?: FileList | null) {
     const uid = user?.uid
@@ -29,6 +29,7 @@ export function ClassNotesSheet({ item, date, onClose }: ClassNotesSheetProps) {
     setBusy(true)
     setError('')
     try {
+      const date = todayKey(nowDate())
       for (const file of Array.from(list)) {
         const note = await buildClassNote(uid, item.id, date, file)
         await upsertClassNote(note)
@@ -49,7 +50,9 @@ export function ClassNotesSheet({ item, date, onClose }: ClassNotesSheetProps) {
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-fg">{item.name}</h2>
-            <p className="text-xs text-muted">{dayLabel} · lecture photos</p>
+            <p className="text-xs text-muted">
+              {shots.length ? `${shots.length} page${shots.length === 1 ? '' : 's'} in this subject` : 'Subject photo album'}
+            </p>
           </div>
           <button type="button" onClick={onClose} className="grid h-11 w-11 place-items-center text-muted" aria-label="Close">
             <X className="h-5 w-5" />
@@ -80,27 +83,38 @@ export function ClassNotesSheet({ item, date, onClose }: ClassNotesSheetProps) {
 
         <div className="mt-4 min-h-0 flex-1 overflow-auto">
           {shots.length === 0 ? (
-            <p className="text-sm text-muted">No pages yet. Photograph the board or your notebook for this class today.</p>
+            <p className="text-sm text-muted">
+              Nothing in {item.name} yet. Photos you add stay in this subject so you can open them any day.
+            </p>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
-              {shots.map((shot) => (
-                <div key={shot.id} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setPreview(shot.url)}
-                    className="block w-full overflow-hidden rounded-2xl ring-1 ring-line"
-                  >
-                    <img src={shot.url} alt="" className="aspect-[3/4] w-full object-cover" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void removeClassNote(shot)}
-                    className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-black/55 text-white"
-                    aria-label="Delete photo"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+            <div className="space-y-4">
+              {groups.map(([date, pages]) => (
+                <section key={date}>
+                  <h3 className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted">
+                    {formatDayLabel(parseKey(date))}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {pages.map((shot) => (
+                      <div key={shot.id} className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setPreview(shot.url)}
+                          className="block w-full overflow-hidden rounded-2xl ring-1 ring-line"
+                        >
+                          <img src={shot.url} alt="" className="aspect-[3/4] w-full object-cover" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void removeClassNote(shot)}
+                          className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-black/55 text-white"
+                          aria-label="Delete photo"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </section>
               ))}
             </div>
           )}

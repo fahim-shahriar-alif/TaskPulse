@@ -17,7 +17,7 @@ import {
   nowMinutes,
   timeToMinutes,
 } from '../lib/classes'
-import { classNotesOn } from '../lib/classNotes'
+import { notesForClass } from '../lib/classNotes'
 import { deadlineDetail, deadlineHeadline, daysUntil, formatDaysLeft, upcomingDeadlines } from '../lib/deadlines'
 import { formatDayLabel, formatHourLabel, habitStreak, todayKey } from '../lib/dates'
 import { useNow } from '../lib/now'
@@ -140,9 +140,7 @@ export function MyDayPage() {
 
       <AddTaskModal open={addOpen} initialDueDate={today} onClose={() => setAddOpen(false)} />
       <DeadlineModal open={deadlineOpen} onClose={() => setDeadlineOpen(false)} />
-      {notesClass ? (
-        <ClassNotesSheet item={notesClass} date={today} onClose={() => setNotesClass(null)} />
-      ) : null}
+      {notesClass ? <ClassNotesSheet item={notesClass} onClose={() => setNotesClass(null)} /> : null}
 
       <div className="kpi-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(([label, value]) => (
@@ -377,8 +375,8 @@ export function MyDayPage() {
                         className="mt-2 min-h-9 rounded-full bg-card px-3 text-xs text-indigo-400 ring-1 ring-line"
                       >
                         {(() => {
-                          const count = classNotesOn(classNotes, item.id, today).length
-                          return count ? `Notes · ${count}` : 'Add lecture photos'
+                          const count = notesForClass(classNotes, item.id).length
+                          return count ? `Photos · ${count}` : 'Add photos'
                         })()}
                       </button>
                     </div>

@@ -4,7 +4,7 @@ import { ClassNotesSheet } from '../components/ClassNotesSheet'
 import { TaskRow } from '../components/TaskRow'
 import { useStore } from '../context/StoreContext'
 import { classMeetsOn, classesOnDay, formatClassTime } from '../lib/classes'
-import { classNotesOn } from '../lib/classNotes'
+import { notesForClass } from '../lib/classNotes'
 import { deadlineDetail, deadlineHeadline } from '../lib/deadlines'
 import { monthGrid, parseKey } from '../lib/dates'
 import { nowDate } from '../lib/clock'
@@ -177,7 +177,7 @@ export function CalendarPage() {
           <section className="space-y-2">
             <h3 className="text-xs font-medium uppercase tracking-wide text-cyan-500">Classes</h3>
             {selectedClasses.map((item) => {
-              const count = classNotesOn(classNotes, item.id, selected).length
+              const count = notesForClass(classNotes, item.id).length
               return (
                 <div key={item.id} className="glass flex min-h-12 items-center justify-between gap-3 rounded-2xl px-4 py-3">
                   <span>
@@ -191,7 +191,7 @@ export function CalendarPage() {
                       onClick={() => setNotesFor(item)}
                       className="min-h-8 rounded-full bg-field px-3 text-[11px] text-indigo-400 ring-1 ring-line"
                     >
-                      {count ? `Notes · ${count}` : 'Photos'}
+                      {count ? `Photos · ${count}` : 'Photos'}
                     </button>
                   </span>
                 </div>
@@ -232,9 +232,7 @@ export function CalendarPage() {
 
         {empty && <p className="text-sm text-muted">Nothing on this day.</p>}
       </div>
-      {notesFor ? (
-        <ClassNotesSheet item={notesFor} date={selected} onClose={() => setNotesFor(null)} />
-      ) : null}
+      {notesFor ? <ClassNotesSheet item={notesFor} onClose={() => setNotesFor(null)} /> : null}
     </div>
   )
 }

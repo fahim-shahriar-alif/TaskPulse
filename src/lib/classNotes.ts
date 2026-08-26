@@ -13,19 +13,31 @@ export function normalizeClassNote(raw: Partial<ClassNote> & Pick<ClassNote, 'id
   }
 }
 
-export function classNotesOn(notes: ClassNote[], classId: string, date: string) {
+export function notesForClass(notes: ClassNote[], classId: string) {
   return notes
-    .filter((item) => item.classId === classId && item.date === date && item.url)
-    .sort((a, b) => a.createdAt - b.createdAt)
+    .filter((item) => item.classId === classId && item.url)
+    .sort((a, b) => b.createdAt - a.createdAt)
 }
 
-export function classNoteDates(notes: ClassNote[], classId: string) {
-  return [...new Set(notes.filter((item) => item.classId === classId && item.url).map((item) => item.date))].sort(
-    (a, b) => b.localeCompare(a),
-  )
+export function classNotesOn(notes: ClassNote[], classId: string, date: string) {
+  return notesForClass(notes, classId).filter((item) => item.date === date)
 }
 
-function notePath(uid: string, id: string) {
+export function groupClassNotesByDate(notes: ClassNote[]) {
+  const map = new Map<string, ClassNote[]>()
+  for (const item of notes) {
+    const list = map.get(item.date) ?? []
+    list.push(item)
+    map.set(item.date, list)
+  }
+  return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]))
+}
+
+function notePath(uid: string, classId: string, id: string) {
+  return `users/${uid}/subjects/${classId}/${id}.jpg`
+}
+
+function legacyNotePath(uid: string, id: string) {
   return `users/${uid}/classNotes/${id}.jpg`
 }
 
@@ -38,11 +50,11 @@ async function blobToDataUrl(blob: Blob) {
   })
 }
 
-async function storeImage(uid: string, id: string, blob: Blob) {
+async function storeImage(uid: string, classId: string, id: string, blob: Blob) {
   const firebase = getFirebase()
   if (firebase?.storage) {
     try {
-      const file = ref(firebase.storage, notePath(uid, id))
+      const file = ref(firebase.storage, notePath(uid, classId, id))
       await uploadBytes(file, blob, { contentType: 'image/jpeg' })
       return await getDownloadURL(file)
     } catch {
@@ -59,7 +71,7 @@ async function storeImage(uid: string, id: string, blob: Blob) {
 export async function buildClassNote(uid: string, classId: string, date: string, file: File): Promise<ClassNote> {
   const id = crypto.randomUUID()
   const blob = await lecturePhotoBlob(file)
-  const url = await storeImage(uid, id, blob)
+  const url = await storeImage(uid, classId, id, blob)
   return {
     id,
     classId,
@@ -74,8 +86,12 @@ export async function deleteClassNoteFile(uid: string, note: ClassNote) {
   const firebase = getFirebase()
   if (!firebase?.storage) return
   try {
-    await deleteObject(ref(firebase.storage, notePath(uid, note.id)))
+    await deleteObject(ref(firebase.storage, notePath(uid, note.classId, note.id)))
   } catch {
-    /* already gone */
+    try {
+      await deleteObject(ref(firebase.storage, legacyNotePath(uid, note.id)))
+    } catch {
+      /* already gone */
+    }
   }
 }
