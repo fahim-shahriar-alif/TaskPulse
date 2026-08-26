@@ -23,7 +23,9 @@ import { LockScreen } from './LockScreen'
 import { NotificationWatch } from './NotificationWatch'
 import { ProgressReportButton } from './ProgressReportButton'
 import { ThemeToggle } from './ThemeToggle'
+import { UserAvatar } from './UserAvatar'
 import { useLock } from '../context/LockContext'
+import { useStore } from '../context/StoreContext'
 
 const desktopNav = [
   { to: '/', label: 'My Day', icon: LayoutDashboard },
@@ -60,7 +62,9 @@ function linkClass(active: boolean) {
 
 export function AppShell() {
   const { user, logout } = useAuth()
+  const { settings } = useStore()
   const { locked } = useLock()
+  const displayName = user?.displayName || user?.email || 'TaskyPulse'
 
   return (
     <div className="relative min-h-dvh text-fg">
@@ -108,7 +112,13 @@ export function AppShell() {
                   <LogOut className="h-5 w-5" />
                 </button>
               </div>
-              <p className="truncate px-3 pb-2 pt-1 text-center text-[11px] text-faint">{user?.email}</p>
+              <NavLink
+                to="/profile"
+                className="flex items-center justify-center gap-2 truncate px-3 pb-2 pt-1 text-[11px] text-faint hover:text-muted"
+              >
+                <UserAvatar photo={settings.photo} name={displayName} size="sm" />
+                <span className="truncate">{user?.email}</span>
+              </NavLink>
             </div>
           </div>
         </aside>
@@ -123,6 +133,9 @@ export function AppShell() {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <NavLink to="/profile" className="grid h-11 w-11 place-items-center" aria-label="Profile">
+                <UserAvatar photo={settings.photo} name={displayName} size="sm" />
+              </NavLink>
               <ProgressReportButton variant="icon" />
               <button
                 type="button"

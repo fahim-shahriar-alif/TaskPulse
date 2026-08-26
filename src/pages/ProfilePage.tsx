@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useLock } from '../context/LockContext'
 import { useStore } from '../context/StoreContext'
@@ -8,9 +8,11 @@ import {
   requestNotificationPermission,
   showNotice,
 } from '../lib/notifications'
+import { photoDataUrl } from '../lib/photo'
 import { LOCK_MIN_LENGTH } from '../lib/lock'
 import { fieldClass, eyebrowClass, titleClass } from '../lib/ui'
 import { PasswordField } from '../components/PasswordField'
+import { UserAvatar } from '../components/UserAvatar'
 
 const LEAD_MINS = [5, 10, 15, 30] as const
 
@@ -26,9 +28,12 @@ export function ProfilePage() {
   const [name, setName] = useState(user?.displayName ?? '')
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [photoError, setPhotoError] = useState('')
+  const [photoBusy, setPhotoBusy] = useState(false)
   const [notifyHint, setNotifyHint] = useState('')
+  const photoRef = useRef<HTMLInputElement>(null)
   const permission = notificationPermission()
-  const initial = (user?.displayName || user?.email || 'T').slice(0, 1).toUpperCase()
+  const displayName = user?.displayName || user?.email || 'TaskyPulse user'
   const joined = user?.metadata.creationTime
     ? new Date(user.metadata.creationTime).toLocaleDateString(undefined, {
         year: 'numeric',
@@ -36,6 +41,21 @@ export function ProfilePage() {
         day: 'numeric',
       })
     : '—'
+
+  async function onPhoto(file?: File) {
+    if (!file) return
+    setPhotoError('')
+    setPhotoBusy(true)
+    try {
+      const photo = await photoDataUrl(file)
+      await saveSettings({ photo })
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : 'Could not save that photo.')
+    } finally {
+      setPhotoBusy(false)
+      if (photoRef.current) photoRef.current.value = ''
+    }
+  }
 
   async function saveName() {
     setError('')
@@ -56,14 +76,50 @@ export function ProfilePage() {
       </div>
 
       <section className="glass flex items-center gap-4 rounded-3xl p-5">
-        <div className="grid h-16 w-16 place-items-center rounded-3xl bg-indigo-500/15 text-xl font-semibold text-indigo-400">
-          {initial}
-        </div>
-        <div className="min-w-0">
+        <button
+          type="button"
+          onClick={() => photoRef.current?.click()}
+          className="shrink-0 overflow-hidden rounded-3xl ring-1 ring-line"
+          aria-label="Change profile photo"
+        >
+          <UserAvatar photo={settings.photo} name={displayName} size="lg" />
+        </button>
+        <div className="min-w-0 flex-1">
           <p className="truncate text-lg font-semibold text-fg">{user?.displayName || 'TaskyPulse user'}</p>
           <p className="truncate text-sm text-muted">{user?.email}</p>
           <p className="font-mono mt-1 text-[11px] text-faint">Joined {joined}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={photoBusy}
+              onClick={() => photoRef.current?.click()}
+              className="min-h-9 rounded-full bg-field px-3 text-xs text-fg ring-1 ring-line disabled:opacity-40"
+            >
+              {photoBusy ? 'Saving…' : settings.photo ? 'Change photo' : 'Add photo'}
+            </button>
+            {settings.photo ? (
+              <button
+                type="button"
+                disabled={photoBusy}
+                onClick={() => {
+                  setPhotoError('')
+                  void saveSettings({ photo: '' })
+                }}
+                className="min-h-9 rounded-full px-3 text-xs text-muted ring-1 ring-line disabled:opacity-40"
+              >
+                Remove
+              </button>
+            ) : null}
+          </div>
+          {photoError ? <p className="mt-2 text-xs text-rose-400">{photoError}</p> : null}
         </div>
+        <input
+          ref={photoRef}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={(event) => void onPhoto(event.target.files?.[0])}
+        />
       </section>
 
       <section className="glass space-y-3 rounded-3xl p-5">

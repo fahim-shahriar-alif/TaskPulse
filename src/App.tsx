@@ -45,7 +45,10 @@ function Gate() {
   if (loading) {
     return (
       <div className="bg-app grid min-h-dvh place-items-center text-muted">
-        Loading TaskyPulse…
+        <div className="flex flex-col items-center gap-3">
+          <img src="/logo.png" alt="" className="h-12 w-12 rounded-2xl" />
+          <p>Loading TaskyPulse…</p>
+        </div>
       </div>
     )
   }

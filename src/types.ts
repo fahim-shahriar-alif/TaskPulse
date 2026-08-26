@@ -104,6 +104,7 @@ export type Settings = {
   classLeadMins: number
   lockHash: string
   lockSalt: string
+  photo: string
 }
 
 export const TASK_STATUSES: { id: Status; label: string }[] = [
@@ -131,4 +132,5 @@ export const DEFAULT_SETTINGS: Settings = {
   classLeadMins: 15,
   lockHash: '',
   lockSalt: '',
+  photo: '',
 }

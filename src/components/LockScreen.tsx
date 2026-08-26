@@ -3,10 +3,12 @@ import { createPortal } from 'react-dom'
 import { ChevronUp } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLock } from '../context/LockContext'
+import { useStore } from '../context/StoreContext'
 import { formatDayLabel } from '../lib/dates'
 import { sessionQuote, sessionWallpaper } from '../lib/wallpapers'
 import { useNow } from '../lib/now'
 import { PasswordField } from './PasswordField'
+import { UserAvatar } from './UserAvatar'
 
 const OPEN_AT = 80
 const LOCK_BG = '#05070d'
@@ -33,6 +35,7 @@ function LockWeb() {
 
 export function LockScreen() {
   const { user, logout } = useAuth()
+  const { settings } = useStore()
   const { unlock, release } = useLock()
   const now = useNow(1000)
   const [sheet, setSheet] = useState(false)
@@ -46,7 +49,6 @@ export function LockScreen() {
   const dragRef = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const name = user?.displayName || user?.email?.split('@')[0] || 'TaskyPulse'
-  const initial = name.slice(0, 1).toUpperCase()
   const time = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
 
   useEffect(() => {
@@ -141,9 +143,12 @@ export function LockScreen() {
           <p className="text-base leading-relaxed text-white/85 italic sm:text-lg">“{quote.text}”</p>
           {quote.by ? <footer className="mt-2 text-sm text-white/45">— {quote.by}</footer> : null}
         </blockquote>
-        <div className="mt-10 grid h-20 w-20 place-items-center rounded-full bg-white/10 text-2xl font-semibold ring-1 ring-white/20">
-          {initial}
-        </div>
+        <UserAvatar
+          photo={settings.photo}
+          name={name}
+          size="xl"
+          className="mt-10 ring-1 ring-white/20"
+        />
         <p className="mt-3 text-lg font-medium">{name}</p>
         {user?.email ? <p className="mt-1 text-sm text-white/50">{user.email}</p> : null}
       </div>

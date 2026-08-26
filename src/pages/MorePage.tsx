@@ -5,7 +5,7 @@ import { ThemeToggle } from '../components/ThemeToggle'
 import { eyebrowClass, titleClass } from '../lib/ui'
 
 const links = [
-  { to: '/profile', label: 'Profile', hint: 'Account, theme, reminders, and sign out' },
+  { to: '/profile', label: 'Profile', hint: 'Account, photo, theme, reminders, and sign out' },
   { to: '/schedule', label: 'Schedule', hint: 'From–to time ranges' },
   { to: '/habits', label: 'Habits', hint: 'Streaks and daily check-ins' },
   { to: '/classes', label: 'Classes', hint: 'University timetable' },
