@@ -2,6 +2,7 @@ import { Component, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { StoreProvider } from './context/StoreContext'
+import { LockProvider } from './context/LockContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { AppShell } from './components/AppShell'
 import { TaskDetailProvider } from './components/TaskDetailModal'
@@ -52,28 +53,30 @@ function Gate() {
   return (
     <ScreenError>
       <StoreProvider>
-        <TaskDetailProvider>
-          <BrowserRouter>
-            <Routes>
-            <Route element={<AppShell />}>
-              <Route path="/" element={<MyDayPage />} />
-              <Route path="/tasks" element={<TasksPage />} />
-              <Route path="/calendar" element={<CalendarPage />} />
-              <Route path="/focus" element={<FocusPage />} />
-              <Route path="/matrix" element={<MatrixPage />} />
-              <Route path="/stats" element={<StatsPage />} />
-              <Route path="/schedule" element={<SchedulePage />} />
-              <Route path="/habits" element={<HabitsPage />} />
-              <Route path="/classes" element={<ClassesPage />} />
-              <Route path="/deadlines" element={<DeadlinesPage />} />
-              <Route path="/notes" element={<NotesPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/more" element={<MorePage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-            </Routes>
-          </BrowserRouter>
-        </TaskDetailProvider>
+        <LockProvider>
+          <TaskDetailProvider>
+            <BrowserRouter>
+              <Routes>
+              <Route element={<AppShell />}>
+                <Route path="/" element={<MyDayPage />} />
+                <Route path="/tasks" element={<TasksPage />} />
+                <Route path="/calendar" element={<CalendarPage />} />
+                <Route path="/focus" element={<FocusPage />} />
+                <Route path="/matrix" element={<MatrixPage />} />
+                <Route path="/stats" element={<StatsPage />} />
+                <Route path="/schedule" element={<SchedulePage />} />
+                <Route path="/habits" element={<HabitsPage />} />
+                <Route path="/classes" element={<ClassesPage />} />
+                <Route path="/deadlines" element={<DeadlinesPage />} />
+                <Route path="/notes" element={<NotesPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/more" element={<MorePage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+              </Routes>
+            </BrowserRouter>
+          </TaskDetailProvider>
+        </LockProvider>
       </StoreProvider>
     </ScreenError>
   )

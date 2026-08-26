@@ -1,18 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTaskDetail } from './TaskDetailModal'
+import { useLock } from '../context/LockContext'
 import { useStore } from '../context/StoreContext'
 import { deadlineHeadline } from '../lib/deadlines'
 import { fieldClass } from '../lib/ui'
 
 export function CommandPalette() {
   const { tasks, notes, habits, classes, deadlines } = useStore()
+  const { locked } = useLock()
   const { openTask } = useTaskDetail()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
+    if (locked) {
+      setOpen(false)
+      return
+    }
     function onKey(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
@@ -22,7 +28,7 @@ export function CommandPalette() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [locked])
 
   const q = query.trim().toLowerCase()
   const results = useMemo(() => {

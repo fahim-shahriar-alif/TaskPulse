@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useLock } from '../context/LockContext'
 import { useStore } from '../context/StoreContext'
 import { useTheme } from '../context/ThemeContext'
 import {
@@ -7,6 +8,7 @@ import {
   requestNotificationPermission,
   showNotice,
 } from '../lib/notifications'
+import { LOCK_MIN_LENGTH } from '../lib/lock'
 import { fieldClass, eyebrowClass, titleClass } from '../lib/ui'
 
 const LEAD_MINS = [5, 10, 15, 30] as const
@@ -197,6 +199,8 @@ export function ProfilePage() {
         </button>
       </section>
 
+      <LockPasswordSection />
+
       <button
         type="button"
         onClick={() => void logout()}
@@ -207,3 +211,127 @@ export function ProfilePage() {
     </div>
   )
 }
+
+function LockPasswordSection() {
+  const { hasPassword, setPassword, changePassword, clearPassword } = useLock()
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [hint, setHint] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (window.location.hash === '#lock-password') {
+      document.getElementById('lock-password')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [])
+
+  function resetFields() {
+    setCurrent('')
+    setNext('')
+    setConfirm('')
+  }
+
+  async function onSet() {
+    setError('')
+    setHint('')
+    if (next.length < LOCK_MIN_LENGTH) {
+      setError(`Use at least ${LOCK_MIN_LENGTH} characters.`)
+      return
+    }
+    if (next !== confirm) {
+      setError('The two new passwords do not match.')
+      return
+    }
+    setBusy(true)
+    if (hasPassword) {
+      const ok = await changePassword(current, next)
+      setBusy(false)
+      if (!ok) {
+        setError('Current lock password is incorrect.')
+        return
+      }
+    } else {
+      await setPassword(next)
+      setBusy(false)
+    }
+    resetFields()
+    setHint(hasPassword ? 'Lock password updated.' : 'Lock password saved. Use the lock button in the header.')
+  }
+
+  async function onClear() {
+    setError('')
+    setHint('')
+    if (!current) {
+      setError('Enter the current lock password to turn it off.')
+      return
+    }
+    setBusy(true)
+    const ok = await clearPassword(current)
+    setBusy(false)
+    if (!ok) {
+      setError('Current lock password is incorrect.')
+      return
+    }
+    resetFields()
+    setHint('Lock password removed.')
+  }
+
+  return (
+    <section id="lock-password" className="glass space-y-3 rounded-3xl p-5">
+      <h2 className="text-sm font-semibold text-fg">Lock screen</h2>
+      <p className="text-xs text-muted">
+        This password only hides the app on this device. It is not your sign-in password. If you forget it, sign out
+        from the lock screen and sign back in.
+      </p>
+      {hasPassword ? (
+        <input
+          type="password"
+          value={current}
+          autoComplete="off"
+          onChange={(event) => setCurrent(event.target.value)}
+          placeholder="Current lock password"
+          className={`${fieldClass} w-full`}
+        />
+      ) : null}
+      <input
+        type="password"
+        value={next}
+        autoComplete="new-password"
+        onChange={(event) => setNext(event.target.value)}
+        placeholder={hasPassword ? 'New lock password' : 'Lock password'}
+        className={`${fieldClass} w-full`}
+      />
+      <input
+        type="password"
+        value={confirm}
+        autoComplete="new-password"
+        onChange={(event) => setConfirm(event.target.value)}
+        placeholder="Confirm"
+        className={`${fieldClass} w-full`}
+      />
+      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {hint ? <p className="text-sm text-indigo-400">{hint}</p> : null}
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => void onSet()}
+        className="min-h-11 w-full rounded-2xl bg-indigo-500 px-4 text-sm font-medium text-white disabled:opacity-40"
+      >
+        {hasPassword ? 'Update lock password' : 'Set lock password'}
+      </button>
+      {hasPassword ? (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void onClear()}
+          className="min-h-11 w-full rounded-2xl text-sm text-muted ring-1 ring-line disabled:opacity-40"
+        >
+          Turn off lock password
+        </button>
+      ) : null}
+    </section>
+  )
+}
+

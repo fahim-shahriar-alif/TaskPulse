@@ -101,6 +101,8 @@ export type Settings = {
   notifyDeadlines: boolean
   notifyTasks: boolean
   classLeadMins: number
+  lockHash: string
+  lockSalt: string
 }
 
 export const TASK_STATUSES: { id: Status; label: string }[] = [
@@ -126,4 +128,6 @@ export const DEFAULT_SETTINGS: Settings = {
   notifyDeadlines: true,
   notifyTasks: true,
   classLeadMins: 15,
+  lockHash: '',
+  lockSalt: '',
 }

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { LockButton } from '../components/LockButton'
 import { ProgressReportButton } from '../components/ProgressReportButton'
 import { eyebrowClass, titleClass } from '../lib/ui'
 
@@ -21,6 +22,7 @@ export function MorePage() {
         <h1 className={titleClass}>Workspace</h1>
       </div>
       <div className="space-y-2">
+        <LockButton variant="row" />
         {links.map((link) => (
           <Link
             key={link.to}

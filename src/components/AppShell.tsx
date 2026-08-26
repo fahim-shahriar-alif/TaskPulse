@@ -17,9 +17,12 @@ import {
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { CommandPalette } from './CommandPalette'
+import { LockButton } from './LockButton'
+import { LockScreen } from './LockScreen'
 import { NotificationWatch } from './NotificationWatch'
 import { ProgressReportButton } from './ProgressReportButton'
 import { ThemeToggle } from './ThemeToggle'
+import { useLock } from '../context/LockContext'
 
 const desktopNav = [
   { to: '/', label: 'My Day', icon: LayoutDashboard },
@@ -56,9 +59,12 @@ function linkClass(active: boolean) {
 
 export function AppShell() {
   const { user, logout } = useAuth()
+  const { locked } = useLock()
 
   return (
     <div className="bg-app min-h-dvh text-fg">
+      {locked ? <LockScreen /> : null}
+      <div inert={locked}>
       <CommandPalette />
       <NotificationWatch />
       <div className="mx-auto flex min-h-dvh max-w-7xl">
@@ -71,7 +77,10 @@ export function AppShell() {
                 <p className="font-mono text-[11px] text-faint">Focus · Execute</p>
               </div>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-1">
+              <LockButton />
+              <ThemeToggle />
+            </div>
           </div>
           <nav className="flex flex-1 flex-col gap-1 overflow-auto">
             {desktopNav.map((item) => (
@@ -108,6 +117,7 @@ export function AppShell() {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <LockButton />
               <ThemeToggle />
               <ProgressReportButton variant="icon" />
               <button
@@ -144,6 +154,7 @@ export function AppShell() {
             ))}
           </nav>
         </div>
+      </div>
       </div>
     </div>
   )

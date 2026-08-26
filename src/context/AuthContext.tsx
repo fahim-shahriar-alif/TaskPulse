@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth'
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { getFirebase, isFirebaseConfigured } from '../lib/firebase'
+import { clearAllLockFlags } from '../lib/lock'
 
 type AuthContextValue = {
   configured: boolean
@@ -107,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout: async () => {
         const firebase = getFirebase()
         if (!firebase) return
+        clearAllLockFlags()
         await signOut(firebase.auth)
       },
     }),
