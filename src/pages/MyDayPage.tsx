@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AddTaskModal } from '../components/AddTaskModal'
 import { CompletionRing } from '../components/CompletionRing'
@@ -14,19 +14,61 @@ import {
   formatClassTime,
   nextClassToday,
   nowMinutes,
-  overlappingClasses,
+  timeToMinutes,
 } from '../lib/classes'
 import { deadlineDetail, deadlineHeadline, daysUntil, formatDaysLeft, upcomingDeadlines } from '../lib/deadlines'
 import { formatDayLabel, formatHourLabel, habitStreak, todayKey } from '../lib/dates'
 import { useNow } from '../lib/now'
 import { updateSlot, conflictNote } from '../lib/schedule'
 import { eyebrowClass, fieldClass } from '../lib/ui'
+import type { ScheduleSlot } from '../types'
 
 function greeting(date = new Date()) {
   const hour = date.getHours()
   if (hour < 12) return 'Good morning'
   if (hour < 17) return 'Good afternoon'
   return 'Good evening'
+}
+
+function cardHead(title: string, action: ReactNode) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <h2 className="text-sm font-semibold text-fg">{title}</h2>
+      {action}
+    </div>
+  )
+}
+
+function ScheduleRow({
+  slot,
+  clash,
+  onToggle,
+}: {
+  slot: ScheduleSlot
+  clash: string
+  onToggle: () => void
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-field px-4 py-2.5 ring-1 ring-line">
+      <input
+        type="checkbox"
+        checked={slot.done}
+        aria-label={`Mark ${slot.activity || 'schedule block'} done`}
+        onChange={onToggle}
+        className="mt-0.5 h-4 w-4 shrink-0"
+        style={{ accentColor: '#10b981' }}
+      />
+      <span className="min-w-0 flex-1">
+        <span className={`font-mono block text-[11px] ${slot.done ? 'text-faint' : 'text-indigo-400'}`}>
+          {formatHourLabel(slot.from)} – {formatHourLabel(slot.to)}
+        </span>
+        <span className={`mt-0.5 block text-sm ${slot.done ? 'text-faint line-through' : 'text-fg'}`}>
+          {slot.activity || 'Untitled'}
+        </span>
+        {clash && !slot.done ? <span className="mt-0.5 block text-[11px] text-amber-500">{clash}</span> : null}
+      </span>
+    </label>
+  )
 }
 
 export function MyDayPage() {
@@ -44,39 +86,32 @@ export function MyDayPage() {
     () => tasks.filter((task) => task.dueDate === today || (!task.dueDate && !task.done)),
     [tasks, today],
   )
+  const openTasks = todaysTasks.filter((task) => !task.done)
+  const doneTasks = todaysTasks.filter((task) => task.done)
   const overdue = useMemo(
     () => tasks.filter((task) => task.dueDate && task.dueDate < today && !task.done),
     [tasks, today],
   )
-  const upcoming = useMemo(
-    () =>
-      tasks
-        .filter((task) => !task.done && task.dueDate && task.dueDate > today)
-        .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
-        .slice(0, 4),
-    [tasks, today],
-  )
   const dueToday = todaysTasks.filter((task) => task.dueDate === today)
   const doneCount = dueToday.filter((task) => task.done).length
-  const openToday = todaysTasks.filter((task) => !task.done).length
   const pct = dueToday.length ? (doneCount / dueToday.length) * 100 : 0
   const focusToday = sessions.filter((item) => item.date === today).reduce((sum, item) => sum + item.minutes, 0)
-  const habitsDone = habits.filter((habit) => habit.completions[today]).length
   const schedule = [...day.schedule].sort((a, b) => a.from.localeCompare(b.from))
+  const openSlots = schedule.filter((slot) => !slot.done)
+  const doneSlots = schedule.filter((slot) => slot.done)
   const todayClasses = useMemo(() => classesOnDay(classes, today), [classes, today])
   const nextClass = useMemo(() => nextClassToday(classes, today, minutes), [classes, minutes, today])
   const pinned = useMemo(() => upcomingDeadlines(deadlines, today).slice(0, 4), [deadlines, today])
   const recentNotes = useMemo(
-    () => [...notes].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 4),
+    () => [...notes].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 3),
     [notes],
   )
 
-  const stats = [
-    ['Open today', String(openToday)],
-    ['Done', String(doneCount)],
-    ['Focus', `${focusToday}m`],
-    ['Habits', `${habitsDone}/${habits.length || 0}`],
-  ]
+  function toggleSlot(id: string, done: boolean) {
+    void saveDay({ schedule: updateSlot(day.schedule, id, { done }) })
+  }
+
+  const linkClass = 'text-xs text-indigo-400'
 
   return (
     <div className="mx-auto max-w-6xl space-y-5">
@@ -87,67 +122,15 @@ export function MyDayPage() {
           <LiveClock className="shrink-0 text-2xl font-semibold text-fg sm:text-3xl" />
         </div>
         <p className="mt-2 text-sm text-muted">
-          {greeting(now)}, {firstName}. Here’s your day at a glance.
+          {greeting(now)}, {firstName}.
         </p>
-      </div>
-
-      {nextClass && (
-        <Link
-          to="/classes"
-          className="hero-card glass flex min-h-20 items-center justify-between gap-4 rounded-3xl px-5"
-        >
-          <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-wide text-indigo-400">
-              {classMoment(nextClass, minutes) === 'live' ? 'Happening now' : 'Next class'}
-            </p>
-            <p className="mt-1 truncate text-lg font-semibold text-fg">{nextClass.name}</p>
-            <p className="mt-0.5 truncate text-sm text-muted">
-              {formatClassTime(nextClass)}
-              {nextClass.location ? ` · ${nextClass.location}` : ''}
-            </p>
-          </div>
-          <p className="font-mono shrink-0 text-right text-sm font-semibold text-indigo-400">
-            {formatClassCountdown(nextClass, minutes)}
-          </p>
-        </Link>
-      )}
-
-      {todayClasses.length > 0 && !nextClass && (
-        <div className="glass rounded-3xl px-5 py-4">
-          <p className="text-sm text-muted">Classes are done for today.</p>
-        </div>
-      )}
-
-      {pinned.length > 0 && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {pinned.map((item) => {
-            const n = daysUntil(item.date, today)
-            const tone = n <= 0 ? 'text-rose-400' : n <= 3 ? 'text-amber-500' : 'text-indigo-400'
-            return (
-              <Link key={item.id} to="/deadlines" className="glass rounded-3xl p-4">
-                <p className="text-[11px] uppercase tracking-wide text-muted">{deadlineDetail(item, classes)}</p>
-                <p className="mt-1 truncate text-sm font-medium text-fg">{deadlineHeadline(item, classes)}</p>
-                <p className={`font-mono mt-2 text-2xl font-semibold ${tone}`}>{formatDaysLeft(item.date, today)}</p>
-              </Link>
-            )
-          })}
-        </div>
-      )}
-
-      <div className="kpi-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map(([label, value]) => (
-          <div key={label} className="glass rounded-3xl p-4">
-            <p className="text-xs text-muted">{label}</p>
-            <p className="font-mono mt-1 text-2xl font-semibold text-fg">{value}</p>
-          </div>
-        ))}
       </div>
 
       <AddTaskModal open={addOpen} initialDueDate={today} onClose={() => setAddOpen(false)} />
       <DeadlineModal open={deadlineOpen} onClose={() => setDeadlineOpen(false)} />
 
-      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
-        <div className="hero-card glass rounded-3xl p-5">
+      <div className="grid gap-5 lg:grid-cols-2 lg:items-stretch">
+        <div className="hero-card glass flex items-center rounded-3xl p-5">
           <CompletionRing
             value={pct}
             label={
@@ -157,11 +140,10 @@ export function MyDayPage() {
             }
           />
         </div>
-
         <div className="glass rounded-3xl p-5">
-          <h2 className="text-sm font-semibold text-fg">Big 3 non-negotiables</h2>
+          <h2 className="text-sm font-semibold text-fg">Big 3</h2>
           <p className="mt-1 text-xs text-faint">Highest-impact goals for today.</p>
-          <div className="mt-4 space-y-3">
+          <div className="mt-3 space-y-2">
             {day.big3.map((goal, index) => (
               <input
                 key={index}
@@ -177,190 +159,232 @@ export function MyDayPage() {
             ))}
           </div>
         </div>
+      </div>
 
-        <section className="space-y-5">
+      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+        <div className="space-y-5">
           {overdue.length > 0 && (
             <div className="rounded-3xl bg-rose-500/10 p-4 ring-1 ring-rose-400/20">
               <p className="text-sm font-medium text-rose-500">{overdue.length} overdue</p>
               <div className="mt-2 space-y-2">
                 {overdue.map((task) => (
-                  <TaskRow key={task.id} task={task} showPriority={false} className="bg-transparent" />
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    showPriority={false}
+                    showStatus={false}
+                    className="bg-transparent"
+                  />
                 ))}
               </div>
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={() => setAddOpen(true)}
-            className="flex min-h-14 w-full items-center justify-center gap-2 rounded-3xl bg-indigo-500 text-sm font-medium text-white"
-          >
-            Add task
-          </button>
-
-          <div className="glass space-y-3 rounded-3xl p-4">
-            <div className="flex items-center justify-between px-1">
-              <h2 className="text-sm font-semibold text-fg">Today’s tasks</h2>
-              <Link to="/tasks" className="text-xs text-indigo-400">
-                All tasks
-              </Link>
-            </div>
-            {todaysTasks.length === 0 ? (
-              <p className="rounded-2xl bg-field px-4 py-6 text-center text-sm text-muted">
-                Nothing on the list yet. Add a task to give today a shape.
+          <section className="glass space-y-3 rounded-3xl p-5">
+            {cardHead(
+              'Today’s tasks',
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setAddOpen(true)} className={linkClass}>
+                  Add
+                </button>
+                <Link to="/tasks" className={linkClass}>
+                  All
+                </Link>
+              </div>,
+            )}
+            {openTasks.length === 0 && doneTasks.length === 0 ? (
+              <p className="rounded-2xl bg-field px-4 py-5 text-center text-sm text-muted">
+                Nothing on the list yet.
               </p>
             ) : (
               <div className="space-y-2">
-                {todaysTasks.map((task) => (
-                  <TaskRow key={task.id} task={task} subtitle={task.project} className="min-h-14" />
+                {openTasks.map((task) => (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    subtitle={task.project}
+                    showPriority={false}
+                    showStatus={false}
+                    className="min-h-12"
+                  />
                 ))}
+                {openTasks.length === 0 && doneTasks.length > 0 ? (
+                  <p className="px-1 text-sm text-muted">All of today’s tasks are done.</p>
+                ) : null}
+                {doneTasks.length > 0 ? (
+                  <details className="rounded-2xl px-1 py-1">
+                    <summary className="cursor-pointer text-xs text-muted">Done · {doneTasks.length}</summary>
+                    <div className="mt-2 space-y-2">
+                      {doneTasks.map((task) => (
+                        <TaskRow
+                          key={task.id}
+                          task={task}
+                          showPriority={false}
+                          showStatus={false}
+                          className="min-h-11"
+                        />
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
               </div>
             )}
-          </div>
+          </section>
 
-          {upcoming.length > 0 && (
-            <div className="glass space-y-3 rounded-3xl p-4">
-              <h2 className="text-sm font-semibold text-fg">Coming up</h2>
-              {upcoming.map((task) => (
-                <TaskRow key={task.id} task={task} showPriority={false} subtitle={task.dueDate} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        <div className="glass rounded-3xl p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-fg">Today’s classes</h2>
-            <Link to="/classes" className="text-xs text-indigo-400">
-              All classes
-            </Link>
-          </div>
-          <div className="mt-4 space-y-2">
-            {todayClasses.length === 0 ? (
-              <p className="text-sm text-muted">No university classes today. Add them in Classes.</p>
-            ) : (
-              todayClasses.map((item) => {
-                const moment = classMoment(item, minutes)
-                const featured = nextClass?.id === item.id
-                const clash = overlappingClasses(item, todayClasses)
-                return (
-                  <div
-                    key={item.id}
-                    className={`rounded-2xl bg-field px-4 py-3 ring-1 ${
-                      clash.length ? 'ring-amber-400/50' : featured ? 'ring-indigo-400/50' : 'ring-line'
-                    } ${moment === 'done' && !clash.length ? 'opacity-55' : ''}`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</p>
-                      {moment === 'live' && (
-                        <span className="rounded-full bg-indigo-500/15 px-2 py-0.5 text-[10px] font-medium text-indigo-400">
-                          Live
-                        </span>
-                      )}
-                      {moment === 'upcoming' && featured && (
-                        <span className="rounded-full bg-indigo-500/15 px-2 py-0.5 text-[10px] font-medium text-indigo-400">
-                          {formatClassCountdown(item, minutes)}
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-1 text-sm font-medium text-fg">{item.name}</p>
-                    {item.location ? <p className="text-xs text-muted">{item.location}</p> : null}
-                    {clash.length > 0 ? (
-                      <p className="mt-1 text-[11px] text-amber-500">
-                        Overlaps {clash.map((other) => other.name).join(' · ')}
-                      </p>
-                    ) : null}
-                  </div>
-                )
-              })
+          <section className="glass space-y-3 rounded-3xl p-5">
+            {cardHead(
+              'Today’s schedule',
+              <Link to="/schedule" className={linkClass}>
+                Edit
+              </Link>,
             )}
-          </div>
-        </div>
-
-        <div className="glass rounded-3xl p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-fg">Today’s schedule</h2>
-            <Link to="/schedule" className="text-xs text-indigo-400">
-              Edit
-            </Link>
-          </div>
-          {schedule.some((slot) => conflictNote(slot, classes, day.schedule, today)) ? (
-            <p className="mt-2 text-xs text-amber-500">A block overlaps a class or another range. Amber edge marks the clash.</p>
-          ) : null}
-          <div className="mt-4 space-y-2">
             {schedule.length === 0 ? (
               <p className="text-sm text-muted">No ranges yet. Add from–to times on the Schedule page.</p>
             ) : (
-              schedule.map((slot) => {
-                const clash = conflictNote(slot, classes, day.schedule, today)
-                return (
-                <label
-                  key={slot.id}
-                  className={`flex cursor-pointer items-start gap-3 rounded-2xl bg-field px-4 py-3 ring-1 ${
-                    clash ? 'ring-amber-400/50' : 'ring-line'
-                  } ${
-                    slot.done
-                      ? 'border-l-4 border-l-emerald-500'
-                      : clash
-                        ? 'border-l-4 border-l-amber-500'
-                        : 'border-l-4 border-l-transparent'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={slot.done}
-                    aria-label={`Mark ${slot.activity || 'schedule block'} done`}
-                    onChange={() => void saveDay({ schedule: updateSlot(day.schedule, slot.id, { done: !slot.done }) })}
-                    className="mt-1 h-5 w-5 shrink-0"
-                    style={{ accentColor: '#10b981' }}
+              <div className="space-y-2">
+                {openSlots.map((slot) => (
+                  <ScheduleRow
+                    key={slot.id}
+                    slot={slot}
+                    clash={conflictNote(slot, classes, day.schedule, today)}
+                    onToggle={() => toggleSlot(slot.id, !slot.done)}
                   />
-                  <span className="min-w-0 flex-1">
-                    <span className={`font-mono block text-xs ${slot.done ? 'text-emerald-500' : 'text-indigo-400'}`}>
-                      {formatHourLabel(slot.from)} – {formatHourLabel(slot.to)}
-                    </span>
-                    <span className={`mt-1 block text-sm ${slot.done ? 'text-faint line-through' : 'text-fg'}`}>
-                      {slot.activity || 'Untitled'}
-                    </span>
-                    {clash ? <span className="mt-1 block text-[11px] text-amber-500">{clash}</span> : null}
-                  </span>
-                </label>
-                )
-              })
+                ))}
+                {openSlots.length === 0 ? <p className="text-sm text-muted">All blocks checked off.</p> : null}
+                {doneSlots.length > 0 ? (
+                  <details className="rounded-2xl px-1 py-1">
+                    <summary className="cursor-pointer text-xs text-muted">Done · {doneSlots.length}</summary>
+                    <div className="mt-2 space-y-2">
+                      {doneSlots.map((slot) => (
+                        <ScheduleRow
+                          key={slot.id}
+                          slot={slot}
+                          clash=""
+                          onToggle={() => toggleSlot(slot.id, !slot.done)}
+                        />
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
+              </div>
             )}
-          </div>
+          </section>
+
+          <section className="glass space-y-3 rounded-3xl p-5">
+            {cardHead(
+              'Habits',
+              <Link to="/habits" className={linkClass}>
+                All
+              </Link>,
+            )}
+            <div className="space-y-2">
+              {habits.map((habit) => {
+                const done = Boolean(habit.completions[today])
+                const streak = habitStreak(habit.completions)
+                return (
+                  <button
+                    key={habit.id}
+                    type="button"
+                    onClick={() => void upsertHabit(toggleHabitToday(habit))}
+                    className="flex min-h-11 w-full items-center justify-between rounded-2xl bg-field px-4 text-left ring-1 ring-line"
+                  >
+                    <span className={`text-sm ${done ? 'text-faint line-through' : 'text-fg'}`}>{habit.name}</span>
+                    <span className="font-mono text-xs text-faint">
+                      {done ? 'Done' : streak > 0 ? `${streak}d` : ''}
+                    </span>
+                  </button>
+                )
+              })}
+              {habits.length === 0 && <p className="text-sm text-muted">Add habits in the Habits tab.</p>}
+            </div>
+          </section>
+
+          <Link to="/focus" className="glass flex min-h-14 items-center justify-between rounded-3xl px-5">
+            <span>
+              <span className="block text-sm font-medium text-fg">Start a focus session</span>
+              <span className="text-xs text-muted">{focusToday} minutes logged today</span>
+            </span>
+            <span className="text-faint">→</span>
+          </Link>
         </div>
 
-        <div className="glass rounded-3xl p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-fg">Exams & deadlines</h2>
-            <Link to="/deadlines" className="text-xs text-indigo-400">
-              All dates
-            </Link>
-          </div>
-          <div className="mt-4 space-y-2">
-            {pinned.length === 0 ? (
-              <p className="text-sm text-muted">Add an exam against a class so the countdown stays here.</p>
+        <div className="space-y-5">
+          <section className="glass space-y-3 rounded-3xl p-5">
+            {cardHead(
+              'Today’s classes',
+              <Link to="/classes" className={linkClass}>
+                All
+              </Link>,
+            )}
+            {todayClasses.length === 0 ? (
+              <p className="text-sm text-muted">No university classes today.</p>
             ) : (
-              pinned.map((item) => {
-                const n = daysUntil(item.date, today)
-                const tone = n <= 0 ? 'text-rose-400' : n <= 3 ? 'text-amber-500' : 'text-indigo-400'
-                return (
-                  <Link
-                    key={item.id}
-                    to="/deadlines"
-                    className="flex min-h-12 items-center justify-between rounded-2xl bg-field px-4 py-3 ring-1 ring-line"
-                  >
-                    <span>
-                      <span className="block text-sm text-fg">{deadlineHeadline(item, classes)}</span>
-                      <span className="text-[11px] text-faint">{deadlineDetail(item, classes)}</span>
-                      {item.syllabus ? (
-                        <span className="mt-0.5 block line-clamp-2 text-[11px] text-muted">{item.syllabus}</span>
+              <div className="space-y-2">
+                {todayClasses.map((item) => {
+                  const moment = classMoment(item, minutes)
+                  const featured = nextClass?.id === item.id
+                  const overnight = timeToMinutes(item.to) <= timeToMinutes(item.from)
+                  return (
+                    <div
+                      key={item.id}
+                      className={`rounded-2xl bg-field px-4 py-3 ring-1 ${
+                        featured ? 'ring-indigo-400/40' : 'ring-line'
+                      } ${moment === 'done' ? 'opacity-50' : ''}`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-mono text-[11px] text-indigo-400">{formatClassTime(item)}</p>
+                        {moment === 'live' ? (
+                          <span className="text-[11px] font-medium text-indigo-400">Live</span>
+                        ) : null}
+                        {moment === 'upcoming' && featured ? (
+                          <span className="font-mono text-[11px] text-indigo-400">
+                            {formatClassCountdown(item, minutes)}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-sm font-medium text-fg">{item.name}</p>
+                      {item.location ? <p className="text-xs text-muted">{item.location}</p> : null}
+                      {overnight ? (
+                        <p className="mt-1 text-[11px] text-muted">Runs past midnight — check the end time.</p>
                       ) : null}
-                    </span>
-                    <span className={`font-mono text-xs font-semibold ${tone}`}>{formatDaysLeft(item.date, today)}</span>
-                  </Link>
-                )
-              })
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </section>
+
+          <section className="glass space-y-3 rounded-3xl p-5">
+            {cardHead(
+              'Exams & deadlines',
+              <Link to="/deadlines" className={linkClass}>
+                All
+              </Link>,
+            )}
+            {pinned.length === 0 ? (
+              <p className="text-sm text-muted">Pin an exam against a class to keep the countdown here.</p>
+            ) : (
+              <div className="space-y-2">
+                {pinned.map((item) => {
+                  const n = daysUntil(item.date, today)
+                  const tone = n <= 0 ? 'text-rose-400' : n <= 3 ? 'text-amber-500' : 'text-indigo-400'
+                  return (
+                    <Link
+                      key={item.id}
+                      to="/deadlines"
+                      className="flex min-h-11 items-center justify-between gap-3 rounded-2xl bg-field px-4 py-2.5 ring-1 ring-line"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm text-fg">{deadlineHeadline(item, classes)}</span>
+                        <span className="text-[11px] text-faint">{deadlineDetail(item, classes)}</span>
+                      </span>
+                      <span className={`font-mono shrink-0 text-xs font-semibold ${tone}`}>
+                        {formatDaysLeft(item.date, today)}
+                      </span>
+                    </Link>
+                  )
+                })}
+              </div>
             )}
             <button
               type="button"
@@ -369,103 +393,58 @@ export function MyDayPage() {
             >
               Pin an exam
             </button>
-          </div>
-        </div>
+          </section>
 
-        <div className="glass rounded-3xl p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-fg">Habit quick-check</h2>
-            <Link to="/habits" className="text-xs text-indigo-400">
-              All habits
-            </Link>
-          </div>
-          <div className="mt-4 space-y-2">
-            {habits.map((habit) => {
-              const done = Boolean(habit.completions[today])
-              return (
-                <button
-                  key={habit.id}
-                  type="button"
-                  onClick={() => void upsertHabit(toggleHabitToday(habit))}
-                  className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-field px-4 text-left ring-1 ring-line"
-                >
-                  <span className="text-sm text-fg">{habit.name}</span>
-                  <span className="font-mono text-xs text-faint">
-                    {done ? 'Done' : `${habitStreak(habit.completions)} day streak`}
-                  </span>
-                </button>
-              )
-            })}
-            {habits.length === 0 && <p className="text-sm text-muted">Add habits in the Habits tab.</p>}
-          </div>
-        </div>
-
-        <div className="glass rounded-3xl p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-fg">Notes</h2>
-            <Link to="/notes" className="text-xs text-indigo-400">
-              All notes
-            </Link>
-          </div>
-          <form
-            className="mt-4 space-y-2"
-            onSubmit={(event) => {
-              event.preventDefault()
-              const body = noteDraft.trim()
-              if (!body) return
-              const title = body.split('\n')[0].slice(0, 48)
-              void upsertNote({
-                id: crypto.randomUUID(),
-                title: title || 'Untitled',
-                body,
-                tags: ['Ideas'],
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-              })
-              setNoteDraft('')
-            }}
-          >
-            <textarea
-              value={noteDraft}
-              onChange={(event) => setNoteDraft(event.target.value)}
-              placeholder="Scratch a thought for today…"
-              rows={4}
-              className={`${fieldClass} min-h-24 w-full py-3`}
-            />
-            <button
-              type="submit"
-              disabled={!noteDraft.trim()}
-              className="min-h-11 w-full rounded-2xl bg-indigo-500 text-sm font-medium text-white disabled:opacity-40"
+          <section className="glass space-y-3 rounded-3xl p-5">
+            {cardHead(
+              'Notes',
+              <Link to="/notes" className={linkClass}>
+                All
+              </Link>,
+            )}
+            <form
+              className="space-y-2"
+              onSubmit={(event) => {
+                event.preventDefault()
+                const body = noteDraft.trim()
+                if (!body) return
+                const title = body.split('\n')[0].slice(0, 48)
+                void upsertNote({
+                  id: crypto.randomUUID(),
+                  title: title || 'Untitled',
+                  body,
+                  tags: ['Ideas'],
+                  createdAt: Date.now(),
+                  updatedAt: Date.now(),
+                })
+                setNoteDraft('')
+              }}
             >
-              Save note
-            </button>
-          </form>
-          <div className="mt-3 space-y-2">
-            {recentNotes.map((note) => (
-              <Link
-                key={note.id}
-                to="/notes"
-                className="block rounded-2xl bg-field px-4 py-3 ring-1 ring-line"
+              <textarea
+                value={noteDraft}
+                onChange={(event) => setNoteDraft(event.target.value)}
+                placeholder="Scratch a thought for today…"
+                rows={3}
+                className={`${fieldClass} min-h-20 w-full py-3`}
+              />
+              <button
+                type="submit"
+                disabled={!noteDraft.trim()}
+                className="min-h-11 w-full rounded-2xl bg-indigo-500 text-sm font-medium text-white disabled:opacity-40"
               >
+                Save note
+              </button>
+            </form>
+            {recentNotes.map((note) => (
+              <Link key={note.id} to="/notes" className="block rounded-2xl bg-field px-4 py-3 ring-1 ring-line">
                 <span className="block truncate text-sm text-fg">{note.title}</span>
                 {note.body && note.body !== note.title ? (
                   <span className="mt-0.5 block line-clamp-2 text-[11px] text-muted">{note.body}</span>
                 ) : null}
               </Link>
             ))}
-            {recentNotes.length === 0 && !noteDraft ? (
-              <p className="text-sm text-muted">No notes yet. Jot a line above.</p>
-            ) : null}
-          </div>
+          </section>
         </div>
-
-        <Link to="/focus" className="glass flex min-h-16 items-center justify-between rounded-3xl px-5">
-          <span>
-            <span className="block text-sm font-medium text-fg">Start a focus session</span>
-            <span className="text-xs text-muted">{focusToday} minutes logged today</span>
-          </span>
-          <span className="text-faint">→</span>
-        </Link>
       </div>
     </div>
   )

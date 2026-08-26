@@ -19,12 +19,14 @@ export function TaskRow({
   task,
   subtitle,
   showPriority = true,
+  showStatus = true,
   trailing,
   className = '',
 }: {
   task: Task
   subtitle?: string
   showPriority?: boolean
+  showStatus?: boolean
   trailing?: ReactNode
   className?: string
 }) {
@@ -56,7 +58,7 @@ export function TaskRow({
         <p className={`text-sm ${task.done ? 'text-faint line-through' : 'text-fg'}`}>{task.title}</p>
         {subtitle ? <p className="mt-0.5 text-[11px] text-faint">{subtitle}</p> : null}
       </div>
-      <StatusChip status={boardColumn(task)} />
+      {showStatus ? <StatusChip status={boardColumn(task)} /> : null}
       {showPriority ? <PriorityBadge priority={task.priority} /> : null}
       {trailing}
     </div>
