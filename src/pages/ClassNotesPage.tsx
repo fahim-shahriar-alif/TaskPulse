@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Camera, ImagePlus, Trash2 } from 'lucide-react'
+import { CameraCapture, startCameraStream } from '../components/CameraCapture'
 import { useAuth } from '../context/AuthContext'
 import { useStore } from '../context/StoreContext'
 import { buildClassNote, groupClassNotesByDate, notesForClass } from '../lib/classNotes'
@@ -134,14 +135,48 @@ function SubjectAlbum({ item }: { item: UniClass }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [preview, setPreview] = useState<ClassNote | null>(null)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
   const libraryRef = useRef<HTMLInputElement>(null)
   const shots = notesForClass(classNotes, item.id)
   const groups = groupClassNotesByDate(shots)
+  const coarsePointer = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
 
-  async function addFiles(list?: FileList | null) {
+  useEffect(() => {
+    return () => {
+      cameraStream?.getTracks().forEach((track) => track.stop())
+    }
+  }, [cameraStream])
+
+  function closeCamera() {
+    cameraStream?.getTracks().forEach((track) => track.stop())
+    setCameraStream(null)
+  }
+
+  async function openCamera() {
+    setError('')
+    if (!navigator.mediaDevices?.getUserMedia) {
+      cameraRef.current?.click()
+      return
+    }
+    try {
+      const stream = await startCameraStream(true)
+      setCameraStream(stream)
+    } catch (err) {
+      const denied =
+        err instanceof DOMException &&
+        (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')
+      if (denied) {
+        setError('Camera is blocked. Allow it in the address bar, or use Library.')
+        return
+      }
+      cameraRef.current?.click()
+    }
+  }
+
+  async function addPhotos(files: File[]) {
     const uid = user?.uid
-    if (!uid || !list?.length) return
+    if (!uid || !files.length) return
     setBusy(true)
     setError('')
     let settled = false
@@ -151,7 +186,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
       setError('That photo took too long. Try a smaller JPEG, then tap Library again.')
     }, 20000)
     try {
-      for (const file of Array.from(list)) {
+      for (const file of files) {
         const note = await buildClassNote(uid, item.id, lectureDate, file)
         await upsertClassNote(note)
       }
@@ -164,6 +199,11 @@ function SubjectAlbum({ item }: { item: UniClass }) {
       if (cameraRef.current) cameraRef.current.value = ''
       if (libraryRef.current) libraryRef.current.value = ''
     }
+  }
+
+  async function addFiles(list?: FileList | null) {
+    if (!list?.length) return
+    await addPhotos(Array.from(list))
   }
 
   return (
@@ -204,7 +244,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
           <button
             type="button"
             disabled={busy}
-            onClick={() => cameraRef.current?.click()}
+            onClick={() => void openCamera()}
             className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-indigo-500 text-sm font-medium text-white disabled:opacity-40"
           >
             <Camera className="h-4 w-4" />
@@ -252,7 +292,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
         ref={cameraRef}
         type="file"
         accept="image/*"
-        capture="environment"
+        capture={coarsePointer ? 'environment' : undefined}
         className="sr-only"
         onChange={(event) => void addFiles(event.target.files)}
       />
@@ -264,6 +304,18 @@ function SubjectAlbum({ item }: { item: UniClass }) {
         className="sr-only"
         onChange={(event) => void addFiles(event.target.files)}
       />
+
+      {cameraStream ? (
+        <CameraCapture
+          stream={cameraStream}
+          onStream={(next) => setCameraStream(next)}
+          onClose={closeCamera}
+          onCapture={(file) => {
+            closeCamera()
+            void addPhotos([file])
+          }}
+        />
+      ) : null}
 
       {preview ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
