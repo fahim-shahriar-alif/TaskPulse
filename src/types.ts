@@ -83,6 +83,14 @@ export type UniClass = {
 
 export type DeadlineKind = 'exam' | 'assignment' | 'other'
 
+export type ClassNote = {
+  id: string
+  classId: string
+  date: string
+  url: string
+  createdAt: number
+}
+
 export type Deadline = {
   id: string
   title: string

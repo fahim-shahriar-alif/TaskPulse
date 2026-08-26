@@ -43,3 +43,54 @@ export async function photoDataUrl(file: File) {
   }
   return url
 }
+
+function canvasBlob(canvas: HTMLCanvasElement, quality: number) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('Could not process that photo.'))),
+      'image/jpeg',
+      quality,
+    )
+  })
+}
+
+export async function lecturePhotoBlob(file: File) {
+  if (file.type && !file.type.startsWith('image/')) {
+    throw new Error('Choose a photo of your notes.')
+  }
+  if (file.size > MAX_INPUT_BYTES) {
+    throw new Error('Use a photo under 8 MB.')
+  }
+
+  let bitmap: ImageBitmap
+  try {
+    bitmap = await createImageBitmap(file)
+  } catch {
+    throw new Error('That image format is not supported. Try a JPEG or PNG.')
+  }
+
+  const maxEdge = 1600
+  const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale))
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale))
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    bitmap.close()
+    throw new Error('Could not process that photo.')
+  }
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+  bitmap.close()
+
+  const maxBytes = 700_000
+  let quality = 0.82
+  let blob = await canvasBlob(canvas, quality)
+  while (blob.size > maxBytes && quality > 0.45) {
+    quality -= 0.08
+    blob = await canvasBlob(canvas, quality)
+  }
+  if (blob.size > 900_000) {
+    throw new Error('That photo is too detailed. Try a closer shot of one page.')
+  }
+  return blob
+}

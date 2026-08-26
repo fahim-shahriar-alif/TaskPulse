@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { ClassNotesSheet } from '../components/ClassNotesSheet'
 import { DeadlineModal } from '../components/DeadlineModal'
 import { Modal } from '../components/Modal'
 import { useStore } from '../context/StoreContext'
@@ -11,16 +12,18 @@ import {
   formatDays,
   overlappingClasses,
 } from '../lib/classes'
+import { classNoteDates, classNotesOn } from '../lib/classNotes'
 import { examsForClass, formatDaysLeft } from '../lib/deadlines'
-import { todayKey } from '../lib/dates'
+import { formatDayLabel, parseKey, todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
 import type { UniClass, WeekDay } from '../types'
 
 export function ClassesPage() {
-  const { classes, deadlines, upsertClass, removeClass } = useStore()
+  const { classes, deadlines, classNotes, upsertClass, removeClass } = useStore()
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState<UniClass>(emptyClass)
   const [examClassId, setExamClassId] = useState<string | null>(null)
+  const [notesFor, setNotesFor] = useState<{ item: UniClass; date: string } | null>(null)
   const today = todayKey()
   const todayClasses = useMemo(() => classes.filter((item) => classMeetsOn(item, today)), [classes, today])
   const draftClash = useMemo(() => overlappingClasses(draft, classes), [classes, draft])
@@ -79,6 +82,16 @@ export function ClassesPage() {
                       Overlaps {clash.map((other) => other.name).join(' · ')}
                     </p>
                   ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setNotesFor({ item, date: today })}
+                    className="mt-2 min-h-9 rounded-full bg-card px-3 text-xs text-indigo-400 ring-1 ring-line"
+                  >
+                    {(() => {
+                      const count = classNotesOn(classNotes, item.id, today).length
+                      return count ? `Notes · ${count}` : 'Add lecture photos'
+                    })()}
+                  </button>
                 </div>
               )
             })}
@@ -135,12 +148,35 @@ export function ClassesPage() {
               </button>
               <button
                 type="button"
+                onClick={() => setNotesFor({ item, date: today })}
+                className="min-h-11 flex-1 rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
+              >
+                Notes
+              </button>
+              <button
+                type="button"
                 onClick={() => setExamClassId(item.id)}
                 className="min-h-11 flex-1 rounded-2xl bg-indigo-500 text-sm font-medium text-white"
               >
                 Add exam
               </button>
             </div>
+            {classNoteDates(classNotes, item.id).length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {classNoteDates(classNotes, item.id)
+                  .slice(0, 6)
+                  .map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setNotesFor({ item, date: key })}
+                      className="min-h-8 rounded-full bg-field px-3 text-[11px] text-muted ring-1 ring-line"
+                    >
+                      {formatDayLabel(parseKey(key))} · {classNotesOn(classNotes, item.id, key).length}
+                    </button>
+                  ))}
+              </div>
+            ) : null}
           </article>
           )
         })}
@@ -272,6 +308,9 @@ export function ClassesPage() {
         classId={examClassId ?? ''}
         onClose={() => setExamClassId(null)}
       />
+      {notesFor ? (
+        <ClassNotesSheet item={notesFor.item} date={notesFor.date} onClose={() => setNotesFor(null)} />
+      ) : null}
     </div>
   )
 }

@@ -14,8 +14,9 @@ import { DEFAULT_HABITS } from '../lib/defaults'
 import { getFirebase } from '../lib/firebase'
 import { defaultSchedule, mergeClassSlots, normalizeSchedule } from '../lib/schedule'
 import { normalizeClass } from '../lib/classes'
+import { deleteClassNoteFile, normalizeClassNote } from '../lib/classNotes'
 import { normalizeDeadline } from '../lib/deadlines'
-import type { DayDoc, Deadline, FocusSession, Habit, Note, Settings, Status, Task, UniClass } from '../types'
+import type { ClassNote, DayDoc, Deadline, FocusSession, Habit, Note, Settings, Status, Task, UniClass } from '../types'
 import { DEFAULT_SETTINGS } from '../types'
 import { useAuth } from './AuthContext'
 import { useTheme } from './ThemeContext'
@@ -28,6 +29,7 @@ type StoreContextValue = {
   sessions: FocusSession[]
   classes: UniClass[]
   deadlines: Deadline[]
+  classNotes: ClassNote[]
   settings: Settings
   day: DayDoc
   upsertTask: (task: Task) => Promise<void>
@@ -42,6 +44,8 @@ type StoreContextValue = {
   removeClass: (id: string) => Promise<void>
   upsertDeadline: (item: Deadline) => Promise<void>
   removeDeadline: (id: string) => Promise<void>
+  upsertClassNote: (item: ClassNote) => Promise<void>
+  removeClassNote: (item: ClassNote) => Promise<void>
   saveDay: (patch: Partial<DayDoc>) => Promise<void>
   saveSettings: (patch: Partial<Settings>) => Promise<void>
   resetSchedule: () => Promise<void>
@@ -85,6 +89,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [sessions, setSessions] = useState<FocusSession[]>([])
   const [classes, setClasses] = useState<UniClass[]>([])
   const [deadlines, setDeadlines] = useState<Deadline[]>([])
+  const [classNotes, setClassNotes] = useState<ClassNote[]>([])
   const [settings, setSettings] = useState<Settings>({ ...DEFAULT_SETTINGS, theme })
   const [days, setDays] = useState<DayDoc[]>([])
 
@@ -149,6 +154,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const unsubDeadlines = onSnapshot(collection(db, 'users', uid, 'deadlines'), (snap) => {
       setDeadlines(snap.docs.map((item) => normalizeDeadline({ ...(item.data() as Deadline), id: item.id })))
     })
+    const unsubClassNotes = onSnapshot(collection(db, 'users', uid, 'classNotes'), (snap) => {
+      setClassNotes(snap.docs.map((item) => normalizeClassNote({ ...(item.data() as ClassNote), id: item.id })))
+    })
     const unsubSettings = onSnapshot(doc(db, 'users', uid, 'settings', 'app'), (snap) => {
       if (snap.exists()) {
         const incoming = snap.data() as Settings
@@ -167,6 +175,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       unsubSessions()
       unsubClasses()
       unsubDeadlines()
+      unsubClassNotes()
       unsubSettings()
     }
   }, [uid])
@@ -252,6 +261,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [upsertTask],
   )
 
+  const upsertClassNote = useCallback(
+    (item: ClassNote) => write(['classNotes', item.id], normalizeClassNote(item)),
+    [write],
+  )
+
+  const removeClassNote = useCallback(
+    async (item: ClassNote) => {
+      if (uid) await deleteClassNoteFile(uid, item)
+      await remove(['classNotes', item.id])
+    },
+    [remove, uid],
+  )
+
+  const removeClass = useCallback(
+    async (id: string) => {
+      const related = classNotes.filter((item) => item.classId === id)
+      await Promise.all(related.map((item) => removeClassNote(item)))
+      await remove(['classes', id])
+    },
+    [classNotes, remove, removeClassNote],
+  )
+
   const value = useMemo<StoreContextValue>(
     () => ({
       ready,
@@ -261,6 +292,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       sessions,
       classes,
       deadlines,
+      classNotes,
       settings,
       day,
       upsertTask,
@@ -272,14 +304,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeNote: (id) => remove(['notes', id]),
       addSession: (session) => write(['sessions', session.id], session),
       upsertClass: (item) => write(['classes', item.id], normalizeClass(item)),
-      removeClass: (id) => remove(['classes', id]),
+      removeClass,
       upsertDeadline: (item) => write(['deadlines', item.id], normalizeDeadline(item)),
       removeDeadline: (id) => remove(['deadlines', id]),
+      upsertClassNote,
+      removeClassNote,
       saveDay,
       saveSettings,
       resetSchedule: () => saveDay({ schedule: day.schedule.filter((slot) => slot.classId) }),
     }),
     [
+      classNotes,
       completeTask,
       classes,
       day,
@@ -288,12 +323,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       notes,
       ready,
       remove,
+      removeClass,
+      removeClassNote,
       saveDay,
       saveSettings,
       sessions,
       settings,
       tasks,
       uid,
+      upsertClassNote,
       upsertTask,
       write,
     ],

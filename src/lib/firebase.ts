@@ -7,6 +7,7 @@ import {
   persistentMultipleTabManager,
   type Firestore,
 } from 'firebase/firestore'
+import { getStorage, type FirebaseStorage } from 'firebase/storage'
 
 export function isFirebaseConfigured() {
   return Boolean(
@@ -19,6 +20,7 @@ export function isFirebaseConfigured() {
 let app: FirebaseApp | undefined
 let auth: Auth | undefined
 let db: Firestore | undefined
+let storage: FirebaseStorage | undefined
 
 export function getFirebase() {
   if (!isFirebaseConfigured()) return null
@@ -41,6 +43,9 @@ export function getFirebase() {
     } catch {
       db = getFirestore(app)
     }
+    if (import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) {
+      storage = getStorage(app)
+    }
   }
-  return { app, auth: auth!, db: db! }
+  return { app, auth: auth!, db: db!, storage }
 }
