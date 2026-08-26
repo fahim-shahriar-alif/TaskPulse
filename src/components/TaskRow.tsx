@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useStore } from '../context/StoreContext'
-import { STATUS_SIGNAL, statusLabel } from '../lib/status'
+import { STATUS_SIGNAL, boardColumn, statusLabel } from '../lib/status'
 import type { Status, Task } from '../types'
 import { PriorityBadge } from './PriorityBadge'
 import { useTaskDetail } from './TaskDetailModal'
@@ -56,7 +56,7 @@ export function TaskRow({
         <p className={`text-sm ${task.done ? 'text-faint line-through' : 'text-fg'}`}>{task.title}</p>
         {subtitle ? <p className="mt-0.5 text-[11px] text-faint">{subtitle}</p> : null}
       </div>
-      <StatusChip status={task.done ? 'completed' : task.status} />
+      <StatusChip status={boardColumn(task)} />
       {showPriority ? <PriorityBadge priority={task.priority} /> : null}
       {trailing}
     </div>

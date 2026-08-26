@@ -5,7 +5,7 @@ import { StatusChip, TaskRow } from '../components/TaskRow'
 import { useTaskDetail } from '../components/TaskDetailModal'
 import { useStore } from '../context/StoreContext'
 import { addDays, todayKey } from '../lib/dates'
-import { STATUS_SIGNAL } from '../lib/status'
+import { boardColumn, STATUS_SIGNAL } from '../lib/status'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
 import type { Status, Task } from '../types'
 import { PROJECTS, TASK_STATUSES } from '../types'
@@ -13,7 +13,7 @@ import { PROJECTS, TASK_STATUSES } from '../types'
 const SMART = ['all', 'today', 'tomorrow', 'week', 'inbox', 'overdue', 'done'] as const
 
 export function TasksPage() {
-  const { tasks, upsertTask, removeTask } = useStore()
+  const { tasks, upsertTask, removeTask, completeTask } = useStore()
   const { openTask } = useTaskDetail()
   const [view, setView] = useState<'list' | 'kanban'>('kanban')
   const [smart, setSmart] = useState<(typeof SMART)[number]>('all')
@@ -159,7 +159,7 @@ export function TasksPage() {
               </h2>
               <div className="space-y-2">
                 {filtered
-                  .filter((task) => task.status === column.id)
+                  .filter((task) => boardColumn(task) === column.id)
                   .map((task) => (
                     <article
                       key={task.id}
@@ -179,11 +179,23 @@ export function TasksPage() {
                       }}
                       className="cursor-pointer rounded-2xl bg-field p-3 ring-1 ring-line"
                     >
-                      <p className="text-sm text-fg">{task.title}</p>
-                      <div className="mt-2 flex items-center justify-between gap-2">
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          checked={boardColumn(task) === 'completed'}
+                          aria-label={`Mark ${task.title} done`}
+                          onClick={(event) => event.stopPropagation()}
+                          onChange={() => void completeTask(task)}
+                          className="mt-0.5 h-5 w-5 shrink-0 accent-indigo-400"
+                        />
+                        <p className={`min-w-0 flex-1 text-sm ${task.done ? 'text-faint line-through' : 'text-fg'}`}>
+                          {task.title}
+                        </p>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between gap-2 pl-7">
                         <span className="font-mono text-[11px] text-faint">#{task.project}</span>
                         <div className="flex items-center gap-2">
-                          <StatusChip status={task.status} />
+                          <StatusChip status={boardColumn(task)} />
                           <PriorityBadge priority={task.priority} />
                         </div>
                       </div>

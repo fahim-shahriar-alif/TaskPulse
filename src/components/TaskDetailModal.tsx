@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { useStore } from '../context/StoreContext'
-import { STATUS_SIGNAL } from '../lib/status'
+import { boardColumn, STATUS_SIGNAL } from '../lib/status'
 import { fieldClass } from '../lib/ui'
 import type { Priority, Recurrence, Status, Task } from '../types'
 import { PROJECTS, TASK_STATUSES, TASK_TAGS } from '../types'
@@ -80,7 +80,7 @@ function TaskDetailModal({ task, onClose }: { task: Task | null; onClose: () => 
             <p className="mb-2 text-xs text-muted">Current status</p>
             <div className="grid grid-cols-3 gap-2">
               {TASK_STATUSES.map((item) => {
-                const on = task.status === item.id
+                const on = boardColumn(task) === item.id
                 const tone = STATUS_SIGNAL[item.id]
                 return (
                   <button

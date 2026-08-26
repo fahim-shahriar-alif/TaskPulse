@@ -14,7 +14,7 @@ import { getFirebase } from '../lib/firebase'
 import { defaultSchedule, normalizeSchedule } from '../lib/schedule'
 import { normalizeClass } from '../lib/classes'
 import { normalizeDeadline } from '../lib/deadlines'
-import type { DayDoc, Deadline, FocusSession, Habit, Note, Settings, Task, UniClass } from '../types'
+import type { DayDoc, Deadline, FocusSession, Habit, Note, Settings, Status, Task, UniClass } from '../types'
 import { DEFAULT_SETTINGS } from '../types'
 import { useAuth } from './AuthContext'
 import { useTheme } from './ThemeContext'
@@ -53,14 +53,16 @@ function emptyDay(date: string): DayDoc {
 }
 
 export function normalizeTask(raw: Partial<Task> & Pick<Task, 'id' | 'title'>): Task {
+  const done = Boolean(raw.done || raw.status === 'completed')
+  const status: Status = done ? 'completed' : raw.status === 'inprog' ? 'inprog' : 'todo'
   return {
     id: raw.id,
     title: raw.title,
     project: raw.project || 'Personal',
     priority: raw.priority || 'medium',
     dueDate: raw.dueDate || '',
-    status: raw.status || (raw.done ? 'completed' : 'todo'),
-    done: Boolean(raw.done || raw.status === 'completed'),
+    status,
+    done,
     notes: raw.notes || '',
     tags: raw.tags || [],
     subtasks: raw.subtasks || [],

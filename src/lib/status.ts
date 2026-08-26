@@ -5,6 +5,11 @@ export function statusLabel(status: Status) {
   return TASK_STATUSES.find((item) => item.id === status)?.label ?? status
 }
 
+export function boardColumn(task: { status: Status; done: boolean }): Status {
+  if (task.done || task.status === 'completed') return 'completed'
+  return task.status === 'inprog' ? 'inprog' : 'todo'
+}
+
 export const STATUS_SIGNAL: Record<Status, { dot: string; chip: string; solid: string; dotOn: string }> = {
   todo: {
     dot: 'bg-white ring-1 ring-slate-400/80 dark:ring-white/80',
