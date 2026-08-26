@@ -9,6 +9,7 @@ import {
   emptyClass,
   formatClassTime,
   formatDays,
+  overlappingClasses,
 } from '../lib/classes'
 import { examsForClass, formatDaysLeft } from '../lib/deadlines'
 import { todayKey } from '../lib/dates'
@@ -22,6 +23,8 @@ export function ClassesPage() {
   const [examClassId, setExamClassId] = useState<string | null>(null)
   const today = todayKey()
   const todayClasses = useMemo(() => classes.filter((item) => classMeetsOn(item, today)), [classes, today])
+  const draftClash = useMemo(() => overlappingClasses(draft, classes), [classes, draft])
+  const clashNote = draftClash.map((item) => `${item.name} (${formatClassTime(item)})`).join(' · ')
 
   function edit(item?: UniClass) {
     setDraft(item ? { ...item } : emptyClass())
@@ -52,17 +55,33 @@ export function ClassesPage() {
         </button>
       </div>
 
+      {classes.some((item) => overlappingClasses(item, classes).length > 0) && (
+        <p className="rounded-2xl bg-amber-500/10 px-4 py-3 text-sm text-amber-600 ring-1 ring-amber-400/30 dark:text-amber-200">
+          Two classes share a day and time. Edit one so they no longer overlap — save is blocked until they don’t.
+        </p>
+      )}
       {todayClasses.length > 0 && (
         <div className="glass rounded-3xl p-5">
           <h2 className="text-sm font-semibold text-fg">Today</h2>
           <div className="mt-3 space-y-2">
-            {todayClasses.map((item) => (
-              <div key={item.id} className="rounded-2xl bg-field px-4 py-3 ring-1 ring-line">
-                <p className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</p>
-                <p className="mt-1 text-sm font-medium text-fg">{item.name}</p>
-                {item.location ? <p className="text-xs text-muted">{item.location}</p> : null}
-              </div>
-            ))}
+            {todayClasses.map((item) => {
+              const clash = overlappingClasses(item, todayClasses)
+              return (
+                <div
+                  key={item.id}
+                  className={`rounded-2xl bg-field px-4 py-3 ring-1 ${clash.length ? 'ring-amber-400/50' : 'ring-line'}`}
+                >
+                  <p className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</p>
+                  <p className="mt-1 text-sm font-medium text-fg">{item.name}</p>
+                  {item.location ? <p className="text-xs text-muted">{item.location}</p> : null}
+                  {clash.length > 0 ? (
+                    <p className="mt-1 text-[11px] text-amber-500">
+                      Overlaps {clash.map((other) => other.name).join(' · ')}
+                    </p>
+                  ) : null}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
@@ -70,8 +89,12 @@ export function ClassesPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         {classes.map((item) => {
           const upcoming = examsForClass(deadlines, item.id, today).slice(0, 3)
+          const clash = overlappingClasses(item, classes)
           return (
-          <article key={item.id} className="glass rounded-3xl p-5">
+          <article
+            key={item.id}
+            className={`glass rounded-3xl p-5 ${clash.length ? 'ring-1 ring-amber-400/40' : ''}`}
+          >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-fg">{item.name}</h2>
@@ -87,6 +110,11 @@ export function ClassesPage() {
               {REPEAT_OPTIONS.find((option) => option.id === item.repeat)?.label}
               {item.location ? ` · ${item.location}` : ''}
             </p>
+            {clash.length > 0 ? (
+              <p className="mt-2 text-xs text-amber-500">
+                Overlaps {clash.map((other) => other.name).join(' · ')}
+              </p>
+            ) : null}
             {upcoming.length > 0 && (
               <div className="mt-3 space-y-1">
                 {upcoming.map((exam) => (
@@ -129,7 +157,7 @@ export function ClassesPage() {
           className="space-y-3"
           onSubmit={(event) => {
             event.preventDefault()
-            if (!draft.name.trim() || draft.days.length === 0) return
+            if (!draft.name.trim() || draft.days.length === 0 || draftClash.length > 0) return
             void upsertClass({ ...draft, name: draft.name.trim() })
             setOpen(false)
           }}
@@ -228,7 +256,12 @@ export function ClassesPage() {
             rows={2}
             className={`${fieldClass} w-full py-3`}
           />
-          <button type="submit" className="min-h-11 w-full rounded-2xl bg-indigo-500 text-sm font-medium text-white">
+          {clashNote ? <p className="text-xs text-amber-500">Overlaps {clashNote}. Change the day or time to save.</p> : null}
+          <button
+            type="submit"
+            disabled={draftClash.length > 0}
+            className="min-h-11 w-full rounded-2xl bg-indigo-500 text-sm font-medium text-white disabled:opacity-40"
+          >
             Save class
           </button>
         </form>

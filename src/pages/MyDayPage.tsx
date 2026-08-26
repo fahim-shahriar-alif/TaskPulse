@@ -14,6 +14,7 @@ import {
   formatClassTime,
   nextClassToday,
   nowMinutes,
+  overlappingClasses,
 } from '../lib/classes'
 import { deadlineDetail, deadlineHeadline, daysUntil, formatDaysLeft, upcomingDeadlines } from '../lib/deadlines'
 import { formatDayLabel, formatHourLabel, habitStreak, todayKey } from '../lib/dates'
@@ -236,12 +237,13 @@ export function MyDayPage() {
               todayClasses.map((item) => {
                 const moment = classMoment(item, minutes)
                 const featured = nextClass?.id === item.id
+                const clash = overlappingClasses(item, todayClasses)
                 return (
                   <div
                     key={item.id}
                     className={`rounded-2xl bg-field px-4 py-3 ring-1 ${
-                      featured ? 'ring-indigo-400/50' : 'ring-line'
-                    } ${moment === 'done' ? 'opacity-55' : ''}`}
+                      clash.length ? 'ring-amber-400/50' : featured ? 'ring-indigo-400/50' : 'ring-line'
+                    } ${moment === 'done' && !clash.length ? 'opacity-55' : ''}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</p>
@@ -258,6 +260,11 @@ export function MyDayPage() {
                     </div>
                     <p className="mt-1 text-sm font-medium text-fg">{item.name}</p>
                     {item.location ? <p className="text-xs text-muted">{item.location}</p> : null}
+                    {clash.length > 0 ? (
+                      <p className="mt-1 text-[11px] text-amber-500">
+                        Overlaps {clash.map((other) => other.name).join(' · ')}
+                      </p>
+                    ) : null}
                   </div>
                 )
               })

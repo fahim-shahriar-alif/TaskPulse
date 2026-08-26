@@ -1,5 +1,5 @@
 import type { ScheduleSlot, UniClass } from '../types'
-import { classesOnDay, formatClassTime, timeToMinutes } from './classes'
+import { classesOnDay, formatClassTime, timesOverlap } from './classes'
 import { addHour } from './dates'
 
 export function defaultSchedule(): ScheduleSlot[] {
@@ -48,18 +48,6 @@ export function nextRange(schedule: ScheduleSlot[]) {
   const last = [...schedule].sort((a, b) => a.from.localeCompare(b.from)).at(-1)!
   const from = last.to || last.from
   return { from, to: addHour(from) }
-}
-
-function span(from: string, to: string) {
-  const start = timeToMinutes(from)
-  const end = Math.max(start + 1, timeToMinutes(to))
-  return { start, end }
-}
-
-export function timesOverlap(aFrom: string, aTo: string, bFrom: string, bTo: string) {
-  const a = span(aFrom, aTo)
-  const b = span(bFrom, bTo)
-  return a.start < b.end && b.start < a.end
 }
 
 export function classConflictsForSlot(slot: ScheduleSlot, classes: UniClass[], key: string) {

@@ -1,4 +1,4 @@
-import { formatHourLabel, parseKey, todayKey } from './dates'
+import { addDays, formatHourLabel, parseKey, todayKey } from './dates'
 import type { RepeatRule, UniClass, WeekDay } from '../types'
 
 export const WEEKDAYS: { id: WeekDay; label: string; js: number }[] = [
@@ -84,6 +84,30 @@ export function classesOnDay(classes: UniClass[], key: string) {
 export function timeToMinutes(time: string) {
   const [h, m] = time.split(':').map(Number)
   return (h || 0) * 60 + (m || 0)
+}
+
+export function timesOverlap(aFrom: string, aTo: string, bFrom: string, bTo: string) {
+  const a0 = timeToMinutes(aFrom)
+  const a1 = Math.max(a0 + 1, timeToMinutes(aTo))
+  const b0 = timeToMinutes(bFrom)
+  const b1 = Math.max(b0 + 1, timeToMinutes(bTo))
+  return a0 < b1 && b0 < a1
+}
+
+export function classesOverlapOnCalendar(a: UniClass, b: UniClass, from = todayKey()) {
+  if (a.id === b.id) return false
+  if (!timesOverlap(a.from, a.to, b.from, b.to)) return false
+  if (a.repeat === 'once' && classMeetsOn(b, a.startDate)) return true
+  if (b.repeat === 'once' && classMeetsOn(a, b.startDate)) return true
+  for (let i = 0; i < 16 * 7; i += 1) {
+    const key = addDays(from, i)
+    if (classMeetsOn(a, key) && classMeetsOn(b, key)) return true
+  }
+  return false
+}
+
+export function overlappingClasses(item: UniClass, list: UniClass[]) {
+  return list.filter((other) => classesOverlapOnCalendar(item, other))
 }
 
 export function nowMinutes(date = new Date()) {
