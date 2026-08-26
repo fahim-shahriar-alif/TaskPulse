@@ -3,6 +3,45 @@ import { getFirebase } from './firebase'
 import { lecturePhotoBlob } from './photo'
 import type { ClassNote } from '../types'
 
+const STORAGE_WAIT_MS = 8000
+const FIRESTORE_URL_MAX = 700_000
+
+function skipStorageKey(uid: string) {
+  return `tp-skip-storage-${uid}`
+}
+
+function shouldSkipStorage(uid: string) {
+  try {
+    return sessionStorage.getItem(skipStorageKey(uid)) === '1'
+  } catch {
+    return false
+  }
+}
+
+function rememberSkipStorage(uid: string) {
+  try {
+    sessionStorage.setItem(skipStorageKey(uid), '1')
+  } catch {
+    /* private mode */
+  }
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string) {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(message)), ms)
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer)
+        resolve(value)
+      },
+      (err) => {
+        window.clearTimeout(timer)
+        reject(err)
+      },
+    )
+  })
+}
+
 export function normalizeClassNote(raw: Partial<ClassNote> & Pick<ClassNote, 'id'>): ClassNote {
   return {
     id: raw.id,
@@ -52,25 +91,25 @@ async function blobToDataUrl(blob: Blob) {
 
 async function storeImage(uid: string, classId: string, id: string, blob: Blob) {
   const firebase = getFirebase()
-  if (firebase?.storage) {
+  if (firebase?.storage && !shouldSkipStorage(uid)) {
     try {
       const file = ref(firebase.storage, notePath(uid, classId, id))
-      await uploadBytes(file, blob, { contentType: 'image/jpeg' })
-      return await getDownloadURL(file)
+      await withTimeout(uploadBytes(file, blob, { contentType: 'image/jpeg' }), STORAGE_WAIT_MS, 'storage-timeout')
+      return await withTimeout(getDownloadURL(file), STORAGE_WAIT_MS, 'storage-timeout')
     } catch {
-      /* Storage may be off — keep the photo in Firestore instead. */
+      rememberSkipStorage(uid)
     }
   }
   const url = await blobToDataUrl(blob)
-  if (url.length > 900_000) {
-    throw new Error('Could not save that photo. Enable Firebase Storage or try a smaller shot.')
+  if (url.length > FIRESTORE_URL_MAX) {
+    throw new Error('Could not save that photo. Try a closer shot of one page.')
   }
   return url
 }
 
 export async function buildClassNote(uid: string, classId: string, date: string, file: File): Promise<ClassNote> {
   const id = crypto.randomUUID()
-  const blob = await lecturePhotoBlob(file)
+  const blob = await withTimeout(lecturePhotoBlob(file), 12000, 'That photo took too long to process. Try a JPEG of one page.')
   const url = await storeImage(uid, classId, id, blob)
   return {
     id,

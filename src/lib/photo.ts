@@ -69,7 +69,7 @@ export async function lecturePhotoBlob(file: File) {
     throw new Error('That image format is not supported. Try a JPEG or PNG.')
   }
 
-  const maxEdge = 1600
+  const maxEdge = 1280
   const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height))
   const canvas = document.createElement('canvas')
   canvas.width = Math.max(1, Math.round(bitmap.width * scale))
@@ -82,14 +82,14 @@ export async function lecturePhotoBlob(file: File) {
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
   bitmap.close()
 
-  const maxBytes = 700_000
-  let quality = 0.82
+  const maxBytes = 420_000
+  let quality = 0.8
   let blob = await canvasBlob(canvas, quality)
-  while (blob.size > maxBytes && quality > 0.45) {
+  while (blob.size > maxBytes && quality > 0.4) {
     quality -= 0.08
     blob = await canvasBlob(canvas, quality)
   }
-  if (blob.size > 900_000) {
+  if (blob.size > 600_000) {
     throw new Error('That photo is too detailed. Try a closer shot of one page.')
   }
   return blob

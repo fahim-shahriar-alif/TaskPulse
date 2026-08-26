@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Camera, ImagePlus, Trash2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -8,6 +8,41 @@ import { nowDate } from '../lib/clock'
 import { formatDayLabel, parseKey, todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
 import type { ClassNote, UniClass } from '../types'
+
+function PhotoThumb({ src, onOpen }: { src: string; onOpen: () => void }) {
+  const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
+
+  useEffect(() => {
+    if (status !== 'loading') return
+    const timer = window.setTimeout(() => setStatus('failed'), 12000)
+    return () => window.clearTimeout(timer)
+  }, [src, status])
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="relative block w-full overflow-hidden rounded-3xl bg-field ring-1 ring-line"
+    >
+      {status === 'loading' ? (
+        <span className="absolute inset-x-0 top-3 mx-auto h-6 w-6 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
+      ) : null}
+      {status === 'failed' ? (
+        <span className="grid aspect-[3/4] place-items-center px-3 text-center text-xs text-muted">
+          Photo saved, but it would not display. Delete and add it again.
+        </span>
+      ) : (
+        <img
+          src={src}
+          alt=""
+          onLoad={() => setStatus('ready')}
+          onError={() => setStatus('failed')}
+          className={`aspect-[3/4] w-full object-cover ${status === 'ready' ? 'opacity-100' : 'opacity-40'}`}
+        />
+      )}
+    </button>
+  )
+}
 
 export function ClassNotesPage() {
   const { classId } = useParams()
@@ -109,6 +144,12 @@ function SubjectAlbum({ item }: { item: UniClass }) {
     if (!uid || !list?.length) return
     setBusy(true)
     setError('')
+    let settled = false
+    const watchdog = window.setTimeout(() => {
+      if (settled) return
+      setBusy(false)
+      setError('That photo took too long. Try a smaller JPEG, then tap Library again.')
+    }, 20000)
     try {
       for (const file of Array.from(list)) {
         const note = await buildClassNote(uid, item.id, lectureDate, file)
@@ -117,6 +158,8 @@ function SubjectAlbum({ item }: { item: UniClass }) {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save that photo.')
     } finally {
+      settled = true
+      window.clearTimeout(watchdog)
       setBusy(false)
       if (cameraRef.current) cameraRef.current.value = ''
       if (libraryRef.current) libraryRef.current.value = ''
@@ -189,13 +232,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {pages.map((shot) => (
                 <div key={shot.id} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setPreview(shot)}
-                    className="block w-full overflow-hidden rounded-3xl ring-1 ring-line"
-                  >
-                    <img src={shot.url} alt="" className="aspect-[3/4] w-full object-cover" />
-                  </button>
+                  <PhotoThumb src={shot.url} onOpen={() => setPreview(shot)} />
                   <button
                     type="button"
                     onClick={() => void removeClassNote(shot)}

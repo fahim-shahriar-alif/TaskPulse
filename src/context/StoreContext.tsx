@@ -262,7 +262,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   )
 
   const upsertClassNote = useCallback(
-    (item: ClassNote) => write(['classNotes', item.id], normalizeClassNote(item)),
+    async (item: ClassNote) => {
+      const next = normalizeClassNote(item)
+      setClassNotes((prev) => [next, ...prev.filter((entry) => entry.id !== next.id)])
+      try {
+        await write(['classNotes', next.id], next)
+      } catch (err) {
+        setClassNotes((prev) => prev.filter((entry) => entry.id !== next.id))
+        throw err
+      }
+    },
     [write],
   )
 
