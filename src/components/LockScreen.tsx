@@ -13,14 +13,7 @@ const FALLBACK_BG =
   'radial-gradient(1200px 700px at 50% -10%, rgb(14 165 233 / 0.28), transparent 55%), radial-gradient(900px 500px at 80% 120%, rgb(99 102 241 / 0.22), transparent 50%), #061018'
 
 function LockBackdropLayer({ backdrop }: { backdrop: LockBackdrop | null }) {
-  const [shown, setShown] = useState(false)
-
-  useEffect(() => {
-    setShown(false)
-  }, [backdrop?.url])
-
   if (!backdrop) return null
-  const mediaClass = `h-full w-full object-cover transition-opacity duration-700 ${shown ? 'opacity-100' : 'opacity-0'}`
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -32,8 +25,7 @@ function LockBackdropLayer({ backdrop }: { backdrop: LockBackdrop | null }) {
           muted
           loop
           playsInline
-          className={mediaClass}
-          onLoadedData={() => setShown(true)}
+          className="h-full w-full object-cover"
         />
       ) : (
         <img
@@ -41,11 +33,10 @@ function LockBackdropLayer({ backdrop }: { backdrop: LockBackdrop | null }) {
           src={backdrop.url}
           alt=""
           referrerPolicy="no-referrer"
-          className={mediaClass}
-          onLoad={() => setShown(true)}
+          className="h-full w-full object-cover"
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/75" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/30 to-black/65" />
     </div>
   )
 }
@@ -75,20 +66,11 @@ export function LockScreen() {
   }, [])
 
   useEffect(() => {
-    const ac = new AbortController()
+    let cancelled = false
     async function load() {
       try {
-        const next = await randomLockBackdrop(ac.signal)
-        if (!next || ac.signal.aborted) return
-        if (next.kind === 'image') {
-          await new Promise<void>((resolve) => {
-            const img = new Image()
-            img.onload = () => resolve()
-            img.onerror = () => resolve()
-            img.src = next.url
-          })
-        }
-        if (!ac.signal.aborted) setBackdrop(next)
+        const next = await randomLockBackdrop()
+        if (!cancelled && next) setBackdrop(next)
       } catch {
         /* keep the gradient fallback */
       }
@@ -96,7 +78,7 @@ export function LockScreen() {
     void load()
     const timer = window.setInterval(() => void load(), ROTATE_MS)
     return () => {
-      ac.abort()
+      cancelled = true
       window.clearInterval(timer)
     }
   }, [])
