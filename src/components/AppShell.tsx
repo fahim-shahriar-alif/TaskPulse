@@ -64,7 +64,7 @@ export function AppShell() {
 
   return (
     <div className="relative min-h-dvh text-fg">
-      <AppBackdrop />
+      {!locked ? <AppBackdrop /> : null}
       {locked ? <LockScreen /> : null}
       <div className="relative z-10" inert={locked}>
       <CommandPalette />

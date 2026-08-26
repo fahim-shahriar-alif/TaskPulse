@@ -4,7 +4,7 @@ import { sessionWallpaper } from '../lib/wallpapers'
 
 export function AppBackdrop() {
   const { theme } = useTheme()
-  const [src] = useState(sessionWallpaper)
+  const [src] = useState(() => sessionWallpaper())
 
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>

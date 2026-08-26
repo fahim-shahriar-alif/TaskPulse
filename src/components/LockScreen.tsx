@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronUp } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLock } from '../context/LockContext'
@@ -12,14 +13,18 @@ const LOCK_BG = '#05070d'
 
 function LockWeb() {
   return (
-    <svg className="lock-web-spin pointer-events-none absolute inset-x-0 top-[-20%] h-[85%] w-full" viewBox="0 0 100 100" aria-hidden>
-      <g className="lock-web-pulse" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.35">
-        {['12', '28', '44', '62', '82'].map((r) => (
-          <ellipse key={r} cx="50" cy="0" rx={r} ry={Number(r) * 0.72} />
+    <svg
+      className="lock-web-spin pointer-events-none absolute inset-x-0 top-[-18%] h-[70%] w-full opacity-40"
+      viewBox="0 0 100 100"
+      aria-hidden
+    >
+      <g className="lock-web-pulse" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="0.3">
+        {['14', '30', '46', '64'].map((r) => (
+          <ellipse key={r} cx="50" cy="0" rx={r} ry={Number(r) * 0.7} />
         ))}
-        {Array.from({ length: 12 }, (_, i) => {
-          const a = ((i * 15 - 90) * Math.PI) / 180
-          return <line key={i} x1="50" y1="0" x2={50 + Math.cos(a) * 92} y2={Math.sin(a) * 78} />
+        {Array.from({ length: 10 }, (_, i) => {
+          const a = ((i * 18 - 90) * Math.PI) / 180
+          return <line key={i} x1="50" y1="0" x2={50 + Math.cos(a) * 88} y2={Math.sin(a) * 72} />
         })}
       </g>
     </svg>
@@ -35,7 +40,7 @@ export function LockScreen() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [wallpaper] = useState(sessionWallpaper)
+  const [wallpaper] = useState(() => sessionWallpaper())
   const startY = useRef<number | null>(null)
   const dragRef = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -44,9 +49,10 @@ export function LockScreen() {
   const time = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
 
   useEffect(() => {
+    const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.overflow = prev
     }
   }, [])
 
@@ -101,11 +107,11 @@ export function LockScreen() {
     }
   }
 
-  const lift = sheet ? 120 : drag
+  const lift = sheet ? 80 : drag
 
-  return (
+  const screen = (
     <div
-      className="fixed inset-0 z-[100] flex touch-none flex-col overflow-hidden text-white"
+      className={`fixed inset-0 z-[200] flex flex-col overflow-hidden text-white ${sheet ? '' : 'touch-none'}`}
       role="dialog"
       aria-modal="true"
       aria-label="Screen locked"
@@ -118,12 +124,12 @@ export function LockScreen() {
       <img
         src={wallpaper}
         alt=""
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-center"
       />
       <LockWeb />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/70" />
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-black/40 via-black/20 to-black/65" />
       <div
-        className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 drop-shadow-[0_2px_16px_rgba(0,0,0,0.85)] transition-transform duration-200"
+        className="relative z-[2] flex flex-1 flex-col items-center justify-center px-6 drop-shadow-[0_2px_16px_rgba(0,0,0,0.85)] transition-transform duration-200"
         style={{ transform: `translateY(${-lift * 0.35}px)` }}
       >
         <time dateTime={now.toISOString()} className="font-mono text-7xl font-semibold tabular-nums tracking-tight sm:text-8xl">
@@ -137,7 +143,7 @@ export function LockScreen() {
         {user?.email ? <p className="mt-1 text-sm text-white/50">{user.email}</p> : null}
       </div>
 
-      <div className="relative z-10 pb-[max(2rem,env(safe-area-inset-bottom))]">
+      <div className="relative z-[2] pb-[max(2rem,env(safe-area-inset-bottom))]">
         {!sheet ? (
           <button
             type="button"
@@ -150,7 +156,7 @@ export function LockScreen() {
           </button>
         ) : (
           <form
-            className="mx-auto w-full max-w-sm space-y-3 rounded-t-3xl bg-white/10 px-5 pb-6 pt-5 ring-1 ring-white/15 backdrop-blur-xl"
+            className="mx-auto w-full max-w-sm touch-auto space-y-3 rounded-t-3xl bg-black/45 px-5 pb-6 pt-5 ring-1 ring-white/15 backdrop-blur-xl"
             onSubmit={(event) => void submit(event)}
             onPointerDown={(event) => event.stopPropagation()}
           >
@@ -191,4 +197,6 @@ export function LockScreen() {
       </div>
     </div>
   )
+
+  return createPortal(screen, document.body)
 }
