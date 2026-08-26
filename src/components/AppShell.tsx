@@ -17,6 +17,7 @@ import {
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { CommandPalette } from './CommandPalette'
+import { AppBackdrop } from './AppBackdrop'
 import { LockButton } from './LockButton'
 import { LockScreen } from './LockScreen'
 import { NotificationWatch } from './NotificationWatch'
@@ -62,9 +63,10 @@ export function AppShell() {
   const { locked } = useLock()
 
   return (
-    <div className="bg-app min-h-dvh text-fg">
+    <div className="relative min-h-dvh text-fg">
+      <AppBackdrop />
       {locked ? <LockScreen /> : null}
-      <div inert={locked}>
+      <div className="relative z-10" inert={locked}>
       <CommandPalette />
       <NotificationWatch />
       <div className="mx-auto flex min-h-dvh max-w-7xl">

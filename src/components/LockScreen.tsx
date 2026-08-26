@@ -3,12 +3,12 @@ import { ChevronUp } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLock } from '../context/LockContext'
 import { formatDayLabel } from '../lib/dates'
+import { sessionWallpaper } from '../lib/wallpapers'
 import { useNow } from '../lib/now'
 import { PasswordField } from './PasswordField'
 
 const OPEN_AT = 80
 const LOCK_BG = '#05070d'
-const WALLPAPERS = ['/lock/lock-city-web.png', '/lock/lock-street-web.png', '/lock/lock-web-graphic.png']
 
 function LockWeb() {
   return (
@@ -35,7 +35,7 @@ export function LockScreen() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [wallpaper] = useState(() => WALLPAPERS[Math.floor(Math.random() * WALLPAPERS.length)])
+  const [wallpaper] = useState(sessionWallpaper)
   const startY = useRef<number | null>(null)
   const dragRef = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
