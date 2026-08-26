@@ -4,7 +4,7 @@ import { ChevronUp } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLock } from '../context/LockContext'
 import { formatDayLabel } from '../lib/dates'
-import { sessionWallpaper } from '../lib/wallpapers'
+import { sessionQuote, sessionWallpaper } from '../lib/wallpapers'
 import { useNow } from '../lib/now'
 import { PasswordField } from './PasswordField'
 
@@ -41,6 +41,7 @@ export function LockScreen() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [wallpaper] = useState(() => sessionWallpaper())
+  const [quote] = useState(() => sessionQuote())
   const startY = useRef<number | null>(null)
   const dragRef = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -136,7 +137,11 @@ export function LockScreen() {
           {time}
         </time>
         <p className="mt-3 text-lg text-white/70">{formatDayLabel(now)}</p>
-        <div className="mt-12 grid h-20 w-20 place-items-center rounded-full bg-white/10 text-2xl font-semibold ring-1 ring-white/20">
+        <blockquote className="mt-8 max-w-md px-2 text-center">
+          <p className="text-base leading-relaxed text-white/85 italic sm:text-lg">“{quote.text}”</p>
+          {quote.by ? <footer className="mt-2 text-sm text-white/45">— {quote.by}</footer> : null}
+        </blockquote>
+        <div className="mt-10 grid h-20 w-20 place-items-center rounded-full bg-white/10 text-2xl font-semibold ring-1 ring-white/20">
           {initial}
         </div>
         <p className="mt-3 text-lg font-medium">{name}</p>
