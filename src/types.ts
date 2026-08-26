@@ -47,6 +47,7 @@ export type ScheduleSlot = {
   to: string
   activity: string
   done: boolean
+  classId?: string
 }
 
 export type DayDoc = {

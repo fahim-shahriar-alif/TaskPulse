@@ -64,6 +64,7 @@ function ScheduleRow({
         </span>
         <span className={`mt-0.5 block text-sm ${slot.done ? 'text-faint line-through' : 'text-fg'}`}>
           {slot.activity || 'Untitled'}
+          {slot.classId ? <span className="ml-2 text-[10px] font-medium uppercase tracking-wide text-indigo-400">Class</span> : null}
         </span>
         {clash && !slot.done ? <span className="mt-0.5 block text-[11px] text-amber-500">{clash}</span> : null}
       </span>
@@ -256,7 +257,7 @@ export function MyDayPage() {
               </Link>,
             )}
             {schedule.length === 0 ? (
-              <p className="text-sm text-muted">No ranges yet. Add from–to times on the Schedule page.</p>
+              <p className="text-sm text-muted">No ranges yet. Today’s classes show up here on their own.</p>
             ) : (
               <div className="space-y-2">
                 {openSlots.map((slot) => (

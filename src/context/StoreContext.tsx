@@ -11,7 +11,7 @@ import {
 import { nextDue, todayKey } from '../lib/dates'
 import { DEFAULT_HABITS } from '../lib/defaults'
 import { getFirebase } from '../lib/firebase'
-import { defaultSchedule, normalizeSchedule } from '../lib/schedule'
+import { defaultSchedule, mergeClassSlots, normalizeSchedule } from '../lib/schedule'
 import { normalizeClass } from '../lib/classes'
 import { normalizeDeadline } from '../lib/deadlines'
 import type { DayDoc, Deadline, FocusSession, Habit, Note, Settings, Status, Task, UniClass } from '../types'
@@ -173,15 +173,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const day = useMemo(() => {
     const found = days.find((item) => item.date === date)
     const base = emptyDay(date)
-    if (!found) return base
-    const big3 = Array.isArray(found.big3) ? found.big3 : base.big3
+    const big3 = Array.isArray(found?.big3) ? found.big3 : base.big3
+    const raw = found
+      ? {
+          ...base,
+          ...found,
+          big3: [big3[0] || '', big3[1] || '', big3[2] || ''] as [string, string, string],
+          schedule: normalizeSchedule(found.schedule),
+        }
+      : base
     return {
-      ...base,
-      ...found,
-      big3: [big3[0] || '', big3[1] || '', big3[2] || ''] as [string, string, string],
-      schedule: normalizeSchedule(found.schedule),
+      ...raw,
+      schedule: mergeClassSlots(raw.schedule, classes, date),
     }
-  }, [date, days])
+  }, [classes, date, days])
 
   const write = useCallback(
     async (path: string[], data: object) => {
@@ -271,7 +276,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeDeadline: (id) => remove(['deadlines', id]),
       saveDay,
       saveSettings,
-      resetSchedule: () => saveDay({ schedule: [] }),
+      resetSchedule: () => saveDay({ schedule: day.schedule.filter((slot) => slot.classId) }),
     }),
     [
       completeTask,

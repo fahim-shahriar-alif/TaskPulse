@@ -31,6 +31,7 @@ export function normalizeScheduleSlot(
     to: padTime(raw.to || addHour(from)),
     activity: raw.activity || '',
     done: Boolean(raw.done),
+    classId: raw.classId || undefined,
   }
 }
 
@@ -50,8 +51,28 @@ export function nextRange(schedule: ScheduleSlot[]) {
   return { from, to: addHour(from) }
 }
 
+export function mergeClassSlots(schedule: ScheduleSlot[], classes: UniClass[], key: string): ScheduleSlot[] {
+  const today = classesOnDay(classes, key)
+  const existing = new Map(schedule.filter((slot) => slot.classId).map((slot) => [slot.classId, slot]))
+  const personal = schedule.filter((slot) => !slot.classId)
+  const fromClasses = today.map((item) => {
+    const prev = existing.get(item.id)
+    return {
+      id: prev?.id || `class:${item.id}`,
+      from: item.from,
+      to: item.to,
+      activity: item.name,
+      done: Boolean(prev?.done),
+      classId: item.id,
+    }
+  })
+  return [...personal, ...fromClasses]
+}
+
 export function classConflictsForSlot(slot: ScheduleSlot, classes: UniClass[], key: string) {
-  return classesOnDay(classes, key).filter((item) => timesOverlap(slot.from, slot.to, item.from, item.to))
+  return classesOnDay(classes, key).filter(
+    (item) => item.id !== slot.classId && timesOverlap(slot.from, slot.to, item.from, item.to),
+  )
 }
 
 export function slotConflictsForSlot(slot: ScheduleSlot, schedule: ScheduleSlot[]) {
