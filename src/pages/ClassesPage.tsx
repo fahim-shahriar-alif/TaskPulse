@@ -1,5 +1,5 @@
+import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
-import { ClassNotesSheet } from '../components/ClassNotesSheet'
 import { DeadlineModal } from '../components/DeadlineModal'
 import { Modal } from '../components/Modal'
 import { useStore } from '../context/StoreContext'
@@ -23,7 +23,6 @@ export function ClassesPage() {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState<UniClass>(emptyClass)
   const [examClassId, setExamClassId] = useState<string | null>(null)
-  const [notesFor, setNotesFor] = useState<UniClass | null>(null)
   const today = todayKey()
   const todayClasses = useMemo(() => classes.filter((item) => classMeetsOn(item, today)), [classes, today])
   const draftClash = useMemo(() => overlappingClasses(draft, classes), [classes, draft])
@@ -82,16 +81,15 @@ export function ClassesPage() {
                       Overlaps {clash.map((other) => other.name).join(' · ')}
                     </p>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => setNotesFor(item)}
-                    className="mt-2 min-h-9 rounded-full bg-card px-3 text-xs text-indigo-400 ring-1 ring-line"
+                  <Link
+                    to={`/class-notes/${item.id}?date=${today}`}
+                    className="mt-2 inline-flex min-h-9 items-center rounded-full bg-card px-3 text-xs text-indigo-400 ring-1 ring-line"
                   >
                     {(() => {
                       const count = notesForClass(classNotes, item.id).length
-                      return count ? `Photos · ${count}` : 'Add photos'
+                      return count ? `Class notes · ${count}` : 'Add class notes'
                     })()}
-                  </button>
+                  </Link>
                 </div>
               )
             })}
@@ -147,13 +145,12 @@ export function ClassesPage() {
               >
                 Edit
               </button>
-              <button
-                type="button"
-                onClick={() => setNotesFor(item)}
-                className="min-h-11 flex-1 rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
+              <Link
+                to={`/class-notes/${item.id}`}
+                className="grid min-h-11 flex-1 place-items-center rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
               >
-                Photos{photoCount ? ` · ${photoCount}` : ''}
-              </button>
+                Notes{photoCount ? ` · ${photoCount}` : ''}
+              </Link>
               <button
                 type="button"
                 onClick={() => setExamClassId(item.id)}
@@ -293,7 +290,6 @@ export function ClassesPage() {
         classId={examClassId ?? ''}
         onClose={() => setExamClassId(null)}
       />
-      {notesFor ? <ClassNotesSheet item={notesFor} onClose={() => setNotesFor(null)} /> : null}
     </div>
   )
 }

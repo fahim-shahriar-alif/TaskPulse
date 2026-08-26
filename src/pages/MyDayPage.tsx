@@ -1,7 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AddTaskModal } from '../components/AddTaskModal'
-import { ClassNotesSheet } from '../components/ClassNotesSheet'
 import { CompletionRing } from '../components/CompletionRing'
 import { DeadlineModal } from '../components/DeadlineModal'
 import { LiveClock } from '../components/LiveClock'
@@ -80,7 +79,6 @@ export function MyDayPage() {
   const [addOpen, setAddOpen] = useState(false)
   const [deadlineOpen, setDeadlineOpen] = useState(false)
   const [noteDraft, setNoteDraft] = useState('')
-  const [notesClass, setNotesClass] = useState<(typeof classes)[number] | null>(null)
   const now = useNow()
   const today = todayKey(now)
   const minutes = nowMinutes(now)
@@ -140,7 +138,6 @@ export function MyDayPage() {
 
       <AddTaskModal open={addOpen} initialDueDate={today} onClose={() => setAddOpen(false)} />
       <DeadlineModal open={deadlineOpen} onClose={() => setDeadlineOpen(false)} />
-      {notesClass ? <ClassNotesSheet item={notesClass} onClose={() => setNotesClass(null)} /> : null}
 
       <div className="kpi-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(([label, value]) => (
@@ -369,16 +366,15 @@ export function MyDayPage() {
                       {overnight ? (
                         <p className="mt-1 text-[11px] text-muted">Runs past midnight — check the end time.</p>
                       ) : null}
-                      <button
-                        type="button"
-                        onClick={() => setNotesClass(item)}
-                        className="mt-2 min-h-9 rounded-full bg-card px-3 text-xs text-indigo-400 ring-1 ring-line"
+                      <Link
+                        to={`/class-notes/${item.id}?date=${today}`}
+                        className="mt-2 inline-flex min-h-9 items-center rounded-full bg-card px-3 text-xs text-indigo-400 ring-1 ring-line"
                       >
                         {(() => {
                           const count = notesForClass(classNotes, item.id).length
-                          return count ? `Photos · ${count}` : 'Add photos'
+                          return count ? `Class notes · ${count}` : 'Add class notes'
                         })()}
-                      </button>
+                      </Link>
                     </div>
                   )
                 })}

@@ -49,6 +49,15 @@ export function CommandPalette() {
       .filter((item) => item.name.toLowerCase().includes(q) || item.course.toLowerCase().includes(q))
       .slice(0, 4)
       .map((item) => ({ id: item.id, label: item.name, to: '/classes', kind: 'Class' as const }))
+    const classNoteHits = classes
+      .filter((item) => item.name.toLowerCase().includes(q) || item.course.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((item) => ({
+        id: `photos-${item.id}`,
+        label: `${item.name} photos`,
+        to: `/class-notes/${item.id}`,
+        kind: 'Class notes' as const,
+      }))
     const deadlineHits = deadlines
       .filter((item) => {
         const label = deadlineHeadline(item, classes).toLowerCase()
@@ -61,7 +70,7 @@ export function CommandPalette() {
         to: '/deadlines',
         kind: 'Exam' as const,
       }))
-    return [...taskHits, ...noteHits, ...habitHits, ...classHits, ...deadlineHits]
+    return [...taskHits, ...noteHits, ...habitHits, ...classHits, ...classNoteHits, ...deadlineHits]
   }, [classes, deadlines, habits, notes, q, tasks])
 
   if (!open) return null

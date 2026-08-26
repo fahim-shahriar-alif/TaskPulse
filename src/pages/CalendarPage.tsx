@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ClassNotesSheet } from '../components/ClassNotesSheet'
 import { TaskRow } from '../components/TaskRow'
 import { useStore } from '../context/StoreContext'
 import { classMeetsOn, classesOnDay, formatClassTime } from '../lib/classes'
@@ -39,7 +38,6 @@ export function CalendarPage() {
     return { year: now.getFullYear(), month: now.getMonth() }
   })
   const [picked, setPicked] = useState<string | null>(null)
-  const [notesFor, setNotesFor] = useState<(typeof classes)[number] | null>(null)
   const selected = picked ?? today
   const days = useMemo(() => monthGrid(cursor.year, cursor.month), [cursor])
 
@@ -186,13 +184,12 @@ export function CalendarPage() {
                   </span>
                   <span className="flex shrink-0 flex-col items-end gap-2">
                     <span className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</span>
-                    <button
-                      type="button"
-                      onClick={() => setNotesFor(item)}
-                      className="min-h-8 rounded-full bg-field px-3 text-[11px] text-indigo-400 ring-1 ring-line"
+                    <Link
+                      to={`/class-notes/${item.id}?date=${selected}`}
+                      className="min-h-8 rounded-full bg-field px-3 text-[11px] leading-8 text-indigo-400 ring-1 ring-line"
                     >
-                      {count ? `Photos · ${count}` : 'Photos'}
-                    </button>
+                      {count ? `Notes · ${count}` : 'Class notes'}
+                    </Link>
                   </span>
                 </div>
               )
@@ -232,7 +229,6 @@ export function CalendarPage() {
 
         {empty && <p className="text-sm text-muted">Nothing on this day.</p>}
       </div>
-      {notesFor ? <ClassNotesSheet item={notesFor} onClose={() => setNotesFor(null)} /> : null}
     </div>
   )
 }
