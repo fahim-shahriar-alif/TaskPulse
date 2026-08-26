@@ -7,8 +7,24 @@ import { useNow } from '../lib/now'
 import { PasswordField } from './PasswordField'
 
 const OPEN_AT = 80
-const LOCK_BG =
-  'radial-gradient(1200px 700px at 50% -10%, rgb(14 165 233 / 0.28), transparent 55%), radial-gradient(900px 500px at 80% 120%, rgb(99 102 241 / 0.22), transparent 50%), #061018'
+const LOCK_BG = '#05070d'
+const WALLPAPERS = ['/lock/lock-city-web.png', '/lock/lock-street-web.png', '/lock/lock-web-graphic.png']
+
+function LockWeb() {
+  return (
+    <svg className="lock-web-spin pointer-events-none absolute inset-x-0 top-[-20%] h-[85%] w-full" viewBox="0 0 100 100" aria-hidden>
+      <g className="lock-web-pulse" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.35">
+        {['12', '28', '44', '62', '82'].map((r) => (
+          <ellipse key={r} cx="50" cy="0" rx={r} ry={Number(r) * 0.72} />
+        ))}
+        {Array.from({ length: 12 }, (_, i) => {
+          const a = ((i * 15 - 90) * Math.PI) / 180
+          return <line key={i} x1="50" y1="0" x2={50 + Math.cos(a) * 92} y2={Math.sin(a) * 78} />
+        })}
+      </g>
+    </svg>
+  )
+}
 
 export function LockScreen() {
   const { user, logout } = useAuth()
@@ -19,6 +35,7 @@ export function LockScreen() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [wallpaper] = useState(() => WALLPAPERS[Math.floor(Math.random() * WALLPAPERS.length)])
   const startY = useRef<number | null>(null)
   const dragRef = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -98,8 +115,15 @@ export function LockScreen() {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
+      <img
+        src={wallpaper}
+        alt=""
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+      />
+      <LockWeb />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/70" />
       <div
-        className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 transition-transform duration-200"
+        className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 drop-shadow-[0_2px_16px_rgba(0,0,0,0.85)] transition-transform duration-200"
         style={{ transform: `translateY(${-lift * 0.35}px)` }}
       >
         <time dateTime={now.toISOString()} className="font-mono text-7xl font-semibold tabular-nums tracking-tight sm:text-8xl">

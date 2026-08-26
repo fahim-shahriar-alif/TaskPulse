@@ -330,3 +330,31 @@ html.dark .shadow-sky-500\/25,
 html[data-theme='dark'] .shadow-sky-500\/25 {
   --tw-shadow-color: rgb(14 165 233 / 0.35);
 }
+
+.lock-web-spin {
+  animation: lock-web-spin 36s linear infinite;
+  transform-origin: 50% 0%;
+}
+
+.lock-web-pulse {
+  animation: lock-web-pulse 5.5s ease-in-out infinite;
+}
+
+@keyframes lock-web-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lock-web-pulse {
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
