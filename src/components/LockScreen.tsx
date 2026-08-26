@@ -3,10 +3,52 @@ import { ChevronUp } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLock } from '../context/LockContext'
 import { formatDayLabel } from '../lib/dates'
+import { randomLockBackdrop, type LockBackdrop } from '../lib/lockBackdrop'
 import { useNow } from '../lib/now'
 import { PasswordField } from './PasswordField'
 
 const OPEN_AT = 80
+const ROTATE_MS = 75_000
+const FALLBACK_BG =
+  'radial-gradient(1200px 700px at 50% -10%, rgb(14 165 233 / 0.28), transparent 55%), radial-gradient(900px 500px at 80% 120%, rgb(99 102 241 / 0.22), transparent 50%), #061018'
+
+function LockBackdropLayer({ backdrop }: { backdrop: LockBackdrop | null }) {
+  const [shown, setShown] = useState(false)
+
+  useEffect(() => {
+    setShown(false)
+  }, [backdrop?.url])
+
+  if (!backdrop) return null
+  const mediaClass = `h-full w-full object-cover transition-opacity duration-700 ${shown ? 'opacity-100' : 'opacity-0'}`
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {backdrop.kind === 'video' ? (
+        <video
+          key={backdrop.url}
+          src={backdrop.url}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className={mediaClass}
+          onLoadedData={() => setShown(true)}
+        />
+      ) : (
+        <img
+          key={backdrop.url}
+          src={backdrop.url}
+          alt=""
+          referrerPolicy="no-referrer"
+          className={mediaClass}
+          onLoad={() => setShown(true)}
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/75" />
+    </div>
+  )
+}
 
 export function LockScreen() {
   const { user, logout } = useAuth()
@@ -17,6 +59,7 @@ export function LockScreen() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [backdrop, setBackdrop] = useState<LockBackdrop | null>(null)
   const startY = useRef<number | null>(null)
   const dragRef = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -28,6 +71,33 @@ export function LockScreen() {
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = ''
+    }
+  }, [])
+
+  useEffect(() => {
+    const ac = new AbortController()
+    async function load() {
+      try {
+        const next = await randomLockBackdrop(ac.signal)
+        if (!next || ac.signal.aborted) return
+        if (next.kind === 'image') {
+          await new Promise<void>((resolve) => {
+            const img = new Image()
+            img.onload = () => resolve()
+            img.onerror = () => resolve()
+            img.src = next.url
+          })
+        }
+        if (!ac.signal.aborted) setBackdrop(next)
+      } catch {
+        /* keep the gradient fallback */
+      }
+    }
+    void load()
+    const timer = window.setInterval(() => void load(), ROTATE_MS)
+    return () => {
+      ac.abort()
+      window.clearInterval(timer)
     }
   }, [])
 
@@ -90,17 +160,15 @@ export function LockScreen() {
       role="dialog"
       aria-modal="true"
       aria-label="Screen locked"
-      style={{
-        background:
-          'radial-gradient(1200px 700px at 50% -10%, rgb(14 165 233 / 0.28), transparent 55%), radial-gradient(900px 500px at 80% 120%, rgb(99 102 241 / 0.22), transparent 50%), #061018',
-      }}
+      style={{ background: FALLBACK_BG }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
+      <LockBackdropLayer backdrop={backdrop} />
       <div
-        className="flex flex-1 flex-col items-center justify-center px-6 transition-transform duration-200"
+        className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 drop-shadow-[0_2px_18px_rgba(0,0,0,0.85)] transition-transform duration-200"
         style={{ transform: `translateY(${-lift * 0.35}px)` }}
       >
         <time dateTime={now.toISOString()} className="font-mono text-7xl font-semibold tabular-nums tracking-tight sm:text-8xl">
@@ -114,7 +182,7 @@ export function LockScreen() {
         {user?.email ? <p className="mt-1 text-sm text-white/50">{user.email}</p> : null}
       </div>
 
-      <div className="relative pb-[max(2rem,env(safe-area-inset-bottom))]">
+      <div className="relative z-10 pb-[max(2rem,env(safe-area-inset-bottom))]">
         {!sheet ? (
           <button
             type="button"
