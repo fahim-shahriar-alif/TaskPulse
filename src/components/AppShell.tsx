@@ -69,17 +69,11 @@ export function AppShell() {
       <NotificationWatch />
       <div className="mx-auto flex min-h-dvh max-w-7xl">
         <aside className="glass sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-y-0 border-l-0 p-5 lg:flex">
-          <div className="mb-8 flex items-center justify-between gap-3 px-1">
-            <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="" className="h-10 w-10 rounded-2xl" />
-              <div>
-                <p className="text-sm font-semibold tracking-tight text-fg">TaskyPulse</p>
-                <p className="font-mono text-[11px] text-faint">Focus · Execute</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <LockButton />
-              <ThemeToggle />
+          <div className="mb-8 flex items-center gap-3 px-1">
+            <img src="/logo.png" alt="" className="h-10 w-10 rounded-2xl" />
+            <div>
+              <p className="text-sm font-semibold tracking-tight text-fg">TaskyPulse</p>
+              <p className="font-mono text-[11px] text-faint">Focus · Execute</p>
             </div>
           </div>
           <nav className="flex flex-1 flex-col gap-1 overflow-auto">
@@ -98,11 +92,21 @@ export function AppShell() {
           <div className="space-y-3">
             <p className="px-1 font-mono text-[10px] text-faint">⌘K search</p>
             <ProgressReportButton variant="sidebar" />
-            <div className="flex items-center justify-between gap-2 px-1">
-              <p className="truncate text-xs text-faint">{user?.email}</p>
-              <button type="button" onClick={() => void logout()} className="text-faint hover:text-fg" aria-label="Sign out">
-                <LogOut className="h-4 w-4" />
-              </button>
+            <div className="rounded-2xl bg-field p-1 ring-1 ring-line">
+              <div className="grid grid-cols-3">
+                <LockButton />
+                <ThemeToggle />
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  className="grid h-11 place-items-center rounded-2xl text-muted hover:bg-card hover:text-fg"
+                  aria-label="Sign out"
+                  title="Sign out"
+                >
+                  <LogOut className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="truncate px-3 pb-2 pt-1 text-center text-[11px] text-faint">{user?.email}</p>
             </div>
           </div>
         </aside>
@@ -117,8 +121,6 @@ export function AppShell() {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <LockButton />
-              <ThemeToggle />
               <ProgressReportButton variant="icon" />
               <button
                 type="button"

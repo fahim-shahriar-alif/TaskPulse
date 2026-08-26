@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { LockButton } from '../components/LockButton'
 import { ProgressReportButton } from '../components/ProgressReportButton'
+import { ThemeToggle } from '../components/ThemeToggle'
 import { eyebrowClass, titleClass } from '../lib/ui'
 
 const links = [
@@ -23,6 +24,7 @@ export function MorePage() {
       </div>
       <div className="space-y-2">
         <LockButton variant="row" />
+        <ThemeToggle variant="row" />
         {links.map((link) => (
           <Link
             key={link.to}
