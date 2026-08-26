@@ -31,9 +31,10 @@ function greeting(date = new Date()) {
 
 export function MyDayPage() {
   const { user } = useAuth()
-  const { tasks, habits, day, sessions, classes, deadlines, upsertHabit, saveDay } = useStore()
+  const { tasks, habits, notes, day, sessions, classes, deadlines, upsertHabit, upsertNote, saveDay } = useStore()
   const [addOpen, setAddOpen] = useState(false)
   const [deadlineOpen, setDeadlineOpen] = useState(false)
+  const [noteDraft, setNoteDraft] = useState('')
   const now = useNow()
   const today = todayKey(now)
   const minutes = nowMinutes(now)
@@ -65,6 +66,10 @@ export function MyDayPage() {
   const todayClasses = useMemo(() => classesOnDay(classes, today), [classes, today])
   const nextClass = useMemo(() => nextClassToday(classes, today, minutes), [classes, minutes, today])
   const pinned = useMemo(() => upcomingDeadlines(deadlines, today).slice(0, 4), [deadlines, today])
+  const recentNotes = useMemo(
+    () => [...notes].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 4),
+    [notes],
+  )
 
   const stats = [
     ['Open today', String(openToday)],
@@ -141,7 +146,7 @@ export function MyDayPage() {
       <AddTaskModal open={addOpen} initialDueDate={today} onClose={() => setAddOpen(false)} />
       <DeadlineModal open={deadlineOpen} onClose={() => setDeadlineOpen(false)} />
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
         <div className="hero-card glass rounded-3xl p-5">
           <CompletionRing
             value={pct}
@@ -392,6 +397,65 @@ export function MyDayPage() {
               )
             })}
             {habits.length === 0 && <p className="text-sm text-muted">Add habits in the Habits tab.</p>}
+          </div>
+        </div>
+
+        <div className="glass rounded-3xl p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-fg">Notes</h2>
+            <Link to="/notes" className="text-xs text-indigo-400">
+              All notes
+            </Link>
+          </div>
+          <form
+            className="mt-4 space-y-2"
+            onSubmit={(event) => {
+              event.preventDefault()
+              const body = noteDraft.trim()
+              if (!body) return
+              const title = body.split('\n')[0].slice(0, 48)
+              void upsertNote({
+                id: crypto.randomUUID(),
+                title: title || 'Untitled',
+                body,
+                tags: ['Ideas'],
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              })
+              setNoteDraft('')
+            }}
+          >
+            <textarea
+              value={noteDraft}
+              onChange={(event) => setNoteDraft(event.target.value)}
+              placeholder="Scratch a thought for today…"
+              rows={4}
+              className={`${fieldClass} min-h-24 w-full py-3`}
+            />
+            <button
+              type="submit"
+              disabled={!noteDraft.trim()}
+              className="min-h-11 w-full rounded-2xl bg-indigo-500 text-sm font-medium text-white disabled:opacity-40"
+            >
+              Save note
+            </button>
+          </form>
+          <div className="mt-3 space-y-2">
+            {recentNotes.map((note) => (
+              <Link
+                key={note.id}
+                to="/notes"
+                className="block rounded-2xl bg-field px-4 py-3 ring-1 ring-line"
+              >
+                <span className="block truncate text-sm text-fg">{note.title}</span>
+                {note.body && note.body !== note.title ? (
+                  <span className="mt-0.5 block line-clamp-2 text-[11px] text-muted">{note.body}</span>
+                ) : null}
+              </Link>
+            ))}
+            {recentNotes.length === 0 && !noteDraft ? (
+              <p className="text-sm text-muted">No notes yet. Jot a line above.</p>
+            ) : null}
           </div>
         </div>
 

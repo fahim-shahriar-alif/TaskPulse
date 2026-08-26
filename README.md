@@ -27,7 +27,7 @@ Home screen for “what is happening today.”
 - **Today’s classes** — name, room, time, Live / countdown tags
 - **Exams & deadlines** — class name, kind, syllabus snippet, days left; pin a new exam from here
 - **Today’s schedule** — from–to blocks. Check a block done: green tick, green left border, struck-through title. Saved with that day. An **amber** edge and “Overlaps …” line appear if a block collides with a class or another range
-- Habit quick-check and a shortcut into Focus
+- Habit quick-check, a **notes pad** (quick capture + latest notes), and a shortcut into Focus
 - Layout is paired cards on a wide screen so the page does not dump everything down one column
 
 ### Tasks (`/tasks`)
