@@ -94,8 +94,16 @@ export function MyDayPage() {
   )
   const dueToday = todaysTasks.filter((task) => task.dueDate === today)
   const doneCount = dueToday.filter((task) => task.done).length
+  const openToday = todaysTasks.filter((task) => !task.done).length
   const pct = dueToday.length ? (doneCount / dueToday.length) * 100 : 0
   const focusToday = sessions.filter((item) => item.date === today).reduce((sum, item) => sum + item.minutes, 0)
+  const habitsDone = habits.filter((habit) => habit.completions[today]).length
+  const stats = [
+    ['Open today', String(openToday)],
+    ['Done', String(doneCount)],
+    ['Focus', `${focusToday}m`],
+    ['Habits', `${habitsDone}/${habits.length || 0}`],
+  ]
   const schedule = [...day.schedule].sort((a, b) => a.from.localeCompare(b.from))
   const openSlots = schedule.filter((slot) => !slot.done)
   const doneSlots = schedule.filter((slot) => slot.done)
@@ -128,6 +136,15 @@ export function MyDayPage() {
 
       <AddTaskModal open={addOpen} initialDueDate={today} onClose={() => setAddOpen(false)} />
       <DeadlineModal open={deadlineOpen} onClose={() => setDeadlineOpen(false)} />
+
+      <div className="kpi-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map(([label, value]) => (
+          <div key={label} className="glass rounded-3xl p-4">
+            <p className="text-xs text-muted">{label}</p>
+            <p className="font-mono mt-1 text-2xl font-semibold text-fg">{value}</p>
+          </div>
+        ))}
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-2 lg:items-stretch">
         <div className="hero-card glass flex items-center rounded-3xl p-5">
