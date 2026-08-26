@@ -6,7 +6,7 @@ Live: [taskypulse.netlify.app](https://taskypulse.netlify.app)
 
 Repo: [github.com/fahim-shahriar-alif/TaskPulse](https://github.com/fahim-shahriar-alif/TaskPulse)
 
-Sign in with email and password. Everything you add is stored in Firestore under your user id. Light and dark appearance stays on **this device** only and does not follow you to other logins.
+Sign in with email and password, or open **Create an account** (`/register`) the first time. Everything you add is stored in Firestore under your user id. Light and dark appearance stays on **this device** only and does not follow you to other logins.
 
 ---
 

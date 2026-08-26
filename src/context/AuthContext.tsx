@@ -7,7 +7,7 @@ import {
   updateProfile,
   type User,
 } from 'firebase/auth'
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { getFirebase, isFirebaseConfigured } from '../lib/firebase'
 import { clearAllLockFlags } from '../lib/lock'
 
@@ -18,9 +18,10 @@ type AuthContextValue = {
   busy: boolean
   error: string | null
   signIn: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string) => Promise<void>
+  register: (email: string, password: string, name?: string) => Promise<void>
   updateName: (name: string) => Promise<void>
   logout: () => Promise<void>
+  clearError: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -66,6 +67,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const clearError = useCallback(() => setError(null), [])
+
+  const signIn = useCallback(async (email: string, password: string) => {
+    const firebase = getFirebase()
+    if (!firebase) return
+    setError(null)
+    setBusy(true)
+    try {
+      await signInWithEmailAndPassword(firebase.auth, email, password)
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }, [])
+
+  const register = useCallback(async (email: string, password: string, name?: string) => {
+    const firebase = getFirebase()
+    if (!firebase) return
+    setError(null)
+    setBusy(true)
+    try {
+      const cred = await createUserWithEmailAndPassword(firebase.auth, email, password)
+      const displayName = name?.trim()
+      if (displayName) {
+        try {
+          await updateProfile(cred.user, { displayName })
+          setUser(firebase.auth.currentUser)
+        } catch {
+          /* Account exists; name can be set later on Profile. */
+        }
+      }
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }, [])
+
+  const updateName = useCallback(async (name: string) => {
+    const firebase = getFirebase()
+    if (!firebase?.auth.currentUser) return
+    await updateProfile(firebase.auth.currentUser, { displayName: name.trim() })
+    setUser(firebase.auth.currentUser)
+  }, [])
+
+  const logout = useCallback(async () => {
+    const firebase = getFirebase()
+    if (!firebase) return
+    clearAllLockFlags()
+    await signOut(firebase.auth)
+  }, [])
+
   const value = useMemo<AuthContextValue>(
     () => ({
       configured,
@@ -73,46 +127,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       busy,
       error,
-      signIn: async (email, password) => {
-        const firebase = getFirebase()
-        if (!firebase) return
-        setError(null)
-        setBusy(true)
-        try {
-          await signInWithEmailAndPassword(firebase.auth, email, password)
-        } catch (err) {
-          setError(errorMessage(err))
-        } finally {
-          setBusy(false)
-        }
-      },
-      register: async (email, password) => {
-        const firebase = getFirebase()
-        if (!firebase) return
-        setError(null)
-        setBusy(true)
-        try {
-          await createUserWithEmailAndPassword(firebase.auth, email, password)
-        } catch (err) {
-          setError(errorMessage(err))
-        } finally {
-          setBusy(false)
-        }
-      },
-      updateName: async (name) => {
-        const firebase = getFirebase()
-        if (!firebase?.auth.currentUser) return
-        await updateProfile(firebase.auth.currentUser, { displayName: name.trim() })
-        setUser(firebase.auth.currentUser)
-      },
-      logout: async () => {
-        const firebase = getFirebase()
-        if (!firebase) return
-        clearAllLockFlags()
-        await signOut(firebase.auth)
-      },
+      signIn,
+      register,
+      updateName,
+      logout,
+      clearError,
     }),
-    [busy, configured, error, loading, user],
+    [busy, clearError, configured, error, loading, logout, register, signIn, updateName, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

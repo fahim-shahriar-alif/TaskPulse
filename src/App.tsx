@@ -13,6 +13,7 @@ import { DeadlinesPage } from './pages/DeadlinesPage'
 import { FocusPage } from './pages/FocusPage'
 import { HabitsPage } from './pages/HabitsPage'
 import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
 import { MatrixPage } from './pages/MatrixPage'
 import { MorePage } from './pages/MorePage'
 import { MyDayPage } from './pages/MyDayPage'
@@ -53,14 +54,21 @@ function Gate() {
       </div>
     )
   }
-  if (!configured || !user) return <LoginPage />
+  if (!configured || !user) {
+    return (
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    )
+  }
   return (
     <ScreenError>
       <StoreProvider>
         <LockProvider>
           <TaskDetailProvider>
-            <BrowserRouter>
-              <Routes>
+            <Routes>
               <Route element={<AppShell />}>
                 <Route path="/" element={<MyDayPage />} />
                 <Route path="/tasks" element={<TasksPage />} />
@@ -79,8 +87,7 @@ function Gate() {
                 <Route path="/more" element={<MorePage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
-              </Routes>
-            </BrowserRouter>
+            </Routes>
           </TaskDetailProvider>
         </LockProvider>
       </StoreProvider>
@@ -92,7 +99,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Gate />
+        <BrowserRouter>
+          <Gate />
+        </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
   )
