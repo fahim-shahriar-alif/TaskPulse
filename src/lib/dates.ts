@@ -1,4 +1,6 @@
-export function todayKey(date = new Date()) {
+import { nowDate } from './clock'
+
+export function todayKey(date = nowDate()) {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
@@ -24,7 +26,7 @@ export function nextDue(key: string, recurrence: 'daily' | 'weekly' | 'weekdays'
   return cursor
 }
 
-export function formatDayLabel(date = new Date()) {
+export function formatDayLabel(date = nowDate()) {
   return date.toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'short',
@@ -47,7 +49,7 @@ export function addHour(time: string) {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 }
 
-export function habitStreak(completions: Record<string, boolean>, from = new Date()) {
+export function habitStreak(completions: Record<string, boolean>, from = nowDate()) {
   let streak = 0
   const cursor = new Date(from)
   for (let i = 0; i < 400; i += 1) {
@@ -66,7 +68,7 @@ export function habitStreak(completions: Record<string, boolean>, from = new Dat
   return streak
 }
 
-export function startOfWeek(date = new Date()) {
+export function startOfWeek(date = nowDate()) {
   const next = new Date(date)
   const day = next.getDay() || 7
   next.setDate(next.getDate() - day + 1)

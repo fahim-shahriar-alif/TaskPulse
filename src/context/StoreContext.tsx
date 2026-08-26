@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import { nextDue, todayKey } from '../lib/dates'
+import { useTodayKey } from '../lib/now'
 import { DEFAULT_HABITS } from '../lib/defaults'
 import { getFirebase } from '../lib/firebase'
 import { defaultSchedule, mergeClassSlots, normalizeSchedule } from '../lib/schedule'
@@ -76,7 +77,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const { theme } = useTheme()
   const uid = user?.uid
-  const date = todayKey()
+  const date = useTodayKey()
   const [ready, setReady] = useState(false)
   const [tasks, setTasks] = useState<Task[]>([])
   const [habits, setHabits] = useState<Habit[]>([])

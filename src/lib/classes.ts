@@ -1,4 +1,5 @@
 import { addDays, formatHourLabel, parseKey, todayKey } from './dates'
+import { nowDate } from './clock'
 import type { RepeatRule, UniClass, WeekDay } from '../types'
 
 export const WEEKDAYS: { id: WeekDay; label: string; js: number }[] = [
@@ -110,7 +111,7 @@ export function overlappingClasses(item: UniClass, list: UniClass[]) {
   return list.filter((other) => classesOverlapOnCalendar(item, other))
 }
 
-export function nowMinutes(date = new Date()) {
+export function nowMinutes(date = nowDate()) {
   return date.getHours() * 60 + date.getMinutes()
 }
 

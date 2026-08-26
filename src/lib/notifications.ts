@@ -1,3 +1,4 @@
+import { nowDate } from './clock'
 import { classMeetsOn, formatClassTime, nowMinutes, timeToMinutes } from './classes'
 import { addDays, formatHourLabel, todayKey } from './dates'
 import { deadlineHeadline, deadlineKindLabel } from './deadlines'
@@ -84,7 +85,7 @@ export function collectDueNotices(input: {
   tasks: Task[]
   settings: Settings
 }): Notice[] {
-  const now = input.now ?? new Date()
+  const now = input.now ?? nowDate()
   const today = todayKey(now)
   const minutes = nowMinutes(now)
   const prefix = input.uid

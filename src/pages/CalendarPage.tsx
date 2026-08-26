@@ -4,7 +4,9 @@ import { TaskRow } from '../components/TaskRow'
 import { useStore } from '../context/StoreContext'
 import { classMeetsOn, classesOnDay, formatClassTime } from '../lib/classes'
 import { deadlineDetail, deadlineHeadline } from '../lib/deadlines'
-import { monthGrid, parseKey, todayKey } from '../lib/dates'
+import { monthGrid, parseKey } from '../lib/dates'
+import { nowDate } from '../lib/clock'
+import { useTodayKey } from '../lib/now'
 import { eyebrowClass, titleClass } from '../lib/ui'
 
 type Marks = { tasks: number; classes: number; exams: number }
@@ -29,11 +31,14 @@ function DayDots({ marks, on }: { marks: Marks; on: boolean }) {
 
 export function CalendarPage() {
   const { tasks, classes, deadlines } = useStore()
-  const now = new Date()
-  const [cursor, setCursor] = useState({ year: now.getFullYear(), month: now.getMonth() })
-  const [selected, setSelected] = useState(todayKey())
+  const today = useTodayKey()
+  const [cursor, setCursor] = useState(() => {
+    const now = nowDate()
+    return { year: now.getFullYear(), month: now.getMonth() }
+  })
+  const [picked, setPicked] = useState<string | null>(null)
+  const selected = picked ?? today
   const days = useMemo(() => monthGrid(cursor.year, cursor.month), [cursor])
-  const today = todayKey()
 
   const marks = useMemo(() => {
     const map = new Map<string, Marks>()
@@ -103,8 +108,9 @@ export function CalendarPage() {
             type="button"
             className="min-h-11 rounded-2xl px-4 text-sm text-muted ring-1 ring-line"
             onClick={() => {
-              setCursor({ year: now.getFullYear(), month: now.getMonth() })
-              setSelected(today)
+              const stamp = nowDate()
+              setCursor({ year: stamp.getFullYear(), month: stamp.getMonth() })
+              setPicked(null)
             }}
           >
             Today
@@ -135,7 +141,7 @@ export function CalendarPage() {
             <button
               key={key}
               type="button"
-              onClick={() => setSelected(key)}
+              onClick={() => setPicked(key)}
               className={[
                 'min-h-16 rounded-2xl p-2 text-left text-sm transition',
                 selected === key ? 'bg-indigo-500 text-white shadow-md shadow-sky-500/25' : 'hover:bg-field',
