@@ -105,6 +105,32 @@ html.dark body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.tp-password:-webkit-autofill,
+.tp-password:-webkit-autofill:hover,
+.tp-password:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--fg);
+  caret-color: var(--fg);
+  box-shadow: 0 0 0 1000px var(--field) inset;
+  transition: background-color 9999s ease-out;
+}
+
+.tp-password-lock {
+  background: #0c2236;
+  color: #ffffff;
+}
+
+.tp-password-lock::placeholder {
+  color: rgb(255 255 255 / 0.4);
+}
+
+.tp-password-lock:-webkit-autofill,
+.tp-password-lock:-webkit-autofill:hover,
+.tp-password-lock:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+  caret-color: #ffffff;
+  box-shadow: 0 0 0 1000px #0c2236 inset;
+}
+
 .glass {
   background: var(--card);
   border: 1px solid var(--glass-border);

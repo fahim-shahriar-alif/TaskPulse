@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useLock } from '../context/LockContext'
 import { formatDayLabel } from '../lib/dates'
 import { useNow } from '../lib/now'
-import { fieldClass } from '../lib/ui'
+import { PasswordField } from './PasswordField'
 
 const OPEN_AT = 80
 
@@ -132,17 +132,18 @@ export function LockScreen() {
             onPointerDown={(event) => event.stopPropagation()}
           >
             <p className="text-center text-sm text-white/70">Enter your lock password</p>
-            <input
+            <PasswordField
               ref={inputRef}
-              type="password"
+              tone="lock"
               value={password}
+              name="taskypulse-lock"
               autoComplete="off"
               onChange={(event) => {
                 setPassword(event.target.value)
                 setError('')
               }}
               placeholder="Password"
-              className={`${fieldClass} w-full bg-black/30 text-white placeholder:text-white/35`}
+              className="tp-password-lock bg-[#0c2236] text-white placeholder:text-white/40"
             />
             {error ? <p className="text-center text-sm text-rose-300">{error}</p> : null}
             <button

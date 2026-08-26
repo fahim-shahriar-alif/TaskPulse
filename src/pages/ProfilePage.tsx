@@ -10,6 +10,7 @@ import {
 } from '../lib/notifications'
 import { LOCK_MIN_LENGTH } from '../lib/lock'
 import { fieldClass, eyebrowClass, titleClass } from '../lib/ui'
+import { PasswordField } from '../components/PasswordField'
 
 const LEAD_MINS = [5, 10, 15, 30] as const
 
@@ -286,30 +287,24 @@ function LockPasswordSection() {
         from the lock screen and sign back in.
       </p>
       {hasPassword ? (
-        <input
-          type="password"
+        <PasswordField
           value={current}
           autoComplete="off"
           onChange={(event) => setCurrent(event.target.value)}
           placeholder="Current lock password"
-          className={`${fieldClass} w-full`}
         />
       ) : null}
-      <input
-        type="password"
+      <PasswordField
         value={next}
         autoComplete="new-password"
         onChange={(event) => setNext(event.target.value)}
         placeholder={hasPassword ? 'New lock password' : 'Lock password'}
-        className={`${fieldClass} w-full`}
       />
-      <input
-        type="password"
+      <PasswordField
         value={confirm}
         autoComplete="new-password"
         onChange={(event) => setConfirm(event.target.value)}
         placeholder="Confirm"
-        className={`${fieldClass} w-full`}
       />
       {error ? <p className="text-sm text-rose-400">{error}</p> : null}
       {hint ? <p className="text-sm text-indigo-400">{hint}</p> : null}
