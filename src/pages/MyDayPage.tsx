@@ -150,15 +150,19 @@ export function MyDayPage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2 lg:items-stretch">
-        <div className="hero-card glass flex items-center rounded-3xl p-5">
-          <CompletionRing
-            value={pct}
-            label={
-              dueToday.length
-                ? `${doneCount} of ${dueToday.length} dated tasks done · ${focusToday}m focus`
-                : `No dated tasks yet · ${focusToday}m focus`
-            }
-          />
+        <div className="hero-card glass flex flex-col justify-center rounded-3xl p-5">
+          <h2 className="text-sm font-semibold text-fg">Today’s progress</h2>
+          <p className="mt-1 text-xs text-faint">Dated tasks and focus minutes for this day.</p>
+          <div className="mt-4">
+            <CompletionRing
+              value={pct}
+              label={
+                dueToday.length
+                  ? `${doneCount} of ${dueToday.length} dated tasks done · ${focusToday}m focus`
+                  : `No dated tasks yet · ${focusToday}m focus`
+              }
+            />
+          </div>
         </div>
         <div className="glass rounded-3xl p-5">
           <h2 className="text-sm font-semibold text-fg">Big 3</h2>
