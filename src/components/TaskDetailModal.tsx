@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { Check } from './Check'
 import { useStore } from '../context/StoreContext'
 import { boardColumn, STATUS_SIGNAL } from '../lib/status'
 import { fieldClass } from '../lib/ui'
@@ -177,10 +178,10 @@ function TaskDetailModal({ task, onClose }: { task: Task | null; onClose: () => 
           <div className="space-y-2">
             <p className="text-xs text-muted">Checklist</p>
             {task.subtasks.map((item) => (
-              <label key={item.id} className="flex min-h-10 items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
+              <div key={item.id} className="flex min-h-10 items-center gap-2 text-sm">
+                <Check
                   checked={item.done}
+                  size="sm"
                   onChange={() =>
                     void upsertTask({
                       ...task,
@@ -189,10 +190,10 @@ function TaskDetailModal({ task, onClose }: { task: Task | null; onClose: () => 
                       ),
                     })
                   }
-                  className="accent-indigo-400"
+                  label={`Mark ${item.title} done`}
                 />
                 <span className={item.done ? 'text-faint line-through' : 'text-fg'}>{item.title}</span>
-              </label>
+              </div>
             ))}
             <form
               className="flex gap-2"

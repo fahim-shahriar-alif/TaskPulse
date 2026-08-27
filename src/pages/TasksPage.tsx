@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { AddTaskModal } from '../components/AddTaskModal'
+import { Check } from '../components/Check'
 import { PriorityBadge } from '../components/PriorityBadge'
 import { StatusChip, TaskRow } from '../components/TaskRow'
 import { useTaskDetail } from '../components/TaskDetailModal'
@@ -177,16 +178,13 @@ export function TasksPage() {
                         if (dragging.current) return
                         openTask(task.id)
                       }}
-                      className="cursor-pointer rounded-2xl bg-field p-3 ring-1 ring-line"
+                      className="cursor-pointer rounded-2xl bg-field p-3 ring-1 ring-line transition active:scale-[0.99]"
                     >
                       <div className="flex items-start gap-2">
-                        <input
-                          type="checkbox"
+                        <Check
                           checked={boardColumn(task) === 'completed'}
-                          aria-label={`Mark ${task.title} done`}
-                          onClick={(event) => event.stopPropagation()}
                           onChange={() => void completeTask(task)}
-                          className="mt-0.5 h-5 w-5 shrink-0 accent-indigo-400"
+                          label={`Mark ${task.title} done`}
                         />
                         <p className={`min-w-0 flex-1 text-sm ${task.done ? 'text-faint line-through' : 'text-fg'}`}>
                           {task.title}

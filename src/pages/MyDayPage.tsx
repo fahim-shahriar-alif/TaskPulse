@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AddTaskModal } from '../components/AddTaskModal'
+import { Check } from '../components/Check'
 import { CompletionRing } from '../components/CompletionRing'
 import { DeadlineModal } from '../components/DeadlineModal'
 import { LiveClock } from '../components/LiveClock'
@@ -50,14 +51,12 @@ function ScheduleRow({
   onToggle: () => void
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-field px-4 py-2.5 ring-1 ring-line">
-      <input
-        type="checkbox"
+    <div className="flex items-start gap-3 rounded-2xl bg-field px-3 py-2.5 ring-1 ring-line transition active:scale-[0.99]">
+      <Check
         checked={slot.done}
-        aria-label={`Mark ${slot.activity || 'schedule block'} done`}
         onChange={onToggle}
-        className="mt-0.5 h-4 w-4 shrink-0"
-        style={{ accentColor: '#10b981' }}
+        label={`Mark ${slot.activity || 'schedule block'} done`}
+        size="sm"
       />
       <span className="min-w-0 flex-1">
         <span className={`font-mono block text-[11px] ${slot.done ? 'text-faint' : 'text-indigo-400'}`}>
@@ -69,7 +68,7 @@ function ScheduleRow({
         </span>
         {clash && !slot.done ? <span className="mt-0.5 block text-[11px] text-amber-500">{clash}</span> : null}
       </span>
-    </label>
+    </div>
   )
 }
 
@@ -125,25 +124,27 @@ export function MyDayPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-5">
-      <div>
-        <p className={eyebrowClass}>My Day</p>
-        <div className="mt-1 flex items-baseline justify-between gap-4">
-          <h1 className="min-w-0 text-3xl font-semibold text-fg">{formatDayLabel(now)}</h1>
-          <LiveClock className="shrink-0 text-2xl font-semibold text-fg sm:text-3xl" />
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className={eyebrowClass}>My Day</p>
+          <h1 className="mt-1 text-[1.65rem] font-semibold leading-[1.15] tracking-tight text-fg sm:text-3xl">
+            {formatDayLabel(now)}
+          </h1>
+          <p className="mt-1.5 text-sm text-muted">
+            {greeting(now)}, {firstName}.
+          </p>
         </div>
-        <p className="mt-2 text-sm text-muted">
-          {greeting(now)}, {firstName}.
-        </p>
+        <LiveClock className="mt-6 shrink-0 text-xl font-semibold text-indigo-400 sm:mt-7 sm:text-3xl sm:text-fg" />
       </div>
 
       <AddTaskModal open={addOpen} initialDueDate={today} onClose={() => setAddOpen(false)} />
       <DeadlineModal open={deadlineOpen} onClose={() => setDeadlineOpen(false)} />
 
-      <div className="kpi-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="kpi-grid grid grid-cols-2 gap-2.5 lg:grid-cols-4">
         {stats.map(([label, value]) => (
-          <div key={label} className="glass rounded-3xl p-4">
-            <p className="text-xs text-muted">{label}</p>
-            <p className="font-mono mt-1 text-2xl font-semibold text-fg">{value}</p>
+          <div key={label} className="rounded-2xl px-3.5 py-3 ring-1 ring-line sm:rounded-3xl sm:p-4">
+            <p className="text-[11px] font-medium text-muted sm:text-xs">{label}</p>
+            <p className="kpi-value font-mono mt-1 text-[1.65rem] font-semibold leading-none sm:text-2xl">{value}</p>
           </div>
         ))}
       </div>
@@ -301,17 +302,28 @@ export function MyDayPage() {
                 const done = Boolean(habit.completions[today])
                 const streak = habitStreak(habit.completions)
                 return (
-                  <button
+                  <div
                     key={habit.id}
-                    type="button"
-                    onClick={() => void upsertHabit(toggleHabitToday(habit))}
-                    className="flex min-h-11 w-full items-center justify-between rounded-2xl bg-field px-4 text-left ring-1 ring-line"
+                    className="flex min-h-12 w-full items-center gap-3 rounded-2xl bg-field px-3 text-left ring-1 ring-line transition active:scale-[0.99]"
                   >
-                    <span className={`text-sm ${done ? 'text-faint line-through' : 'text-fg'}`}>{habit.name}</span>
-                    <span className="font-mono text-xs text-faint">
-                      {done ? 'Done' : streak > 0 ? `${streak}d` : ''}
-                    </span>
-                  </button>
+                    <Check
+                      checked={done}
+                      onChange={() => void upsertHabit(toggleHabitToday(habit))}
+                      label={`Mark ${habit.name} ${done ? 'not done' : 'done'}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void upsertHabit(toggleHabitToday(habit))}
+                      className="flex min-h-12 min-w-0 flex-1 items-center justify-between gap-2 text-left touch-manipulation"
+                    >
+                      <span className={`min-w-0 truncate text-sm ${done ? 'text-faint line-through' : 'text-fg'}`}>
+                        {habit.name}
+                      </span>
+                      <span className="font-mono shrink-0 text-xs text-faint">
+                        {done ? 'Done' : streak > 0 ? `${streak}d` : ''}
+                      </span>
+                    </button>
+                  </div>
                 )
               })}
               {habits.length === 0 && <p className="text-sm text-muted">Add habits in the Habits tab.</p>}

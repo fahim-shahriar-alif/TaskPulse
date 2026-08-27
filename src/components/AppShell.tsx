@@ -162,8 +162,8 @@ export function AppShell() {
                 end={item.to === '/'}
                 className={({ isActive }) =>
                   [
-                    'flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-medium touch-manipulation',
-                    isActive ? 'text-indigo-400' : 'text-faint',
+                    'flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[11px] font-medium touch-manipulation',
+                    isActive ? 'bg-indigo-500/20 text-indigo-400' : 'text-faint',
                   ].join(' ')
                 }
               >

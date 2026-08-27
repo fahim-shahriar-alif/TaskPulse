@@ -199,37 +199,50 @@ html.dark .stat-grid > :nth-child(5n + 5) .stat-bar {
 }
 
 html.light .kpi-grid > :nth-child(4n + 1) {
-  background: #bae6fd;
+  background: #7dd3fc;
   border-color: transparent;
 }
 html.light .kpi-grid > :nth-child(4n + 2) {
-  background: #bbf7d0;
+  background: #6ee7b7;
   border-color: transparent;
 }
 html.light .kpi-grid > :nth-child(4n + 3) {
-  background: #fde68a;
+  background: #fcd34d;
   border-color: transparent;
 }
 html.light .kpi-grid > :nth-child(4n + 4) {
-  background: #ddd6fe;
+  background: #c4b5fd;
   border-color: transparent;
 }
 
 html.dark .kpi-grid > :nth-child(4n + 1) {
-  background: rgb(14 165 233 / 0.22);
-  border-color: transparent;
+  background: rgb(14 165 233 / 0.4);
+  box-shadow: inset 3px 0 0 #38bdf8;
 }
 html.dark .kpi-grid > :nth-child(4n + 2) {
-  background: rgb(16 185 129 / 0.2);
-  border-color: transparent;
+  background: rgb(16 185 129 / 0.36);
+  box-shadow: inset 3px 0 0 #34d399;
 }
 html.dark .kpi-grid > :nth-child(4n + 3) {
-  background: rgb(245 158 11 / 0.2);
-  border-color: transparent;
+  background: rgb(245 158 11 / 0.36);
+  box-shadow: inset 3px 0 0 #fbbf24;
 }
 html.dark .kpi-grid > :nth-child(4n + 4) {
-  background: rgb(139 92 246 / 0.24);
-  border-color: transparent;
+  background: rgb(139 92 246 / 0.4);
+  box-shadow: inset 3px 0 0 #a78bfa;
+}
+
+html.dark .kpi-grid > :nth-child(4n + 1) .kpi-value {
+  color: #7dd3fc;
+}
+html.dark .kpi-grid > :nth-child(4n + 2) .kpi-value {
+  color: #6ee7b7;
+}
+html.dark .kpi-grid > :nth-child(4n + 3) .kpi-value {
+  color: #fcd34d;
+}
+html.dark .kpi-grid > :nth-child(4n + 4) .kpi-value {
+  color: #c4b5fd;
 }
 
 html.light input[type='checkbox'],
