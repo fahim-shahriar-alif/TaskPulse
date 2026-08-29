@@ -5,6 +5,7 @@ import { Modal } from '../components/Modal'
 import { useStore } from '../context/StoreContext'
 import {
   REPEAT_OPTIONS,
+  UNIVERSITY_SLOTS,
   WEEKDAYS,
   classKind,
   classKindLabel,
@@ -12,7 +13,9 @@ import {
   emptyClass,
   formatClassTime,
   formatDays,
+  matchingUniversitySlot,
   overlappingClasses,
+  universitySlotLabel,
 } from '../lib/classes'
 import { notesForClass } from '../lib/classNotes'
 import { examsForClass, formatDaysLeft } from '../lib/deadlines'
@@ -201,6 +204,9 @@ export function ClassesPage() {
                       ...draft,
                       kind: option.id,
                       course: option.id === 'other' ? '' : draft.course,
+                      ...(option.id === 'university' && !matchingUniversitySlot(draft.from, draft.to)
+                        ? { from: UNIVERSITY_SLOTS[0].from, to: UNIVERSITY_SLOTS[0].to }
+                        : {}),
                     })
                   }
                   className={`min-h-10 rounded-full px-3 text-xs ${
@@ -253,26 +259,49 @@ export function ClassesPage() {
               })}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="text-xs text-muted">
-              From
-              <input
-                type="time"
-                value={draft.from}
-                onChange={(event) => setDraft({ ...draft, from: event.target.value })}
-                className={`${fieldClass} mt-1 w-full`}
-              />
-            </label>
-            <label className="text-xs text-muted">
-              To
-              <input
-                type="time"
-                value={draft.to}
-                onChange={(event) => setDraft({ ...draft, to: event.target.value })}
-                className={`${fieldClass} mt-1 w-full`}
-              />
-            </label>
-          </div>
+          {classKind(draft) === 'university' ? (
+            <div>
+              <p className="mb-2 text-xs text-muted">Period · 1.5 hours, 10 min break after each class</p>
+              <div className="flex flex-col gap-2">
+                {UNIVERSITY_SLOTS.map((slot) => {
+                  const on = draft.from === slot.from && draft.to === slot.to
+                  return (
+                    <button
+                      key={`${slot.from}-${slot.to}`}
+                      type="button"
+                      onClick={() => setDraft({ ...draft, from: slot.from, to: slot.to })}
+                      className={`min-h-11 rounded-2xl px-4 text-left text-sm ${
+                        on ? 'bg-indigo-500 text-white' : 'bg-field text-muted ring-1 ring-line'
+                      }`}
+                    >
+                      {universitySlotLabel(slot)}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-xs text-muted">
+                From
+                <input
+                  type="time"
+                  value={draft.from}
+                  onChange={(event) => setDraft({ ...draft, from: event.target.value })}
+                  className={`${fieldClass} mt-1 w-full`}
+                />
+              </label>
+              <label className="text-xs text-muted">
+                To
+                <input
+                  type="time"
+                  value={draft.to}
+                  onChange={(event) => setDraft({ ...draft, to: event.target.value })}
+                  className={`${fieldClass} mt-1 w-full`}
+                />
+              </label>
+            </div>
+          )}
           <div>
             <p className="mb-2 text-xs text-muted">Repeat</p>
             <div className="flex flex-wrap gap-2">

@@ -56,7 +56,8 @@ University timetable, or **Others** with a name you write.
 
 - Type: University or Others
 - University: name plus optional course code. Others: write the name yourself
-- Room, days of week, from–to time
+- University periods are fixed (1.5 hours, 10 min break, plus 6:30–9:30 pm). Others still pick any from–to time
+- Room and days of week
 - Repeat: weekly, every two weeks (anchor week), or once on a chosen date
 - Classes cannot share a day and overlapping times — save is blocked until the clash is gone
 - **Add exam** on a class card pre-selects that class (AI exam, ML exam, …)

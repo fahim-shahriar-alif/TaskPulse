@@ -18,6 +18,24 @@ export const REPEAT_OPTIONS: { id: RepeatRule; label: string }[] = [
   { id: 'once', label: 'Once' },
 ]
 
+export const UNIVERSITY_SLOTS: { from: string; to: string }[] = [
+  { from: '08:00', to: '09:30' },
+  { from: '09:40', to: '11:10' },
+  { from: '11:20', to: '12:50' },
+  { from: '13:00', to: '14:30' },
+  { from: '14:40', to: '16:10' },
+  { from: '16:20', to: '17:50' },
+  { from: '18:30', to: '21:30' },
+]
+
+export function universitySlotLabel(slot: { from: string; to: string }) {
+  return `${formatHourLabel(slot.from)} – ${formatHourLabel(slot.to)}`
+}
+
+export function matchingUniversitySlot(from: string, to: string) {
+  return UNIVERSITY_SLOTS.find((slot) => slot.from === from && slot.to === to) ?? null
+}
+
 export function weekdayFromKey(key: string): WeekDay {
   const js = parseKey(key).getDay()
   return WEEKDAYS.find((day) => day.js === js)?.id ?? 'sun'
@@ -51,8 +69,8 @@ export function normalizeClass(raw: Partial<UniClass> & Pick<UniClass, 'id' | 'n
     course: kind === 'other' ? '' : raw.course || '',
     location: raw.location || '',
     days,
-    from: raw.from || '09:00',
-    to: raw.to || '10:00',
+    from: raw.from || UNIVERSITY_SLOTS[0].from,
+    to: raw.to || UNIVERSITY_SLOTS[0].to,
     repeat: raw.repeat || 'weekly',
     startDate: raw.startDate || todayKey(),
     notes: raw.notes || '',
@@ -66,8 +84,8 @@ export function emptyClass(): UniClass {
     id: crypto.randomUUID(),
     name: '',
     days: [],
-    from: '09:00',
-    to: '10:30',
+    from: UNIVERSITY_SLOTS[0].from,
+    to: UNIVERSITY_SLOTS[0].to,
     repeat: 'weekly',
     startDate: todayKey(),
     createdAt: Date.now(),
