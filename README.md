@@ -32,11 +32,12 @@ Home screen for “what is happening today.”
 
 ### Tasks (`/tasks`)
 
-Opens on the **kanban** board (list view is still one tap away).
+Opens as a **date list** (kanban is one tap away).
 
-- Columns: **To do** (white signal), **In progress** (yellow), **Done** (green)
-- Drag a card between columns; Done also marks the task complete
-- List view: search, smart lists (all, today, tomorrow, week, inbox, overdue, done), list filter (Work / Study / Personal / Health), priority filter
+- Days are grouped: overdue, today, the next week, later dates, then no date
+- Change the date on a row, or drop a task onto another day, to move it
+- Kanban columns: **To do** (white signal), **In progress** (yellow), **Done** (green); drag a card between columns
+- Search, smart lists (all, today, tomorrow, week, inbox, overdue, done), list filter (Work / Study / Personal / Health), priority filter
 - Add a task with title, list, priority, due date, recurrence (none / daily / weekly / weekdays), tags (deep, quick, waiting, home), and notes
 - Tap any task (My Day, Tasks, Calendar, Matrix, Focus) to open the same **task sheet**: status, list, priority, due date, recurrence, tags, notes, subtasks, pomodoro count, delete
 

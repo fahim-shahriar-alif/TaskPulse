@@ -54,8 +54,8 @@ export function TaskRow({
         </div>
         {showStatus ? <StatusChip status={boardColumn(task)} /> : null}
         {showPriority ? <PriorityBadge priority={task.priority} /> : null}
-        {trailing}
       </button>
+      {trailing}
     </div>
   )
 }
