@@ -27,6 +27,7 @@ import { CLASS_KINDS } from '../types'
 export function ClassesPage() {
   const { classes, deadlines, classNotes, upsertClass, removeClass } = useStore()
   const [open, setOpen] = useState(false)
+  const [slotOpen, setSlotOpen] = useState(false)
   const [draft, setDraft] = useState<UniClass>(emptyClass)
   const [examClassId, setExamClassId] = useState<string | null>(null)
   const today = todayKey()
@@ -36,6 +37,7 @@ export function ClassesPage() {
 
   function edit(item?: UniClass) {
     setDraft(item ? { ...item } : emptyClass())
+    setSlotOpen(false)
     setOpen(true)
   }
 
@@ -182,7 +184,14 @@ export function ClassesPage() {
         </div>
       )}
 
-      <Modal open={open} title={draft.name ? 'Edit class' : 'New class'} onClose={() => setOpen(false)}>
+      <Modal
+        open={open}
+        title={draft.name ? 'Edit class' : 'New class'}
+        onClose={() => {
+          setSlotOpen(false)
+          setOpen(false)
+        }}
+      >
         <form
           className="space-y-3"
           onSubmit={(event) => {
@@ -261,24 +270,19 @@ export function ClassesPage() {
           </div>
           {classKind(draft) === 'university' ? (
             <div>
-              <p className="mb-2 text-xs text-muted">Period · 1.5 hours, 10 min break after each class</p>
-              <div className="flex flex-col gap-2">
-                {UNIVERSITY_SLOTS.map((slot) => {
-                  const on = draft.from === slot.from && draft.to === slot.to
-                  return (
-                    <button
-                      key={`${slot.from}-${slot.to}`}
-                      type="button"
-                      onClick={() => setDraft({ ...draft, from: slot.from, to: slot.to })}
-                      className={`min-h-11 rounded-2xl px-4 text-left text-sm ${
-                        on ? 'bg-indigo-500 text-white' : 'bg-field text-muted ring-1 ring-line'
-                      }`}
-                    >
-                      {universitySlotLabel(slot)}
-                    </button>
-                  )
-                })}
-              </div>
+              <p className="mb-2 text-xs text-muted">Period</p>
+              <button
+                type="button"
+                onClick={() => setSlotOpen(true)}
+                className="flex min-h-11 w-full items-center justify-between rounded-2xl bg-field px-4 text-left text-sm text-fg ring-1 ring-line"
+              >
+                <span>
+                  {matchingUniversitySlot(draft.from, draft.to)
+                    ? universitySlotLabel({ from: draft.from, to: draft.to })
+                    : 'Choose a period'}
+                </span>
+                <span className="text-faint">→</span>
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
@@ -346,6 +350,30 @@ export function ClassesPage() {
             Save class
           </button>
         </form>
+      </Modal>
+
+      <Modal open={slotOpen} title="Choose a period" stacked onClose={() => setSlotOpen(false)}>
+        <p className="mb-3 text-xs text-muted">1.5 hours, 10 min break after each class. Evening is 6:30–9:30 pm.</p>
+        <div className="space-y-2">
+          {UNIVERSITY_SLOTS.map((slot) => {
+            const on = draft.from === slot.from && draft.to === slot.to
+            return (
+              <button
+                key={`${slot.from}-${slot.to}`}
+                type="button"
+                onClick={() => {
+                  setDraft({ ...draft, from: slot.from, to: slot.to })
+                  setSlotOpen(false)
+                }}
+                className={`flex min-h-11 w-full items-center rounded-2xl px-4 text-left text-sm ${
+                  on ? 'bg-indigo-500 text-white' : 'bg-field text-muted ring-1 ring-line'
+                }`}
+              >
+                {universitySlotLabel(slot)}
+              </button>
+            )
+          })}
+        </div>
       </Modal>
 
       <DeadlineModal
