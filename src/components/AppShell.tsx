@@ -98,7 +98,6 @@ export function AppShell() {
             ))}
           </nav>
           <div className="space-y-3">
-            <p className="px-1 font-mono text-[10px] text-faint">⌘K search</p>
             <ProgressReportButton variant="sidebar" />
             <div className="rounded-2xl bg-field p-1 ring-1 ring-line">
               <div className="grid grid-cols-3">
