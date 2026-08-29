@@ -1,11 +1,11 @@
 import { FirebaseError } from 'firebase/app'
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { deleteObject, getDownloadURL, ref, uploadBytes, uploadBytesResumable } from 'firebase/storage'
 import { getFirebase } from './firebase'
 import { lecturePhotoBlob } from './photo'
 import type { ClassNote, ClassNoteKind } from '../types'
 
 const MAX_PDF_BYTES = 10 * 1024 * 1024
-const PDF_WAIT_MS = 90000
+const PDF_WAIT_MS = 15000
 
 const STORAGE_WAIT_MS = 8000
 const FIRESTORE_URL_MAX = 700_000
@@ -137,8 +137,11 @@ function pdfUploadMessage(err: unknown) {
     if (err.code === 'storage/unauthorized') {
       return 'Storage blocked that PDF. In Firebase, open Storage → Rules and publish the PDF rules.'
     }
-    if (err.code === 'storage/retry-limit-exceeded' || err.code === 'storage/canceled') {
+    if (err.code === 'storage/retry-limit-exceeded') {
       return 'Upload stopped. Try again on a better connection.'
+    }
+    if (err.code === 'storage/canceled') {
+      return 'Storage did not finish. Confirm Storage is on, then try a PDF under 5 MB.'
     }
     if (err.code === 'storage/quota-exceeded') {
       return 'Storage quota is full.'
@@ -157,15 +160,37 @@ async function storePdf(uid: string, classId: string, id: string, file: File) {
   }
   const fileRef = ref(firebase.storage, notePath(uid, classId, id, 'pdf'))
   try {
-    await withTimeout(
-      uploadBytes(fileRef, file, { contentType: 'application/pdf' }),
-      PDF_WAIT_MS,
-      'That PDF took too long.',
-    )
-    return await withTimeout(getDownloadURL(fileRef), 15000, 'That PDF took too long.')
+    return await uploadWithCancel(fileRef, file, 'application/pdf', PDF_WAIT_MS)
   } catch (err) {
     throw new Error(pdfUploadMessage(err))
   }
+}
+
+function uploadWithCancel(
+  fileRef: ReturnType<typeof ref>,
+  data: Blob,
+  contentType: string,
+  ms: number,
+) {
+  return new Promise<string>((resolve, reject) => {
+    const task = uploadBytesResumable(fileRef, data, { contentType })
+    const timer = window.setTimeout(() => {
+      task.cancel()
+      reject(new Error('That PDF took too long.'))
+    }, ms)
+    task.on(
+      'state_changed',
+      undefined,
+      (err) => {
+        window.clearTimeout(timer)
+        reject(err)
+      },
+      () => {
+        window.clearTimeout(timer)
+        getDownloadURL(fileRef).then(resolve, reject)
+      },
+    )
+  })
 }
 
 export async function buildClassNote(uid: string, classId: string, date: string, file: File): Promise<ClassNote> {

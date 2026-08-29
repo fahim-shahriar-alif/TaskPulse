@@ -187,7 +187,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
     setBusy(true)
     setError('')
     let settled = false
-    const waitMs = files.some((file) => isPdfFile(file)) ? 90000 : 25000
+    const waitMs = files.some((file) => isPdfFile(file)) ? 18000 : 25000
     const watchdog = window.setTimeout(() => {
       if (settled) return
       setBusy(false)
@@ -261,7 +261,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
             className="flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-indigo-500 text-sm font-medium text-white disabled:opacity-40"
           >
             <Camera className="h-4 w-4" />
-            {busy ? 'Saving…' : 'Camera'}
+            Camera
           </button>
           <button
             type="button"
@@ -282,6 +282,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
             PDF
           </button>
         </div>
+        {busy ? <p className="text-xs text-indigo-400">Uploading… stay on this page.</p> : null}
         {error ? <p className="text-xs text-rose-400">{error}</p> : null}
       </section>
 
