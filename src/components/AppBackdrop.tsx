@@ -11,7 +11,7 @@ export function AppBackdrop() {
       <img src={src} alt="" className="h-full w-full origin-center scale-125 object-cover blur-3xl" />
       <div
         className={`absolute inset-0 ${
-          theme === 'dark' ? 'bg-[#06101c]/75' : 'bg-[#e8f4fc]/90'
+          theme === 'dark' ? 'bg-[#06101c]/75' : 'bg-[#f6f1e8]/70'
         }`}
       />
     </div>

@@ -38,18 +38,18 @@ html[data-theme='dark'] {
 html.light,
 html[data-theme='light'] {
   color-scheme: light;
-  --canvas: #d9eefb;
-  --card: #ffffff;
-  --fg: #0f172a;
-  --muted: #475569;
-  --faint: #64748b;
-  --line: rgb(15 23 42 / 0.12);
-  --field: #f8fafc;
-  --overlay: rgb(15 23 42 / 0.36);
-  --glass-border: rgb(15 23 42 / 0.1);
-  --glow-a: rgb(14 165 233 / 0.35);
-  --glow-b: rgb(56 189 248 / 0.28);
-  --glow-c: rgb(165 180 252 / 0.28);
+  --canvas: #f3efe8;
+  --card: #fffdf9;
+  --fg: #1c1917;
+  --muted: #57534e;
+  --faint: #78716c;
+  --line: rgb(28 25 23 / 0.1);
+  --field: #f4f0e8;
+  --overlay: rgb(28 25 23 / 0.32);
+  --glass-border: rgb(28 25 23 / 0.08);
+  --glow-a: rgb(14 165 233 / 0.14);
+  --glow-b: rgb(251 191 36 / 0.12);
+  --glow-c: rgb(167 139 250 / 0.1);
 }
 
 /* Tailwind v4 keeps default indigo on :root inside @layer theme. Override in the same layer. */
@@ -69,9 +69,9 @@ html[data-theme='light'] {
 
   html.light,
   html[data-theme='light'] {
-    --color-indigo-400: #0ea5e9;
-    --color-peach: #dbeafe;
-    --color-line: rgb(15 23 42 / 0.12);
+    --color-indigo-400: #0284c7;
+    --color-peach: #f3e7d3;
+    --color-line: rgb(28 25 23 / 0.1);
   }
 
   html.dark,
@@ -168,10 +168,10 @@ html[data-theme='light'] .tp-password-lock:-webkit-autofill:focus {
 
 html.light .glass,
 html[data-theme='light'] .glass {
-  background: #ffffff;
-  border-color: rgb(15 23 42 / 0.1);
+  background: #fffdf9;
+  border-color: rgb(28 25 23 / 0.08);
   backdrop-filter: none;
-  box-shadow: 0 8px 24px -8px rgb(15 40 70 / 0.1);
+  box-shadow: 0 10px 28px -10px rgb(28 25 23 / 0.12);
 }
 
 html.dark .glass,
@@ -182,9 +182,9 @@ html[data-theme='dark'] .glass {
 
 html.light .hero-card,
 html[data-theme='light'] .hero-card {
-  background: #ffffff;
-  border-color: rgb(15 23 42 / 0.1);
-  box-shadow: 0 10px 28px -8px rgb(15 40 70 / 0.1);
+  background: #fffdf9;
+  border-color: rgb(28 25 23 / 0.08);
+  box-shadow: 0 12px 30px -10px rgb(28 25 23 / 0.12);
 }
 
 html.dark .hero-card,
@@ -196,7 +196,7 @@ html[data-theme='dark'] .hero-card {
 
 html.light .hero-card .stroke-line,
 html[data-theme='light'] .hero-card .stroke-line {
-  stroke: rgb(15 23 42 / 0.14);
+  stroke: rgb(28 25 23 / 0.12);
 }
 
 html.dark .hero-card .stroke-line,
@@ -226,20 +226,37 @@ html.dark .stat-grid > :nth-child(5n + 5) .stat-bar {
 }
 
 html.light .kpi-grid > :nth-child(4n + 1) {
-  background: #7dd3fc;
+  background: rgb(14 165 233 / 0.12);
   border-color: transparent;
+  box-shadow: inset 3px 0 0 #0ea5e9;
 }
 html.light .kpi-grid > :nth-child(4n + 2) {
-  background: #6ee7b7;
+  background: rgb(16 185 129 / 0.12);
   border-color: transparent;
+  box-shadow: inset 3px 0 0 #059669;
 }
 html.light .kpi-grid > :nth-child(4n + 3) {
-  background: #fcd34d;
+  background: rgb(245 158 11 / 0.14);
   border-color: transparent;
+  box-shadow: inset 3px 0 0 #d97706;
 }
 html.light .kpi-grid > :nth-child(4n + 4) {
-  background: #c4b5fd;
+  background: rgb(139 92 246 / 0.12);
   border-color: transparent;
+  box-shadow: inset 3px 0 0 #7c3aed;
+}
+
+html.light .kpi-grid > :nth-child(4n + 1) .kpi-value {
+  color: #0369a1;
+}
+html.light .kpi-grid > :nth-child(4n + 2) .kpi-value {
+  color: #047857;
+}
+html.light .kpi-grid > :nth-child(4n + 3) .kpi-value {
+  color: #b45309;
+}
+html.light .kpi-grid > :nth-child(4n + 4) .kpi-value {
+  color: #6d28d9;
 }
 
 html.dark .kpi-grid > :nth-child(4n + 1) {
@@ -290,10 +307,9 @@ html[data-theme='light'] .bg-app,
 html.light body,
 html[data-theme='light'] body {
   background:
-    radial-gradient(920px 560px at 100% -8%, rgb(14 165 233 / 0.35), transparent 52%),
-    radial-gradient(760px 480px at -8% 108%, rgb(56 189 248 / 0.28), transparent 50%),
-    radial-gradient(640px 400px at 78% 88%, rgb(167 139 250 / 0.22), transparent 46%),
-    linear-gradient(180deg, #cfe9f8 0%, #e7f5fd 40%, #f7fbff 100%);
+    radial-gradient(820px 480px at 100% -8%, rgb(14 165 233 / 0.12), transparent 52%),
+    radial-gradient(640px 400px at -6% 108%, rgb(251 191 36 / 0.1), transparent 50%),
+    linear-gradient(180deg, #f6f1e8 0%, #f3efe8 42%, #faf7f2 100%);
 }
 
 html.dark .bg-app,
@@ -344,7 +360,7 @@ html[data-theme='dark'] .bg-indigo-500\/15 {
 }
 html.light .ring-line,
 html[data-theme='light'] .ring-line {
-  --tw-ring-color: rgb(15 23 42 / 0.14);
+  --tw-ring-color: rgb(28 25 23 / 0.12);
 }
 html.light .ring-indigo-400\/30,
 html[data-theme='light'] .ring-indigo-400\/30,
@@ -366,7 +382,7 @@ html[data-theme='dark'] .accent-indigo-400 {
 }
 html.light .bg-peach,
 html[data-theme='light'] .bg-peach {
-  background-color: #e0f2fe;
+  background-color: #f3e7d3;
 }
 html.dark .bg-peach,
 html[data-theme='dark'] .bg-peach {
