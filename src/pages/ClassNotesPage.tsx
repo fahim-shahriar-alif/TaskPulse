@@ -5,7 +5,7 @@ import { CameraCapture, startCameraStream } from '../components/CameraCapture'
 import { useAuth } from '../context/AuthContext'
 import { useStore } from '../context/StoreContext'
 import { classKindLabel } from '../lib/classes'
-import { buildClassNote, groupClassNotesByDate, isPdfNote, notesForClass } from '../lib/classNotes'
+import { buildClassNote, groupClassNotesByDate, isPdfFile, isPdfNote, notesForClass } from '../lib/classNotes'
 import { nowDate } from '../lib/clock'
 import { formatDayLabel, parseKey, todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
@@ -187,11 +187,16 @@ function SubjectAlbum({ item }: { item: UniClass }) {
     setBusy(true)
     setError('')
     let settled = false
+    const waitMs = files.some((file) => isPdfFile(file)) ? 90000 : 25000
     const watchdog = window.setTimeout(() => {
       if (settled) return
       setBusy(false)
-      setError('That file took too long. Try a smaller photo or PDF.')
-    }, 20000)
+      setError(
+        files.some((file) => isPdfFile(file))
+          ? 'Storage is still not answering. Confirm Storage is enabled, then try a PDF under 5 MB.'
+          : 'That photo took too long. Try a smaller JPEG.',
+      )
+    }, waitMs)
     try {
       for (const file of files) {
         const note = await buildClassNote(uid, item.id, lectureDate, file)
