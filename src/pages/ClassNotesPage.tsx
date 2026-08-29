@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Camera, FileText, ImagePlus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Camera, ImagePlus, Trash2 } from 'lucide-react'
 import { CameraCapture, startCameraStream } from '../components/CameraCapture'
 import { useAuth } from '../context/AuthContext'
 import { useStore } from '../context/StoreContext'
 import { classKindLabel } from '../lib/classes'
-import { buildClassNote, groupClassNotesByDate, isPdfFile, isPdfNote, notesForClass } from '../lib/classNotes'
+import { buildClassNote, groupClassNotesByDate, notesForClass } from '../lib/classNotes'
 import { nowDate } from '../lib/clock'
 import { formatDayLabel, parseKey, todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
@@ -102,12 +102,8 @@ function SubjectIndex() {
               className="glass flex min-h-24 items-center gap-4 rounded-3xl p-4"
             >
               <div className="h-20 w-16 shrink-0 overflow-hidden rounded-2xl bg-field ring-1 ring-line">
-                {cover && shots[0] && !isPdfNote(shots[0]) ? (
+                {cover ? (
                   <img src={cover} alt="" className="h-full w-full object-cover" />
-                ) : shots[0] && isPdfNote(shots[0]) ? (
-                  <div className="grid h-full place-items-center text-indigo-400">
-                    <FileText className="h-6 w-6" />
-                  </div>
                 ) : (
                   <div className="grid h-full place-items-center text-[10px] text-faint">Empty</div>
                 )}
@@ -144,7 +140,6 @@ function SubjectAlbum({ item }: { item: UniClass }) {
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
   const libraryRef = useRef<HTMLInputElement>(null)
-  const pdfRef = useRef<HTMLInputElement>(null)
   const shots = notesForClass(classNotes, item.id)
   const groups = groupClassNotesByDate(shots)
   const coarsePointer = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
@@ -187,30 +182,24 @@ function SubjectAlbum({ item }: { item: UniClass }) {
     setBusy(true)
     setError('')
     let settled = false
-    const waitMs = files.some((file) => isPdfFile(file)) ? 18000 : 25000
     const watchdog = window.setTimeout(() => {
       if (settled) return
       setBusy(false)
-      setError(
-        files.some((file) => isPdfFile(file))
-          ? 'Storage is still not answering. Confirm Storage is enabled, then try a PDF under 5 MB.'
-          : 'That photo took too long. Try a smaller JPEG.',
-      )
-    }, waitMs)
+      setError('That photo took too long. Try a smaller JPEG, then tap Library again.')
+    }, 20000)
     try {
       for (const file of files) {
         const note = await buildClassNote(uid, item.id, lectureDate, file)
         await upsertClassNote(note)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save that file.')
+      setError(err instanceof Error ? err.message : 'Could not save that photo.')
     } finally {
       settled = true
       window.clearTimeout(watchdog)
       setBusy(false)
       if (cameraRef.current) cameraRef.current.value = ''
       if (libraryRef.current) libraryRef.current.value = ''
-      if (pdfRef.current) pdfRef.current.value = ''
     }
   }
 
@@ -240,7 +229,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
 
       <section className="glass space-y-3 rounded-3xl p-5">
         <h2 className="text-sm font-semibold text-fg">Add against a date</h2>
-        <p className="text-xs text-muted">Photos and PDFs go into {item.name}, filed under the lecture date you pick.</p>
+        <p className="text-xs text-muted">Photos go into {item.name}, filed under the lecture date you pick.</p>
         <label className="block">
           <span className="text-xs text-muted">Lecture date</span>
           <input
@@ -253,41 +242,31 @@ function SubjectAlbum({ item }: { item: UniClass }) {
             className={`${fieldClass} mt-1 w-full`}
           />
         </label>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div className="flex gap-2">
           <button
             type="button"
             disabled={busy}
             onClick={() => void openCamera()}
-            className="flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-indigo-500 text-sm font-medium text-white disabled:opacity-40"
+            className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-indigo-500 text-sm font-medium text-white disabled:opacity-40"
           >
             <Camera className="h-4 w-4" />
-            Camera
+            {busy ? 'Saving…' : 'Camera'}
           </button>
           <button
             type="button"
             disabled={busy}
             onClick={() => libraryRef.current?.click()}
-            className="flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-field text-sm text-fg ring-1 ring-line disabled:opacity-40"
+            className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-2xl bg-field text-sm text-fg ring-1 ring-line disabled:opacity-40"
           >
             <ImagePlus className="h-4 w-4" />
             Library
           </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => pdfRef.current?.click()}
-            className="col-span-2 flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-field text-sm text-fg ring-1 ring-line disabled:opacity-40 sm:col-span-1"
-          >
-            <FileText className="h-4 w-4" />
-            PDF
-          </button>
         </div>
-        {busy ? <p className="text-xs text-indigo-400">Uploading… stay on this page.</p> : null}
         {error ? <p className="text-xs text-rose-400">{error}</p> : null}
       </section>
 
       {shots.length === 0 ? (
-        <p className="text-sm text-muted">No pages in {item.name} yet. Add a photo or a PDF.</p>
+        <p className="text-sm text-muted">No pages in {item.name} yet. Add from camera or the photo library.</p>
       ) : (
         groups.map(([date, pages]) => (
           <section key={date} className="space-y-3">
@@ -295,18 +274,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {pages.map((shot) => (
                 <div key={shot.id} className="relative">
-                  {isPdfNote(shot) ? (
-                    <button
-                      type="button"
-                      onClick={() => window.open(shot.url, '_blank', 'noopener,noreferrer')}
-                      className="grid aspect-[3/4] w-full place-items-center gap-2 rounded-3xl bg-field px-3 text-center ring-1 ring-line"
-                    >
-                      <FileText className="h-8 w-8 text-indigo-400" />
-                      <span className="line-clamp-3 text-xs text-fg">{shot.name || 'PDF'}</span>
-                    </button>
-                  ) : (
-                    <PhotoThumb src={shot.url} onOpen={() => setPreview(shot)} />
-                  )}
+                  <PhotoThumb src={shot.url} onOpen={() => setPreview(shot)} />
                   <button
                     type="button"
                     onClick={() => void removeClassNote(shot)}
@@ -335,13 +303,6 @@ function SubjectAlbum({ item }: { item: UniClass }) {
         type="file"
         accept="image/*"
         multiple
-        className="sr-only"
-        onChange={(event) => void addFiles(event.target.files)}
-      />
-      <input
-        ref={pdfRef}
-        type="file"
-        accept="application/pdf,.pdf"
         className="sr-only"
         onChange={(event) => void addFiles(event.target.files)}
       />
