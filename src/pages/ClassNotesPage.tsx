@@ -5,7 +5,7 @@ import { CameraCapture, startCameraStream } from '../components/CameraCapture'
 import { useAuth } from '../context/AuthContext'
 import { useStore } from '../context/StoreContext'
 import { classKindLabel } from '../lib/classes'
-import { buildClassNote, groupClassNotesByDate, notesForClass } from '../lib/classNotes'
+import { buildClassNote, classNoteSaveError, groupClassNotesByDate, notesForClass } from '../lib/classNotes'
 import { nowDate } from '../lib/clock'
 import { formatDayLabel, parseKey, todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
@@ -193,7 +193,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
         await upsertClassNote(note)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save that photo.')
+      setError(classNoteSaveError(err))
     } finally {
       settled = true
       window.clearTimeout(watchdog)

@@ -82,7 +82,7 @@ export async function lecturePhotoBlob(file: File) {
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
   bitmap.close()
 
-  const maxBytes = 420_000
+  const maxBytes = 280_000
   let quality = 0.8
   let blob = await canvasBlob(canvas, quality)
   while (blob.size > maxBytes && quality > 0.4) {

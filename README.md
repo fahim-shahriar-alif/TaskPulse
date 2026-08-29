@@ -184,6 +184,7 @@ Typical subcollections:
 | `users/{uid}/days` | Per-date Big 3 + schedule slots (including done) |
 | `users/{uid}/sessions` | Focus sessions |
 | `users/{uid}/classes` | University classes |
+| `users/{uid}/classNotes` | Lecture photos (compressed JPEGs, one document per page) |
 | `users/{uid}/deadlines` | Exams / assignments (`classId`, syllabus, date, kind) |
 | `users/{uid}/settings/app` | Pomodoro lengths, reminder toggles (theme is **not** applied from the cloud) |
 
@@ -220,7 +221,7 @@ In the Firebase console:
 
 1. Enable **Authentication → Email/Password**
 2. Create a **Firestore** database
-3. Deploy `firestore.rules` so only `request.auth.uid == userId` can access `users/{userId}/{document=**}`
+3. Deploy `firestore.rules` so only `request.auth.uid == userId` can access `users/{userId}/{document=**}` (`firebase deploy --only firestore:rules,storage`). Paste `firestore.rules` only in **Firestore → Rules**, and `storage.rules` only in **Storage → Rules**.
 
 Restart `npm run dev` after changing `.env`.
 
