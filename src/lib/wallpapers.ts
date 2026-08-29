@@ -1,9 +1,7 @@
 export const WALLPAPERS = [
-  '/lock/lock-city-web.png',
-  '/lock/lock-street-web.png',
-  '/lock/lock-web-graphic.png',
-  '/lock/lock-skyline-4k.png',
-  '/lock/lock-rooftop-4k.png',
+  '/lock/lock-harbor.png',
+  '/lock/lock-ridge.png',
+  '/lock/lock-skyline.png',
 ] as const
 
 export const LOCK_QUOTES = [
@@ -31,7 +29,7 @@ function pick<T>(key: string, list: readonly T[]): T {
 }
 
 export function sessionWallpaper() {
-  return pick('tp-wallpaper', WALLPAPERS)
+  return pick('tp-wallpaper-v2', WALLPAPERS)
 }
 
 export function sessionQuote() {
