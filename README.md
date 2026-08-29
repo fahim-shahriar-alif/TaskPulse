@@ -62,7 +62,8 @@ University timetable, or **Others** with a name you write.
 - Classes cannot share a day and overlapping times — save is blocked until the clash is gone
 - **Add exam** on a class card pre-selects that class (AI exam, ML exam, …)
 - Upcoming exam dates for that class show on the card
-- Deleting a class also deletes its exams and lecture photos
+- Deleting a class also deletes its exams, lecture photos, and PDFs
+- Class notes can store photos or a PDF under 10 MB (PDF needs Firebase Storage)
 
 ### Exams (`/deadlines`)
 

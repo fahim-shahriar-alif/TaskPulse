@@ -1,7 +1,10 @@
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { getFirebase } from './firebase'
 import { lecturePhotoBlob } from './photo'
-import type { ClassNote } from '../types'
+import type { ClassNote, ClassNoteKind } from '../types'
+
+const MAX_PDF_BYTES = 10 * 1024 * 1024
+const PDF_WAIT_MS = 45000
 
 const STORAGE_WAIT_MS = 8000
 const FIRESTORE_URL_MAX = 700_000
@@ -42,12 +45,33 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string) {
   })
 }
 
+export function isPdfFile(file: File) {
+  return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+}
+
+export function isPdfNote(note: Pick<ClassNote, 'kind' | 'url' | 'name'>) {
+  if (note.kind === 'pdf') return true
+  if (note.kind === 'image') return false
+  const name = (note.name || note.url).toLowerCase()
+  return name.includes('.pdf') || note.url.startsWith('data:application/pdf')
+}
+
 export function normalizeClassNote(raw: Partial<ClassNote> & Pick<ClassNote, 'id'>): ClassNote {
+  const url = raw.url || ''
+  const name = raw.name || ''
+  const kind: ClassNoteKind =
+    raw.kind === 'pdf' || raw.kind === 'image'
+      ? raw.kind
+      : url.toLowerCase().includes('.pdf') || name.toLowerCase().endsWith('.pdf')
+        ? 'pdf'
+        : 'image'
   return {
     id: raw.id,
     classId: raw.classId || '',
     date: raw.date || '',
-    url: raw.url || '',
+    url,
+    kind,
+    name,
     createdAt: raw.createdAt || Date.now(),
   }
 }
@@ -72,8 +96,8 @@ export function groupClassNotesByDate(notes: ClassNote[]) {
   return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]))
 }
 
-function notePath(uid: string, classId: string, id: string) {
-  return `users/${uid}/subjects/${classId}/${id}.jpg`
+function notePath(uid: string, classId: string, id: string, ext = 'jpg') {
+  return `users/${uid}/subjects/${classId}/${id}.${ext}`
 }
 
 function legacyNotePath(uid: string, id: string) {
@@ -93,7 +117,7 @@ async function storeImage(uid: string, classId: string, id: string, blob: Blob) 
   const firebase = getFirebase()
   if (firebase?.storage && !shouldSkipStorage(uid)) {
     try {
-      const file = ref(firebase.storage, notePath(uid, classId, id))
+      const file = ref(firebase.storage, notePath(uid, classId, id, 'jpg'))
       await withTimeout(uploadBytes(file, blob, { contentType: 'image/jpeg' }), STORAGE_WAIT_MS, 'storage-timeout')
       return await withTimeout(getDownloadURL(file), STORAGE_WAIT_MS, 'storage-timeout')
     } catch {
@@ -107,8 +131,37 @@ async function storeImage(uid: string, classId: string, id: string, blob: Blob) 
   return url
 }
 
+async function storePdf(uid: string, classId: string, id: string, file: File) {
+  const firebase = getFirebase()
+  if (!firebase?.storage) {
+    throw new Error('PDFs need Firebase Storage. Photos still save without it.')
+  }
+  const fileRef = ref(firebase.storage, notePath(uid, classId, id, 'pdf'))
+  await withTimeout(
+    uploadBytes(fileRef, file, { contentType: 'application/pdf' }),
+    PDF_WAIT_MS,
+    'That PDF took too long. Try a smaller file.',
+  )
+  return await withTimeout(getDownloadURL(fileRef), 8000, 'That PDF took too long. Try a smaller file.')
+}
+
 export async function buildClassNote(uid: string, classId: string, date: string, file: File): Promise<ClassNote> {
   const id = crypto.randomUUID()
+  if (isPdfFile(file)) {
+    if (file.size > MAX_PDF_BYTES) {
+      throw new Error('Use a PDF under 10 MB.')
+    }
+    const url = await storePdf(uid, classId, id, file)
+    return {
+      id,
+      classId,
+      date,
+      url,
+      kind: 'pdf',
+      name: file.name || 'Notes.pdf',
+      createdAt: Date.now(),
+    }
+  }
   const blob = await withTimeout(lecturePhotoBlob(file), 12000, 'That photo took too long to process. Try a JPEG of one page.')
   const url = await storeImage(uid, classId, id, blob)
   return {
@@ -116,6 +169,8 @@ export async function buildClassNote(uid: string, classId: string, date: string,
     classId,
     date,
     url,
+    kind: 'image',
+    name: file.name || '',
     createdAt: Date.now(),
   }
 }
@@ -124,13 +179,18 @@ export async function deleteClassNoteFile(uid: string, note: ClassNote) {
   if (!note.url || note.url.startsWith('data:')) return
   const firebase = getFirebase()
   if (!firebase?.storage) return
+  const ext = isPdfNote(note) ? 'pdf' : 'jpg'
   try {
-    await deleteObject(ref(firebase.storage, notePath(uid, note.classId, note.id)))
+    await deleteObject(ref(firebase.storage, notePath(uid, note.classId, note.id, ext)))
   } catch {
     try {
-      await deleteObject(ref(firebase.storage, legacyNotePath(uid, note.id)))
+      await deleteObject(ref(firebase.storage, notePath(uid, note.classId, note.id, ext === 'pdf' ? 'jpg' : 'pdf')))
     } catch {
-      /* already gone */
+      try {
+        await deleteObject(ref(firebase.storage, legacyNotePath(uid, note.id)))
+      } catch {
+        /* already gone */
+      }
     }
   }
 }

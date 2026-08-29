@@ -85,11 +85,15 @@ export type UniClass = {
 
 export type DeadlineKind = 'exam' | 'assignment' | 'other'
 
+export type ClassNoteKind = 'image' | 'pdf'
+
 export type ClassNote = {
   id: string
   classId: string
   date: string
   url: string
+  kind: ClassNoteKind
+  name: string
   createdAt: number
 }
 
