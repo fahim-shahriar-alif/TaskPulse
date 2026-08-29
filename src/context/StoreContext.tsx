@@ -285,11 +285,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const removeClass = useCallback(
     async (id: string) => {
-      const related = classNotes.filter((item) => item.classId === id)
-      await Promise.all(related.map((item) => removeClassNote(item)))
+      const relatedNotes = classNotes.filter((item) => item.classId === id)
+      const relatedExams = deadlines.filter((item) => item.classId === id)
+      await Promise.all([
+        ...relatedNotes.map((item) => removeClassNote(item)),
+        ...relatedExams.map((item) => remove(['deadlines', item.id])),
+      ])
       await remove(['classes', id])
     },
-    [classNotes, remove, removeClassNote],
+    [classNotes, deadlines, remove, removeClassNote],
   )
 
   const value = useMemo<StoreContextValue>(
