@@ -13,6 +13,26 @@ import { UserAvatar } from './UserAvatar'
 const OPEN_AT = 80
 const LOCK_BG = '#05070d'
 
+function LockWeb() {
+  return (
+    <svg
+      className="lock-web-spin pointer-events-none absolute inset-x-0 top-[-18%] h-[70%] w-full opacity-40"
+      viewBox="0 0 100 100"
+      aria-hidden
+    >
+      <g className="lock-web-pulse" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="0.3">
+        {['14', '30', '46', '64'].map((r) => (
+          <ellipse key={r} cx="50" cy="0" rx={r} ry={Number(r) * 0.7} />
+        ))}
+        {Array.from({ length: 10 }, (_, i) => {
+          const a = ((i * 18 - 90) * Math.PI) / 180
+          return <line key={i} x1="50" y1="0" x2={50 + Math.cos(a) * 88} y2={Math.sin(a) * 72} />
+        })}
+      </g>
+    </svg>
+  )
+}
+
 export function LockScreen() {
   const { user, logout } = useAuth()
   const { settings } = useStore()
@@ -90,7 +110,7 @@ export function LockScreen() {
     }
   }
 
-  const lift = sheet ? 48 : drag
+  const lift = sheet ? 80 : drag
 
   const screen = (
     <div
@@ -109,56 +129,47 @@ export function LockScreen() {
         alt=""
         className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-center"
       />
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-black/55 via-black/25 to-black/75" />
-
-      <header
-        className="relative z-[2] px-6 pt-[max(3.25rem,env(safe-area-inset-top))] text-center transition-transform duration-200"
-        style={{ transform: `translateY(${-lift * 0.2}px)` }}
+      <LockWeb />
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-black/40 via-black/20 to-black/65" />
+      <div
+        className="relative z-[2] flex flex-1 flex-col items-center justify-center px-6 drop-shadow-[0_2px_16px_rgba(0,0,0,0.85)] transition-transform duration-200"
+        style={{ transform: `translateY(${-lift * 0.35}px)` }}
       >
-        <time
-          dateTime={now.toISOString()}
-          className="block font-mono text-[clamp(4.5rem,18vw,7.5rem)] font-semibold leading-none tabular-nums tracking-tight"
-        >
+        <time dateTime={now.toISOString()} className="font-mono text-7xl font-semibold tabular-nums tracking-tight sm:text-8xl">
           {time}
         </time>
         <p className="mt-3 text-lg text-white/70">{formatDayLabel(now)}</p>
-      </header>
+        <blockquote className="mt-8 max-w-md px-2 text-center">
+          <p className="text-base leading-relaxed text-white/85 italic sm:text-lg">“{quote.text}”</p>
+          {quote.by ? <footer className="mt-2 text-sm text-white/45">— {quote.by}</footer> : null}
+        </blockquote>
+        <UserAvatar
+          photo={settings.photo}
+          name={name}
+          size="xl"
+          className="mt-10 ring-1 ring-white/20"
+        />
+        <p className="mt-3 text-lg font-medium">{name}</p>
+        {user?.email ? <p className="mt-1 text-sm text-white/50">{user.email}</p> : null}
+      </div>
 
-      {!sheet ? (
-        <div className="relative z-[2] mt-auto px-8 pb-4 text-center">
-          <blockquote>
-            <p className="text-base leading-relaxed text-white/80 italic sm:text-lg">“{quote.text}”</p>
-            {quote.by ? <footer className="mt-2 text-sm text-white/40">— {quote.by}</footer> : null}
-          </blockquote>
-        </div>
-      ) : null}
-
-      <div className="relative z-[2] mt-auto">
+      <div className="relative z-[2] pb-[max(2rem,env(safe-area-inset-bottom))]">
         {!sheet ? (
-          <div className="flex flex-col items-center pb-[max(2rem,env(safe-area-inset-bottom))]">
-            <UserAvatar photo={settings.photo} name={name} size="xl" className="ring-1 ring-white/20" />
-            <p className="mt-3 text-lg font-medium">{name}</p>
-            {user?.email ? <p className="mt-1 text-sm text-white/50">{user.email}</p> : null}
-            <button
-              type="button"
-              className="mt-8 flex flex-col items-center gap-1 text-white/55"
-              onClick={() => setSheet(true)}
-              onPointerDown={(event) => event.stopPropagation()}
-            >
-              <ChevronUp className="h-7 w-7 animate-bounce" />
-              <span className="text-sm">Slide up to unlock</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            className="mx-auto flex flex-col items-center gap-1 pb-8 text-white/55"
+            onClick={() => setSheet(true)}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <ChevronUp className="h-7 w-7 animate-bounce" />
+            <span className="text-sm">Slide up to unlock</span>
+          </button>
         ) : (
           <form
-            className="flex min-h-[55dvh] w-full flex-col justify-end space-y-3 bg-black/55 px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8 backdrop-blur-2xl"
+            className="mx-auto w-full max-w-sm touch-auto space-y-3 rounded-t-3xl bg-black/45 px-5 pb-6 pt-5 ring-1 ring-white/15 backdrop-blur-xl"
             onSubmit={(event) => void submit(event)}
             onPointerDown={(event) => event.stopPropagation()}
           >
-            <div className="mb-2 flex flex-col items-center">
-              <UserAvatar photo={settings.photo} name={name} size="lg" className="ring-1 ring-white/20" />
-              <p className="mt-3 text-base font-medium">{name}</p>
-            </div>
             <p className="text-center text-sm text-white/70">Enter your lock password</p>
             <PasswordField
               ref={inputRef}
@@ -180,17 +191,6 @@ export function LockScreen() {
               className="min-h-12 w-full rounded-2xl bg-indigo-500 text-sm font-medium text-white disabled:opacity-40"
             >
               {busy ? 'Unlocking…' : 'Unlock'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSheet(false)
-                setPassword('')
-                setError('')
-              }}
-              className="min-h-11 w-full text-sm text-white/45 hover:text-white/80"
-            >
-              Cancel
             </button>
             <button
               type="button"
