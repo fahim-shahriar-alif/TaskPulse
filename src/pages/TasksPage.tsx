@@ -76,7 +76,7 @@ export function TasksPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
+    <div className="w-full space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className={eyebrowClass}>Lists</p>

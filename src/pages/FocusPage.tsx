@@ -105,7 +105,7 @@ export function FocusPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-5 text-center">
+    <div className="w-full space-y-5 text-center">
       <div>
         <p className={eyebrowClass}>Focus</p>
         <h1 className={titleClass}>{label}</h1>

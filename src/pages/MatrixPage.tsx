@@ -27,7 +27,7 @@ export function MatrixPage() {
   const important = (task: Task) => task.priority === 'high'
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
+    <div className="w-full space-y-5">
       <div>
         <p className={eyebrowClass}>Pro</p>
         <h1 className={titleClass}>Eisenhower matrix</h1>

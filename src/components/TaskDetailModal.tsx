@@ -60,9 +60,8 @@ function TaskDetailModal({ task, onClose }: { task: Task | null; onClose: () => 
   }
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center p-4 sm:items-center">
-      <button type="button" className="absolute inset-0 bg-overlay" aria-label="Close" onClick={onClose} />
-      <div className="glass relative max-h-[90dvh] w-full max-w-lg overflow-auto rounded-3xl p-5">
+    <div className="fixed inset-0 z-[70]">
+      <div className="glass relative flex h-dvh w-full flex-col overflow-auto rounded-none p-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))]">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-fg">Task details</h2>
           <button type="button" onClick={onClose} className="min-h-11 rounded-xl px-3 text-sm text-muted hover:text-fg">

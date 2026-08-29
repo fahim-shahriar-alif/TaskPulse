@@ -11,14 +11,8 @@ type ModalProps = {
 export function Modal({ open, title, children, onClose, stacked = false }: ModalProps) {
   if (!open) return null
   return (
-    <div className={`fixed inset-0 flex items-end justify-center p-4 sm:items-center ${stacked ? 'z-[60]' : 'z-50'}`}>
-      <button
-        type="button"
-        className="absolute inset-0 bg-overlay"
-        aria-label="Close dialog"
-        onClick={onClose}
-      />
-      <div className="glass relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-3xl p-5">
+    <div className={`fixed inset-0 ${stacked ? 'z-[60]' : 'z-50'}`}>
+      <div className="glass relative flex h-dvh w-full flex-col overflow-y-auto rounded-none p-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))]">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-fg">{title}</h2>
           <button

@@ -14,8 +14,8 @@ export function AuthScreen({ title, subtitle, children }: AuthScreenProps) {
   const { theme, toggleTheme } = useTheme()
 
   return (
-    <div className="bg-app flex min-h-dvh items-center justify-center px-4">
-      <section className="glass relative w-full max-w-md rounded-3xl p-8">
+    <div className="bg-app flex min-h-dvh flex-col px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]">
+      <section className="relative flex min-h-0 w-full flex-1 flex-col justify-center py-6">
         <button
           type="button"
           onClick={toggleTheme}

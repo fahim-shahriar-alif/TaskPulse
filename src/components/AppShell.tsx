@@ -75,7 +75,7 @@ export function AppShell() {
       <div className="relative z-10" inert={locked}>
       <CommandPalette />
       <NotificationWatch />
-      <div className="mx-auto flex min-h-dvh max-w-7xl">
+      <div className="flex min-h-dvh w-full">
         <aside className="glass sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-y-0 border-l-0 p-5 lg:flex">
           <div className="mb-8 flex items-center gap-3 px-1">
             <img src="/logo.png" alt="" className="h-10 w-10 rounded-2xl" />

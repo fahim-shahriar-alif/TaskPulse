@@ -52,7 +52,7 @@ export function ClassNotesPage() {
   const item = classes.find((entry) => entry.id === classId)
   if (classId && !item) {
     return (
-      <div className="mx-auto max-w-3xl space-y-4">
+      <div className="w-full space-y-4">
         <p className="text-sm text-muted">That subject is gone.</p>
         <Link to="/class-notes" className="text-sm text-indigo-400">
           Back to Class notes
@@ -76,7 +76,7 @@ function SubjectIndex() {
   )
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
+    <div className="w-full space-y-5">
       <div>
         <p className={eyebrowClass}>Library</p>
         <h1 className={titleClass}>Class notes</h1>
@@ -209,7 +209,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
+    <div className="w-full space-y-5">
       <div>
         <button
           type="button"
@@ -320,12 +320,12 @@ function SubjectAlbum({ item }: { item: UniClass }) {
       ) : null}
 
       {preview ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button type="button" className="absolute inset-0 bg-black/80" aria-label="Close photo" onClick={() => setPreview(null)} />
-          <div className="relative max-h-full max-w-full">
-            <img src={preview.url} alt="" className="max-h-[90dvh] max-w-full rounded-2xl object-contain" />
-            <p className="mt-2 text-center text-xs text-white/70">{formatDayLabel(parseKey(preview.date))}</p>
-          </div>
+        <div className="fixed inset-0 z-50 bg-black">
+          <button type="button" className="absolute inset-0" aria-label="Close photo" onClick={() => setPreview(null)} />
+          <img src={preview.url} alt="" className="relative h-full w-full object-contain" />
+          <p className="pointer-events-none absolute inset-x-0 bottom-6 text-center text-xs text-white/70">
+            {formatDayLabel(parseKey(preview.date))}
+          </p>
         </div>
       ) : null}
     </div>

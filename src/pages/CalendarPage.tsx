@@ -87,7 +87,7 @@ export function CalendarPage() {
   })
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
+    <div className="w-full space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className={eyebrowClass}>Pro</p>

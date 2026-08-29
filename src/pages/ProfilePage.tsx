@@ -69,7 +69,7 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-5">
+    <div className="w-full space-y-5">
       <div>
         <p className={eyebrowClass}>Account</p>
         <h1 className={titleClass}>Profile</h1>

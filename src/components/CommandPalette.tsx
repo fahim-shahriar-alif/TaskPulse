@@ -76,9 +76,14 @@ export function CommandPalette() {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[15vh]">
-      <button type="button" className="absolute inset-0 bg-overlay" aria-label="Close search" onClick={() => setOpen(false)} />
-      <div className="glass relative w-full max-w-lg rounded-3xl p-3">
+    <div className="fixed inset-0 z-50">
+      <div className="glass relative flex h-dvh w-full flex-col rounded-none p-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-semibold text-fg">Search</p>
+          <button type="button" onClick={() => setOpen(false)} className="min-h-11 px-3 text-sm text-muted">
+            Close
+          </button>
+        </div>
         <input
           autoFocus
           value={query}
@@ -86,7 +91,7 @@ export function CommandPalette() {
           placeholder="Search tasks, notes, habits, classes, exams"
           className={fieldClass + ' min-h-12 w-full'}
         />
-        <div className="mt-2 max-h-72 overflow-auto">
+        <div className="mt-2 min-h-0 flex-1 overflow-auto">
           {results.map((item) => (
             <button
               key={item.id}
