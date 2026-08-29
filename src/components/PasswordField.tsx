@@ -11,7 +11,10 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(fu
   ref,
 ) {
   const [visible, setVisible] = useState(false)
-  const eye = tone === 'lock' ? 'text-white/55 hover:text-white' : 'text-muted hover:text-fg'
+  const eye =
+    tone === 'lock'
+      ? 'text-slate-500 hover:text-slate-800 dark:text-white/55 dark:hover:text-white'
+      : 'text-muted hover:text-fg'
 
   return (
     <div className="relative">

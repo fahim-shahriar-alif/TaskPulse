@@ -182,7 +182,7 @@ export function LockScreen() {
                 setError('')
               }}
               placeholder="Password"
-              className="tp-password-lock bg-[#0c2236] text-white placeholder:text-white/40"
+              className="tp-password-lock"
             />
             {error ? <p className="text-center text-sm text-rose-300">{error}</p> : null}
             <button

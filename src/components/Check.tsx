@@ -22,7 +22,7 @@ export function Check({ checked, onChange, label, size = 'md' }: CheckProps) {
         onChange()
       }}
       className={`grid shrink-0 place-items-center ring-2 transition duration-200 ease-out touch-manipulation active:scale-90 ${box} ${
-        checked ? 'bg-emerald-500 text-white ring-emerald-400/90' : 'bg-field ring-sky-400/80'
+        checked ? 'bg-emerald-500 text-white ring-emerald-400/90' : 'bg-white ring-sky-500/70 dark:bg-field dark:ring-sky-400/80'
       }`}
     >
       <CheckIcon
