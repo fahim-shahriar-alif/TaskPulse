@@ -1,6 +1,6 @@
 import { addDays, formatHourLabel, parseKey, todayKey } from './dates'
 import { nowDate } from './clock'
-import type { RepeatRule, UniClass, WeekDay } from '../types'
+import type { ClassKind, RepeatRule, UniClass, WeekDay } from '../types'
 
 export const WEEKDAYS: { id: WeekDay; label: string; js: number }[] = [
   { id: 'sat', label: 'Sat', js: 6 },
@@ -34,12 +34,21 @@ export function formatClassTime(item: UniClass) {
   return `${formatHourLabel(item.from)} – ${formatHourLabel(item.to)}`
 }
 
+export function classKind(item: Pick<UniClass, 'kind'>): ClassKind {
+  return item.kind === 'other' ? 'other' : 'university'
+}
+
+export function classKindLabel(item: Pick<UniClass, 'kind'>) {
+  return classKind(item) === 'other' ? 'Others' : 'University'
+}
+
 export function normalizeClass(raw: Partial<UniClass> & Pick<UniClass, 'id' | 'name'>): UniClass {
   const days = Array.isArray(raw.days) ? raw.days.filter((day) => WEEKDAYS.some((item) => item.id === day)) : []
+  const kind = raw.kind === 'other' ? 'other' : 'university'
   return {
     id: raw.id,
     name: raw.name,
-    course: raw.course || '',
+    course: kind === 'other' ? '' : raw.course || '',
     location: raw.location || '',
     days,
     from: raw.from || '09:00',
@@ -47,6 +56,7 @@ export function normalizeClass(raw: Partial<UniClass> & Pick<UniClass, 'id' | 'n
     repeat: raw.repeat || 'weekly',
     startDate: raw.startDate || todayKey(),
     notes: raw.notes || '',
+    kind,
     createdAt: raw.createdAt || Date.now(),
   }
 }

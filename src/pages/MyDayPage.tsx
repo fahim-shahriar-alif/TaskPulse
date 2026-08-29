@@ -9,6 +9,7 @@ import { TaskRow } from '../components/TaskRow'
 import { useAuth } from '../context/AuthContext'
 import { toggleHabitToday, useStore } from '../context/StoreContext'
 import {
+  classKindLabel,
   classMoment,
   classesOnDay,
   formatClassCountdown,
@@ -352,7 +353,7 @@ export function MyDayPage() {
               </Link>,
             )}
             {todayClasses.length === 0 ? (
-              <p className="text-sm text-muted">No university classes today.</p>
+              <p className="text-sm text-muted">Nothing on the timetable today.</p>
             ) : (
               <div className="space-y-2">
                 {todayClasses.map((item) => {
@@ -378,6 +379,7 @@ export function MyDayPage() {
                         ) : null}
                       </div>
                       <p className="mt-1 text-sm font-medium text-fg">{item.name}</p>
+                      <p className="text-[11px] text-faint">{classKindLabel(item)}</p>
                       {item.location ? <p className="text-xs text-muted">{item.location}</p> : null}
                       {overnight ? (
                         <p className="mt-1 text-[11px] text-muted">Runs past midnight — check the end time.</p>

@@ -66,6 +66,7 @@ export type FocusSession = {
 
 export type RepeatRule = 'weekly' | 'biweekly' | 'once'
 export type WeekDay = 'sat' | 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri'
+export type ClassKind = 'university' | 'other'
 
 export type UniClass = {
   id: string
@@ -78,6 +79,7 @@ export type UniClass = {
   repeat: RepeatRule
   startDate: string
   notes: string
+  kind: ClassKind
   createdAt: number
 }
 
@@ -127,6 +129,10 @@ export const DEADLINE_KINDS: { id: DeadlineKind; label: string }[] = [
   { id: 'exam', label: 'Exam' },
   { id: 'assignment', label: 'Assignment' },
   { id: 'other', label: 'Deadline' },
+]
+export const CLASS_KINDS: { id: ClassKind; label: string }[] = [
+  { id: 'university', label: 'University' },
+  { id: 'other', label: 'Others' },
 ]
 
 export const DEFAULT_SETTINGS: Settings = {

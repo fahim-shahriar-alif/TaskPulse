@@ -6,6 +6,8 @@ import { useStore } from '../context/StoreContext'
 import {
   REPEAT_OPTIONS,
   WEEKDAYS,
+  classKind,
+  classKindLabel,
   classMeetsOn,
   emptyClass,
   formatClassTime,
@@ -17,6 +19,7 @@ import { examsForClass, formatDaysLeft } from '../lib/deadlines'
 import { todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
 import type { UniClass, WeekDay } from '../types'
+import { CLASS_KINDS } from '../types'
 
 export function ClassesPage() {
   const { classes, deadlines, classNotes, upsertClass, removeClass } = useStore()
@@ -44,9 +47,11 @@ export function ClassesPage() {
     <div className="mx-auto max-w-4xl space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className={eyebrowClass}>University</p>
+          <p className={eyebrowClass}>Timetable</p>
           <h1 className={titleClass}>Classes</h1>
-          <p className="mt-2 text-sm text-muted">Pick days, set from–to times, and repeat weekly or every two weeks.</p>
+          <p className="mt-2 text-sm text-muted">
+            University, or Others with a name you write. Then pick days and from–to times.
+          </p>
         </div>
         <button
           type="button"
@@ -75,6 +80,7 @@ export function ClassesPage() {
                 >
                   <p className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</p>
                   <p className="mt-1 text-sm font-medium text-fg">{item.name}</p>
+                  <p className="mt-0.5 text-[11px] text-faint">{classKindLabel(item)}</p>
                   {item.location ? <p className="text-xs text-muted">{item.location}</p> : null}
                   {clash.length > 0 ? (
                     <p className="mt-1 text-[11px] text-amber-500">
@@ -110,7 +116,10 @@ export function ClassesPage() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-fg">{item.name}</h2>
-                {item.course ? <p className="text-sm text-muted">{item.course}</p> : null}
+                <p className="mt-0.5 text-[11px] font-medium text-indigo-400">{classKindLabel(item)}</p>
+                {item.course && classKind(item) === 'university' ? (
+                  <p className="text-sm text-muted">{item.course}</p>
+                ) : null}
               </div>
               <button type="button" onClick={() => void removeClass(item.id)} className="text-xs text-rose-400">
                 Delete
@@ -166,7 +175,7 @@ export function ClassesPage() {
 
       {classes.length === 0 && (
         <div className="glass rounded-3xl p-6 text-center">
-          <p className="text-sm text-muted">No classes yet. Add a university class with its days and time.</p>
+          <p className="text-sm text-muted">No classes yet. Add a university class or write an Others name.</p>
         </div>
       )}
 
@@ -180,19 +189,44 @@ export function ClassesPage() {
             setOpen(false)
           }}
         >
+          <div>
+            <p className="mb-2 text-xs text-muted">Type</p>
+            <div className="flex flex-wrap gap-2">
+              {CLASS_KINDS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() =>
+                    setDraft({
+                      ...draft,
+                      kind: option.id,
+                      course: option.id === 'other' ? '' : draft.course,
+                    })
+                  }
+                  className={`min-h-10 rounded-full px-3 text-xs ${
+                    classKind(draft) === option.id ? 'bg-indigo-500 text-white' : 'bg-field text-muted ring-1 ring-line'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <input
             value={draft.name}
             onChange={(event) => setDraft({ ...draft, name: event.target.value })}
-            placeholder="Class name"
+            placeholder={classKind(draft) === 'other' ? 'Write the name' : 'Class name'}
             className={`${fieldClass} w-full`}
             required
           />
-          <input
-            value={draft.course}
-            onChange={(event) => setDraft({ ...draft, course: event.target.value })}
-            placeholder="Course code (optional)"
-            className={`${fieldClass} w-full`}
-          />
+          {classKind(draft) === 'university' ? (
+            <input
+              value={draft.course}
+              onChange={(event) => setDraft({ ...draft, course: event.target.value })}
+              placeholder="Course code (optional)"
+              className={`${fieldClass} w-full`}
+            />
+          ) : null}
           <input
             value={draft.location}
             onChange={(event) => setDraft({ ...draft, location: event.target.value })}

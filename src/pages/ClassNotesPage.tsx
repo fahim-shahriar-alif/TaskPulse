@@ -4,6 +4,7 @@ import { ArrowLeft, Camera, ImagePlus, Trash2 } from 'lucide-react'
 import { CameraCapture, startCameraStream } from '../components/CameraCapture'
 import { useAuth } from '../context/AuthContext'
 import { useStore } from '../context/StoreContext'
+import { classKindLabel } from '../lib/classes'
 import { buildClassNote, groupClassNotesByDate, notesForClass } from '../lib/classNotes'
 import { nowDate } from '../lib/clock'
 import { formatDayLabel, parseKey, todayKey } from '../lib/dates'
@@ -109,6 +110,7 @@ function SubjectIndex() {
               </div>
               <span className="min-w-0 flex-1">
                 <span className="block text-base font-semibold text-fg">{item.name}</span>
+                <span className="block text-[11px] text-indigo-400">{classKindLabel(item)}</span>
                 {item.course ? <span className="block text-xs text-muted">{item.course}</span> : null}
                 <span className="mt-1 block text-xs text-faint">
                   {count

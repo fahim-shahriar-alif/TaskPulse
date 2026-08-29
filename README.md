@@ -52,9 +52,11 @@ One month for tasks, classes, and exams together.
 
 ### Classes (`/classes`)
 
-University timetable.
+University timetable, or **Others** with a name you write.
 
-- Name, optional course code, room, days of week, from–to time
+- Type: University or Others
+- University: name plus optional course code. Others: write the name yourself
+- Room, days of week, from–to time
 - Repeat: weekly, every two weeks (anchor week), or once on a chosen date
 - Classes cannot share a day and overlapping times — save is blocked until the clash is gone
 - **Add exam** on a class card pre-selects that class (AI exam, ML exam, …)

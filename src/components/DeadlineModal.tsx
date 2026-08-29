@@ -63,6 +63,7 @@ export function DeadlineModal({
                 <option key={item.id} value={item.id}>
                   {item.name}
                   {item.course ? ` (${item.course})` : ''}
+                  {item.kind === 'other' ? ' · Others' : ''}
                 </option>
               ))}
             </select>
