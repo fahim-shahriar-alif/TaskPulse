@@ -32,7 +32,8 @@ export function useTaskDetail() {
 }
 
 function TaskDetailModal({ task, onClose }: { task: Task | null; onClose: () => void }) {
-  const { upsertTask, removeTask, completeTask } = useStore()
+  const { classes, upsertTask, removeTask, completeTask } = useStore()
+  const sorted = [...classes].sort((a, b) => a.name.localeCompare(b.name))
   const [sub, setSub] = useState('')
 
   useEffect(() => {
@@ -134,6 +135,22 @@ function TaskDetailModal({ task, onClose }: { task: Task | null; onClose: () => 
                 onChange={(event) => void upsertTask({ ...task, dueDate: event.target.value })}
                 className={`${fieldClass} mt-1 w-full`}
               />
+            </label>
+            <label className="text-xs text-muted sm:col-span-2">
+              Class
+              <select
+                value={task.classId}
+                onChange={(event) => void upsertTask({ ...task, classId: event.target.value })}
+                className={`${fieldClass} mt-1 w-full`}
+              >
+                <option value="">No class</option>
+                {sorted.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                    {item.course ? ` (${item.course})` : ''}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="text-xs text-muted">
               Repeat

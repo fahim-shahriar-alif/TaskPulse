@@ -15,13 +15,14 @@ import { PROJECTS, TASK_STATUSES } from '../types'
 const SMART = ['all', 'today', 'tomorrow', 'week', 'inbox', 'overdue', 'done'] as const
 
 export function TasksPage() {
-  const { tasks, upsertTask, removeTask, completeTask } = useStore()
+  const { tasks, classes, upsertTask, removeTask, completeTask } = useStore()
   const { openTask } = useTaskDetail()
   const [view, setView] = useState<'list' | 'kanban'>('list')
   const [smart, setSmart] = useState<(typeof SMART)[number]>('all')
   const [query, setQuery] = useState('')
   const [project, setProject] = useState('all')
   const [priority, setPriority] = useState('all')
+  const [classId, setClassId] = useState('all')
   const [addOpen, setAddOpen] = useState(false)
   const [addDate, setAddDate] = useState<string | undefined>()
   const [overId, setOverId] = useState<string | null>(null)
@@ -36,6 +37,11 @@ export function TasksPage() {
       .filter((task) => (project === 'all' ? true : task.project === project))
       .filter((task) => (priority === 'all' ? true : task.priority === priority))
       .filter((task) => {
+        if (classId === 'all') return true
+        if (classId === 'none') return !task.classId
+        return task.classId === classId
+      })
+      .filter((task) => {
         if (smart === 'today') return task.dueDate === today && !task.done
         if (smart === 'tomorrow') return task.dueDate === tomorrow && !task.done
         if (smart === 'week') return task.dueDate >= today && task.dueDate <= weekEnd && !task.done
@@ -45,7 +51,7 @@ export function TasksPage() {
         return true
       })
       .sort((a, b) => Number(a.done) - Number(b.done) || a.createdAt - b.createdAt)
-  }, [priority, project, query, smart, tasks, today, tomorrow, weekEnd])
+  }, [classId, priority, project, query, smart, tasks, today, tomorrow, weekEnd])
 
   const groups = useMemo(() => {
     const fillDays = smart === 'all' ? 7 : smart === 'week' ? 8 : 0
@@ -112,7 +118,7 @@ export function TasksPage() {
         ))}
       </div>
 
-      <div className="glass grid gap-3 rounded-3xl p-4 md:grid-cols-3">
+      <div className="glass grid gap-3 rounded-3xl p-4 md:grid-cols-2 xl:grid-cols-4">
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tasks" className={fieldClass} />
         <select value={project} onChange={(event) => setProject(event.target.value)} className={fieldClass}>
           <option value="all">All lists</option>
@@ -127,6 +133,17 @@ export function TasksPage() {
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="low">Low</option>
+        </select>
+        <select value={classId} onChange={(event) => setClassId(event.target.value)} className={fieldClass}>
+          <option value="all">All classes</option>
+          <option value="none">No class</option>
+          {[...classes]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
         </select>
       </div>
 
@@ -200,6 +217,7 @@ export function TasksPage() {
                       className="min-h-14 flex-wrap rounded-3xl"
                       subtitle={[
                         `#${task.project}`,
+                        classes.find((item) => item.id === task.classId)?.name,
                         task.recurrence !== 'none' ? task.recurrence : '',
                         task.subtasks.length
                           ? `${task.subtasks.filter((item) => item.done).length}/${task.subtasks.length}`
@@ -289,6 +307,9 @@ export function TasksPage() {
                       <div className="mt-2 flex items-center justify-between gap-2 pl-7">
                         <span className="font-mono text-[11px] text-faint">
                           #{task.project}
+                          {task.classId
+                            ? ` · ${classes.find((item) => item.id === task.classId)?.name || 'Class'}`
+                            : ''}
                           {task.dueDate ? ` · ${task.dueDate}` : ''}
                         </span>
                         <div className="flex items-center gap-2">

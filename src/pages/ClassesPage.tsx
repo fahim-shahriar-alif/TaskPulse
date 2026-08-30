@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
+import { AddTaskModal } from '../components/AddTaskModal'
 import { DeadlineModal } from '../components/DeadlineModal'
 import { Modal } from '../components/Modal'
+import { useTaskDetail } from '../components/TaskDetailModal'
 import { useStore } from '../context/StoreContext'
 import {
   REPEAT_OPTIONS,
@@ -18,6 +20,7 @@ import {
   universitySlotLabel,
 } from '../lib/classes'
 import { notesForClass } from '../lib/classNotes'
+import { tasksForClass } from '../lib/classTasks'
 import { examsForClass, formatDaysLeft } from '../lib/deadlines'
 import { todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
@@ -25,11 +28,13 @@ import type { UniClass, WeekDay } from '../types'
 import { CLASS_KINDS } from '../types'
 
 export function ClassesPage() {
-  const { classes, deadlines, classNotes, upsertClass, removeClass } = useStore()
+  const { classes, deadlines, classNotes, tasks, upsertClass, removeClass } = useStore()
+  const { openTask } = useTaskDetail()
   const [open, setOpen] = useState(false)
   const [slotOpen, setSlotOpen] = useState(false)
   const [draft, setDraft] = useState<UniClass>(emptyClass)
   const [examClassId, setExamClassId] = useState<string | null>(null)
+  const [taskClassId, setTaskClassId] = useState<string | null>(null)
   const today = todayKey()
   const todayClasses = useMemo(() => classes.filter((item) => classMeetsOn(item, today)), [classes, today])
   const draftClash = useMemo(() => overlappingClasses(draft, classes), [classes, draft])
@@ -113,6 +118,7 @@ export function ClassesPage() {
           const upcoming = examsForClass(deadlines, item.id, today).slice(0, 3)
           const clash = overlappingClasses(item, classes)
           const photoCount = notesForClass(classNotes, item.id).length
+          const pinned = tasksForClass(tasks, item.id).filter((task) => !task.done).slice(0, 4)
           return (
           <article
             key={item.id}
@@ -151,26 +157,48 @@ export function ClassesPage() {
                 ))}
               </div>
             )}
-            <div className="mt-4 flex gap-2">
+            {pinned.length > 0 && (
+              <div className="mt-3 space-y-1">
+                {pinned.map((task) => (
+                  <button
+                    key={task.id}
+                    type="button"
+                    onClick={() => openTask(task.id)}
+                    className="block w-full truncate text-left text-xs text-indigo-400"
+                  >
+                    {task.title}
+                    {task.dueDate ? ` · ${task.dueDate}` : ''}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="mt-4 grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => edit(item)}
-                className="min-h-11 flex-1 rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
+                className="min-h-11 rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
               >
                 Edit
               </button>
               <Link
                 to={`/class-notes/${item.id}`}
-                className="grid min-h-11 flex-1 place-items-center rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
+                className="grid min-h-11 place-items-center rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
               >
                 Notes{photoCount ? ` · ${photoCount}` : ''}
               </Link>
               <button
                 type="button"
                 onClick={() => setExamClassId(item.id)}
-                className="min-h-11 flex-1 rounded-2xl bg-indigo-500 text-sm font-medium text-white"
+                className="min-h-11 rounded-2xl bg-indigo-500 text-sm font-medium text-white"
               >
                 Add exam
+              </button>
+              <button
+                type="button"
+                onClick={() => setTaskClassId(item.id)}
+                className="min-h-11 rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
+              >
+                Add task
               </button>
             </div>
           </article>
@@ -380,6 +408,11 @@ export function ClassesPage() {
         open={Boolean(examClassId)}
         classId={examClassId ?? ''}
         onClose={() => setExamClassId(null)}
+      />
+      <AddTaskModal
+        open={Boolean(taskClassId)}
+        initialClassId={taskClassId ?? undefined}
+        onClose={() => setTaskClassId(null)}
       />
     </div>
   )

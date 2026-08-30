@@ -34,7 +34,10 @@ export function CommandPalette() {
   const results = useMemo(() => {
     if (!q) return []
     const taskHits = tasks
-      .filter((item) => item.title.toLowerCase().includes(q))
+      .filter((item) => {
+        const className = classes.find((entry) => entry.id === item.classId)?.name.toLowerCase() || ''
+        return item.title.toLowerCase().includes(q) || className.includes(q)
+      })
       .slice(0, 6)
       .map((item) => ({ id: item.id, label: item.title, to: '/tasks', kind: 'Task' as const, taskId: item.id }))
     const noteHits = notes

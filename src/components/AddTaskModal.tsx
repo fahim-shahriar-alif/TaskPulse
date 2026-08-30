@@ -8,6 +8,7 @@ import { PROJECTS, TASK_TAGS } from '../types'
 type AddTaskModalProps = {
   open: boolean
   initialDueDate?: string
+  initialClassId?: string
   onClose: () => void
 }
 
@@ -19,19 +20,23 @@ const empty = {
   recurrence: 'none' as Recurrence,
   tags: [] as string[],
   notes: '',
+  classId: '',
 }
 
-export function AddTaskModal({ open, initialDueDate, onClose }: AddTaskModalProps) {
-  const { upsertTask } = useStore()
+export function AddTaskModal({ open, initialDueDate, initialClassId, onClose }: AddTaskModalProps) {
+  const { classes, upsertTask } = useStore()
   const [draft, setDraft] = useState(empty)
+  const sorted = [...classes].sort((a, b) => a.name.localeCompare(b.name))
 
   useEffect(() => {
     if (!open) return
     setDraft({
       ...empty,
       dueDate: initialDueDate ?? todayKey(),
+      classId: initialClassId ?? '',
+      project: initialClassId ? 'Study' : 'Personal',
     })
-  }, [initialDueDate, open])
+  }, [initialClassId, initialDueDate, open])
 
   if (!open) return null
 
@@ -52,6 +57,7 @@ export function AddTaskModal({ open, initialDueDate, onClose }: AddTaskModalProp
         recurrence: draft.recurrence,
         tags: draft.tags,
         notes: draft.notes,
+        classId: draft.classId,
       }),
     )
     close()
@@ -120,6 +126,28 @@ export function AddTaskModal({ open, initialDueDate, onClose }: AddTaskModalProp
                 onChange={(event) => setDraft((current) => ({ ...current, dueDate: event.target.value }))}
                 className={`${fieldClass} mt-1 w-full`}
               />
+            </label>
+            <label className="text-xs text-muted sm:col-span-2">
+              Class
+              <select
+                value={draft.classId}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    classId: event.target.value,
+                    project: event.target.value && current.project === 'Personal' ? 'Study' : current.project,
+                  }))
+                }
+                className={`${fieldClass} mt-1 w-full`}
+              >
+                <option value="">No class</option>
+                {sorted.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                    {item.course ? ` (${item.course})` : ''}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="text-xs text-muted">
               Repeat

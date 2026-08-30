@@ -6,6 +6,7 @@ import { CompletionRing } from '../components/CompletionRing'
 import { DeadlineModal } from '../components/DeadlineModal'
 import { LiveClock } from '../components/LiveClock'
 import { TaskRow } from '../components/TaskRow'
+import { useTaskDetail } from '../components/TaskDetailModal'
 import { useAuth } from '../context/AuthContext'
 import { toggleHabitToday, useStore } from '../context/StoreContext'
 import {
@@ -19,6 +20,7 @@ import {
   timeToMinutes,
 } from '../lib/classes'
 import { notesForClass } from '../lib/classNotes'
+import { tasksForClass } from '../lib/classTasks'
 import { deadlineDetail, deadlineHeadline, daysUntil, formatDaysLeft, upcomingDeadlines } from '../lib/deadlines'
 import { formatDayLabel, formatHourLabel, habitStreak, todayKey } from '../lib/dates'
 import { useNow } from '../lib/now'
@@ -76,6 +78,7 @@ function ScheduleRow({
 export function MyDayPage() {
   const { user } = useAuth()
   const { tasks, habits, notes, day, sessions, classes, deadlines, classNotes, upsertHabit, upsertNote, saveDay } = useStore()
+  const { openTask } = useTaskDetail()
   const [addOpen, setAddOpen] = useState(false)
   const [deadlineOpen, setDeadlineOpen] = useState(false)
   const [noteDraft, setNoteDraft] = useState('')
@@ -227,7 +230,9 @@ export function MyDayPage() {
                   <TaskRow
                     key={task.id}
                     task={task}
-                    subtitle={task.project}
+                    subtitle={[task.project, classes.find((item) => item.id === task.classId)?.name]
+                      .filter(Boolean)
+                      .join(' · ')}
                     showPriority={false}
                     showStatus={false}
                     className="min-h-12"
@@ -384,6 +389,20 @@ export function MyDayPage() {
                       {overnight ? (
                         <p className="mt-1 text-[11px] text-muted">Runs past midnight — check the end time.</p>
                       ) : null}
+                      {tasksForClass(tasks, item.id)
+                        .filter((task) => !task.done)
+                        .slice(0, 3)
+                        .map((task) => (
+                          <button
+                            key={task.id}
+                            type="button"
+                            onClick={() => openTask(task.id)}
+                            className="mt-2 block w-full truncate text-left text-xs text-indigo-400"
+                          >
+                            {task.title}
+                            {task.dueDate ? ` · ${task.dueDate}` : ''}
+                          </button>
+                        ))}
                       <Link
                         to={`/class-notes/${item.id}?date=${today}`}
                         className="mt-2 inline-flex min-h-9 items-center rounded-full bg-card px-3 text-xs text-indigo-400 ring-1 ring-line"

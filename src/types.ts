@@ -22,6 +22,7 @@ export type Task = {
   subtasks: Subtask[]
   recurrence: Recurrence
   pomodoros: number
+  classId: string
   createdAt: number
 }
 

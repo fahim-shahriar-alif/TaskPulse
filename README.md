@@ -38,8 +38,10 @@ Opens as a **date list** (kanban is one tap away).
 - Change the date on a row, or drop a task onto another day, to move it
 - Kanban columns: **To do** (white signal), **In progress** (yellow), **Done** (green); drag a card between columns
 - Search, smart lists (all, today, tomorrow, week, inbox, overdue, done), list filter (Work / Study / Personal / Health), priority filter
-- Add a task with title, list, priority, due date, recurrence (none / daily / weekly / weekdays), tags (deep, quick, waiting, home), and notes
-- Tap any task (My Day, Tasks, Calendar, Matrix, Focus) to open the same **task sheet**: status, list, priority, due date, recurrence, tags, notes, subtasks, pomodoro count, delete
+- Add a task with title, list, priority, due date, class (optional pin), recurrence (none / daily / weekly / weekdays), tags (deep, quick, waiting, home), and notes
+- Pin a task to a class from Add task, the task sheet, or **Add task** on a class card. Open pinned work shows on that class and on My Day
+- Filter the list by class. Deleting a class unpins its tasks (it does not delete them)
+- Tap any task (My Day, Tasks, Calendar, Matrix, Focus) to open the same **task sheet**: status, list, priority, due date, class, recurrence, tags, notes, subtasks, pomodoro count, delete
 
 ### Calendar (`/calendar`)
 
@@ -61,7 +63,8 @@ University timetable, or **Others** with a name you write.
 - Room and days of week
 - Repeat: weekly, every two weeks (anchor week), or once on a chosen date
 - Classes cannot share a day and overlapping times — save is blocked until the clash is gone
-- **Add exam** on a class card pre-selects that class (AI exam, ML exam, …)
+- **Add exam** or **Add task** on a class card pre-selects that class
+- Open tasks pinned to the class show on the card
 - Upcoming exam dates for that class show on the card
 - Deleting a class also deletes its exams and lecture photos
 

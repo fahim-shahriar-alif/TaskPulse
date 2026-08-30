@@ -73,6 +73,7 @@ export function normalizeTask(raw: Partial<Task> & Pick<Task, 'id' | 'title'>): 
     subtasks: raw.subtasks || [],
     recurrence: raw.recurrence || 'none',
     pomodoros: raw.pomodoros || 0,
+    classId: raw.classId || '',
     createdAt: raw.createdAt || Date.now(),
   }
 }
@@ -253,6 +254,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             notes: task.notes,
             tags: task.tags,
             recurrence: task.recurrence,
+            classId: task.classId,
             dueDate: nextDue(task.dueDate || todayKey(), task.recurrence),
           }),
         )
@@ -287,13 +289,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     async (id: string) => {
       const relatedNotes = classNotes.filter((item) => item.classId === id)
       const relatedExams = deadlines.filter((item) => item.classId === id)
+      const relatedTasks = tasks.filter((item) => item.classId === id)
       await Promise.all([
         ...relatedNotes.map((item) => removeClassNote(item)),
         ...relatedExams.map((item) => remove(['deadlines', item.id])),
+        ...relatedTasks.map((item) => upsertTask({ ...item, classId: '' })),
       ])
       await remove(['classes', id])
     },
-    [classNotes, deadlines, remove, removeClassNote],
+    [classNotes, deadlines, remove, removeClassNote, tasks, upsertTask],
   )
 
   const value = useMemo<StoreContextValue>(
@@ -373,6 +377,7 @@ export function newTask(partial: Partial<Task> = {}): Task {
     subtasks: [],
     recurrence: 'none',
     pomodoros: 0,
+    classId: '',
     createdAt: Date.now(),
     ...partial,
   })

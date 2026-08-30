@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { TaskRow } from '../components/TaskRow'
 import { useStore } from '../context/StoreContext'
 import { classMeetsOn, classesOnDay, formatClassTime } from '../lib/classes'
+import { classNameForId } from '../lib/classTasks'
 import { notesForClass } from '../lib/classNotes'
 import { deadlineDetail, deadlineHeadline } from '../lib/deadlines'
 import { monthGrid, parseKey } from '../lib/dates'
@@ -222,7 +223,12 @@ export function CalendarPage() {
           <section className="space-y-2">
             <h3 className="text-xs font-medium uppercase tracking-wide text-indigo-400">Tasks</h3>
             {selectedTasks.map((task) => (
-              <TaskRow key={task.id} task={task} className="glass min-h-12 rounded-2xl" />
+              <TaskRow
+                key={task.id}
+                task={task}
+                subtitle={classNameForId(classes, task.classId) || undefined}
+                className="glass min-h-12 rounded-2xl"
+              />
             ))}
           </section>
         )}
