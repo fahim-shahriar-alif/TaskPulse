@@ -52,7 +52,7 @@ export function ClassNotesPage() {
   const item = classes.find((entry) => entry.id === classId)
   if (classId && !item) {
     return (
-      <div className="w-full space-y-4">
+      <div className="mx-auto max-w-3xl space-y-4">
         <p className="text-sm text-muted">That subject is gone.</p>
         <Link to="/class-notes" className="text-sm text-indigo-400">
           Back to Class notes
@@ -76,7 +76,7 @@ function SubjectIndex() {
   )
 
   return (
-    <div className="w-full space-y-5">
+    <div className="mx-auto max-w-3xl space-y-5">
       <div>
         <p className={eyebrowClass}>Library</p>
         <h1 className={titleClass}>Class notes</h1>
@@ -209,7 +209,7 @@ function SubjectAlbum({ item }: { item: UniClass }) {
   }
 
   return (
-    <div className="w-full space-y-5">
+    <div className="mx-auto max-w-3xl space-y-5">
       <div>
         <button
           type="button"

@@ -54,7 +54,7 @@ export function ClassesPage() {
   }
 
   return (
-    <div className="w-full space-y-5">
+    <div className="mx-auto max-w-4xl space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className={eyebrowClass}>Timetable</p>

@@ -14,7 +14,7 @@ export function SchedulePage() {
   }
 
   return (
-    <div className="w-full space-y-5">
+    <div className="mx-auto max-w-3xl space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className={eyebrowClass}>Time</p>

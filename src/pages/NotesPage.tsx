@@ -34,7 +34,7 @@ export function NotesPage() {
   }
 
   return (
-    <div className="w-full space-y-5">
+    <div className="mx-auto max-w-5xl space-y-5">
       <div>
         <p className={eyebrowClass}>Scratchpad</p>
         <h1 className={titleClass}>Quick notes</h1>

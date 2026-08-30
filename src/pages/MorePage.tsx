@@ -18,7 +18,7 @@ const links = [
 
 export function MorePage() {
   return (
-    <div className="w-full space-y-5">
+    <div className="mx-auto max-w-xl space-y-5">
       <div>
         <p className={eyebrowClass}>More</p>
         <h1 className={titleClass}>Workspace</h1>

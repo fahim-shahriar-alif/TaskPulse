@@ -127,7 +127,7 @@ export function MyDayPage() {
   const linkClass = 'text-xs text-indigo-400'
 
   return (
-    <div className="w-full space-y-5">
+    <div className="mx-auto max-w-6xl space-y-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className={eyebrowClass}>My Day</p>
