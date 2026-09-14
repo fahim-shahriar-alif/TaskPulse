@@ -5,11 +5,11 @@ import { ThemeToggle } from '../components/ThemeToggle'
 import { eyebrowClass, titleClass } from '../lib/ui'
 
 const links = [
-  { to: '/profile', label: 'Profile', hint: 'Account, photo, theme, reminders, and sign out' },
+  { to: '/profile', label: 'Profile', hint: 'Account, backup, theme, reminders, and sign out' },
   { to: '/schedule', label: 'Schedule', hint: 'From–to time ranges' },
   { to: '/habits', label: 'Habits', hint: 'Streaks and daily check-ins' },
-  { to: '/classes', label: 'Classes', hint: 'University timetable' },
-  { to: '/class-notes', label: 'Class notes', hint: 'Lecture photos, one album per subject' },
+  { to: '/classes', label: 'Classes', hint: 'Timetable, attendance, and exams' },
+  { to: '/class-notes', label: 'Class notes', hint: 'Photos and typed notes per lecture' },
   { to: '/deadlines', label: 'Exams', hint: 'Countdowns for tests and due dates' },
   { to: '/notes', label: 'Notes', hint: 'Scratchpad and snippets' },
   { to: '/matrix', label: 'Matrix', hint: 'Eisenhower quadrants' },

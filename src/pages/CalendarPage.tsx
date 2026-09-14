@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { TaskRow } from '../components/TaskRow'
+import { AttendanceToggle } from '../components/AttendanceToggle'
 import { useStore } from '../context/StoreContext'
 import { classMeetsOn, classesOnDay, formatClassTime } from '../lib/classes'
 import { classNameForId } from '../lib/classTasks'
@@ -178,20 +179,23 @@ export function CalendarPage() {
             {selectedClasses.map((item) => {
               const count = notesForClass(classNotes, item.id).length
               return (
-                <div key={item.id} className="glass flex min-h-12 items-center justify-between gap-3 rounded-2xl px-4 py-3">
-                  <span>
-                    <span className="block text-sm text-fg">{item.name}</span>
-                    {item.location ? <span className="text-[11px] text-faint">{item.location}</span> : null}
-                  </span>
-                  <span className="flex shrink-0 flex-col items-end gap-2">
-                    <span className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</span>
-                    <Link
-                      to={`/class-notes/${item.id}?date=${selected}`}
-                      className="min-h-8 rounded-full bg-field px-3 text-[11px] leading-8 text-indigo-400 ring-1 ring-line"
-                    >
-                      {count ? `Notes · ${count}` : 'Class notes'}
-                    </Link>
-                  </span>
+                <div key={item.id} className="glass space-y-2 rounded-2xl px-4 py-3">
+                  <div className="flex min-h-12 items-center justify-between gap-3">
+                    <span>
+                      <span className="block text-sm text-fg">{item.name}</span>
+                      {item.location ? <span className="text-[11px] text-faint">{item.location}</span> : null}
+                    </span>
+                    <span className="flex shrink-0 flex-col items-end gap-2">
+                      <span className="font-mono text-xs text-indigo-400">{formatClassTime(item)}</span>
+                      <Link
+                        to={`/class-notes/${item.id}?date=${selected}`}
+                        className="min-h-8 rounded-full bg-field px-3 text-[11px] leading-8 text-indigo-400 ring-1 ring-line"
+                      >
+                        {count ? `Notes · ${count}` : 'Class notes'}
+                      </Link>
+                    </span>
+                  </div>
+                  <AttendanceToggle classId={item.id} date={selected} />
                 </div>
               )
             })}

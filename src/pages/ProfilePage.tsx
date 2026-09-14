@@ -9,6 +9,8 @@ import {
   showNotice,
 } from '../lib/notifications'
 import { photoDataUrl } from '../lib/photo'
+import { backupFileName, parseBackup } from '../lib/backup'
+import { todayKey } from '../lib/dates'
 import { LOCK_MIN_LENGTH } from '../lib/lock'
 import { fieldClass, eyebrowClass, titleClass } from '../lib/ui'
 import { PasswordField } from '../components/PasswordField'
@@ -258,6 +260,8 @@ export function ProfilePage() {
 
       <LockPasswordSection />
 
+      <BackupSection />
+
       <button
         type="button"
         onClick={() => void logout()}
@@ -382,6 +386,88 @@ function LockPasswordSection() {
           Turn off lock password
         </button>
       ) : null}
+    </section>
+  )
+}
+
+function BackupSection() {
+  const { exportBackup, importBackup } = useStore()
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [hint, setHint] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  function download() {
+    setError('')
+    const payload = exportBackup()
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = backupFileName(todayKey())
+    link.click()
+    URL.revokeObjectURL(url)
+    setHint('Backup downloaded.')
+  }
+
+  async function onPick(list?: FileList | null) {
+    const file = list?.[0]
+    if (fileRef.current) fileRef.current.value = ''
+    if (!file) return
+    setBusy(true)
+    setError('')
+    setHint('')
+    try {
+      const raw = JSON.parse(await file.text()) as unknown
+      parseBackup(raw)
+      if (
+        !window.confirm(
+          'Import this backup? Items with the same id are overwritten. Theme and lock password on this device stay as they are.',
+        )
+      ) {
+        return
+      }
+      await importBackup(raw)
+      setHint('Backup imported. Your data should appear in a moment.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not import that file.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="glass space-y-3 rounded-3xl p-5">
+      <h2 className="text-sm font-semibold text-fg">Backup</h2>
+      <p className="text-xs text-muted">
+        Download a JSON copy of your tasks, classes, notes, attendance, and the rest. Import merges by id. Theme and
+        lock password on this device stay as they are.
+      </p>
+      {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+      {hint ? <p className="text-sm text-indigo-400">{hint}</p> : null}
+      <button
+        type="button"
+        disabled={busy}
+        onClick={download}
+        className="min-h-11 w-full rounded-2xl bg-indigo-500 px-4 text-sm font-medium text-white disabled:opacity-40"
+      >
+        Download backup
+      </button>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => fileRef.current?.click()}
+        className="min-h-11 w-full rounded-2xl text-sm text-fg ring-1 ring-line disabled:opacity-40"
+      >
+        {busy ? 'Importing…' : 'Import backup'}
+      </button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json,.json"
+        className="sr-only"
+        onChange={(event) => void onPick(event.target.files)}
+      />
     </section>
   )
 }

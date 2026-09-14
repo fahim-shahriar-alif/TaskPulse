@@ -94,6 +94,23 @@ export type ClassNote = {
   createdAt: number
 }
 
+export type AttendanceStatus = 'present' | 'missed'
+
+export type Attendance = {
+  id: string
+  classId: string
+  date: string
+  status: AttendanceStatus
+}
+
+export type LectureLog = {
+  id: string
+  classId: string
+  date: string
+  body: string
+  updatedAt: number
+}
+
 export type Deadline = {
   id: string
   title: string

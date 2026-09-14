@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AddTaskModal } from '../components/AddTaskModal'
+import { AttendanceToggle } from '../components/AttendanceToggle'
 import { Check } from '../components/Check'
 import { CompletionRing } from '../components/CompletionRing'
 import { DeadlineModal } from '../components/DeadlineModal'
@@ -412,6 +413,7 @@ export function MyDayPage() {
                           return count ? `Class notes · ${count}` : 'Add class notes'
                         })()}
                       </Link>
+                      <AttendanceToggle classId={item.id} date={today} />
                     </div>
                   )
                 })}

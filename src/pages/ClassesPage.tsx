@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { AddTaskModal } from '../components/AddTaskModal'
+import { AttendanceToggle } from '../components/AttendanceToggle'
 import { DeadlineModal } from '../components/DeadlineModal'
 import { Modal } from '../components/Modal'
 import { useTaskDetail } from '../components/TaskDetailModal'
@@ -20,6 +21,7 @@ import {
   universitySlotLabel,
 } from '../lib/classes'
 import { notesForClass } from '../lib/classNotes'
+import { attendanceSummary } from '../lib/attendance'
 import { tasksForClass } from '../lib/classTasks'
 import { examsForClass, formatDaysLeft } from '../lib/deadlines'
 import { todayKey } from '../lib/dates'
@@ -28,7 +30,7 @@ import type { UniClass, WeekDay } from '../types'
 import { CLASS_KINDS } from '../types'
 
 export function ClassesPage() {
-  const { classes, deadlines, classNotes, tasks, upsertClass, removeClass } = useStore()
+  const { classes, deadlines, classNotes, tasks, attendance, upsertClass, removeClass } = useStore()
   const { openTask } = useTaskDetail()
   const [open, setOpen] = useState(false)
   const [slotOpen, setSlotOpen] = useState(false)
@@ -106,6 +108,7 @@ export function ClassesPage() {
                       return count ? `Class notes · ${count}` : 'Add class notes'
                     })()}
                   </Link>
+                  <AttendanceToggle classId={item.id} date={today} />
                 </div>
               )
             })}
@@ -119,6 +122,7 @@ export function ClassesPage() {
           const clash = overlappingClasses(item, classes)
           const photoCount = notesForClass(classNotes, item.id).length
           const pinned = tasksForClass(tasks, item.id).filter((task) => !task.done).slice(0, 4)
+          const tally = attendanceSummary(attendance, item.id)
           return (
           <article
             key={item.id}
@@ -172,6 +176,11 @@ export function ClassesPage() {
                 ))}
               </div>
             )}
+            {tally.present || tally.missed ? (
+              <p className="mt-3 text-xs text-muted">
+                Present {tally.present} · Missed {tally.missed}
+              </p>
+            ) : null}
             <div className="mt-4 grid grid-cols-2 gap-2">
               <button
                 type="button"

@@ -6,7 +6,7 @@ Live: [taskypulse.netlify.app](https://taskypulse.netlify.app)
 
 Repo: [github.com/fahim-shahriar-alif/TaskPulse](https://github.com/fahim-shahriar-alif/TaskPulse)
 
-Sign in with email and password, or open **Create an account** (`/register`) the first time. Everything you add is stored in Firestore under your user id. Light and dark appearance stays on **this device** only and does not follow you to other logins.
+Sign in with email and password, or open **Create an account** (`/register`) the first time. Use **Forgot password?** on the login screen if you need a reset link. Everything you add is stored in Firestore under your user id. Light and dark appearance stays on **this device** only and does not follow you to other logins.
 
 ---
 
@@ -24,7 +24,7 @@ Home screen for “what is happening today.”
 - Overdue tasks called out separately
 - **Today’s tasks** — due today, plus undated open items
 - **Big 3 non-negotiables** — three free-text goals for this date only (not linked to the kanban)
-- **Today’s classes** — name, room, time, Live / countdown tags
+- **Today’s classes** — name, room, time, Live / countdown tags; mark Present or Missed for today
 - **Exams & deadlines** — class name, kind, syllabus snippet, days left; pin a new exam from here
 - **Today’s schedule** — from–to blocks. Check a block done: green tick, green left border, struck-through title. Saved with that day. An **amber** edge and “Overlaps …” line appear if a block collides with a class or another range
 - Habit quick-check, a **notes pad** (quick capture + latest notes), and a shortcut into Focus
@@ -48,7 +48,7 @@ Opens as a **date list** (kanban is one tap away).
 One month for tasks, classes, and exams together.
 
 - Day dots: indigo = tasks due that day, cyan = a class meets, amber = exam or deadline
-- Tap a day: classes (with times), exams (with class + kind + syllabus), and tasks
+- Tap a day: classes (with times), exams (with class + kind + syllabus), and tasks; mark Present / Missed on a class for that date
 - Recurring classes (weekly, every two weeks, or once) light up the days they actually meet
 - An exam can sit on any date — it does not have to be a class day
 - Prev / Today / Next month; Today also selects today’s date
@@ -66,7 +66,16 @@ University timetable, or **Others** with a name you write.
 - **Add exam** or **Add task** on a class card pre-selects that class
 - Open tasks pinned to the class show on the card
 - Upcoming exam dates for that class show on the card
-- Deleting a class also deletes its exams and lecture photos
+- Mark **Present** or **Missed** on today’s class (My Day, Classes, Calendar, or the class-notes album). The class card shows `Present N · Missed M`
+- Deleting a class also deletes its exams, lecture photos, typed lecture notes, and attendance (pinned tasks stay, unpinned)
+
+### Class notes (`/class-notes`)
+
+One album per subject.
+
+- Camera or photo library, filed under the lecture date you pick
+- Typed notes for that same class + date
+- Photos save as compressed JPEGs in Firestore (no Storage upload)
 
 ### Exams (`/deadlines`)
 
@@ -138,6 +147,8 @@ Scratchpad with tags: Ideas, Bookmarks, Exam, DevOps. Filter by tag. DevOps / co
 - **Reminders**: enable after allowing notifications; toggle class / exam / overdue; class lead time 5 / 10 / 15 / 30 minutes; send a test ping
 - Appearance: light / dark (this device)
 - Pomodoro and break minutes
+- Lock password (this device only)
+- **Backup**: download a JSON file, or import one (merges by id; theme and lock password stay on this device)
 - Sign out
 
 On iPad / iPhone, add TaskyPulse to the **Home Screen** first. Safari tabs can suspend timers, so class reminders are most reliable as an installed PWA.
@@ -189,6 +200,8 @@ Typical subcollections:
 | `users/{uid}/sessions` | Focus sessions |
 | `users/{uid}/classes` | University classes |
 | `users/{uid}/classNotes` | Lecture photos (compressed JPEGs, one document per page) |
+| `users/{uid}/lectureLogs` | Typed lecture notes (`{classId}_{date}`) |
+| `users/{uid}/attendance` | Present / missed per class and date (`{classId}_{date}`) |
 | `users/{uid}/deadlines` | Exams / assignments (`classId`, syllabus, date, kind) |
 | `users/{uid}/settings/app` | Pomodoro lengths, reminder toggles (theme is **not** applied from the cloud) |
 

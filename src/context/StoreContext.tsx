@@ -14,9 +14,26 @@ import { DEFAULT_HABITS } from '../lib/defaults'
 import { getFirebase } from '../lib/firebase'
 import { defaultSchedule, mergeClassSlots, normalizeSchedule } from '../lib/schedule'
 import { normalizeClass } from '../lib/classes'
+import { attendanceId, normalizeAttendance } from '../lib/attendance'
+import { buildBackup, parseBackup, type BackupPayload } from '../lib/backup'
 import { deleteClassNoteFile, normalizeClassNote } from '../lib/classNotes'
 import { normalizeDeadline } from '../lib/deadlines'
-import type { ClassNote, DayDoc, Deadline, FocusSession, Habit, Note, Settings, Status, Task, UniClass } from '../types'
+import { lectureLogId, normalizeLectureLog } from '../lib/lectureLogs'
+import type {
+  Attendance,
+  AttendanceStatus,
+  ClassNote,
+  DayDoc,
+  Deadline,
+  FocusSession,
+  Habit,
+  LectureLog,
+  Note,
+  Settings,
+  Status,
+  Task,
+  UniClass,
+} from '../types'
 import { DEFAULT_SETTINGS } from '../types'
 import { useAuth } from './AuthContext'
 import { useTheme } from './ThemeContext'
@@ -30,6 +47,9 @@ type StoreContextValue = {
   classes: UniClass[]
   deadlines: Deadline[]
   classNotes: ClassNote[]
+  attendance: Attendance[]
+  lectureLogs: LectureLog[]
+  days: DayDoc[]
   settings: Settings
   day: DayDoc
   upsertTask: (task: Task) => Promise<void>
@@ -46,9 +66,13 @@ type StoreContextValue = {
   removeDeadline: (id: string) => Promise<void>
   upsertClassNote: (item: ClassNote) => Promise<void>
   removeClassNote: (item: ClassNote) => Promise<void>
+  setAttendance: (classId: string, date: string, status: AttendanceStatus | null) => Promise<void>
+  saveLectureLog: (classId: string, date: string, body: string) => Promise<void>
   saveDay: (patch: Partial<DayDoc>) => Promise<void>
   saveSettings: (patch: Partial<Settings>) => Promise<void>
   resetSchedule: () => Promise<void>
+  exportBackup: () => BackupPayload
+  importBackup: (raw: unknown) => Promise<void>
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null)
@@ -91,6 +115,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [classes, setClasses] = useState<UniClass[]>([])
   const [deadlines, setDeadlines] = useState<Deadline[]>([])
   const [classNotes, setClassNotes] = useState<ClassNote[]>([])
+  const [attendance, setAttendanceState] = useState<Attendance[]>([])
+  const [lectureLogs, setLectureLogs] = useState<LectureLog[]>([])
   const [settings, setSettings] = useState<Settings>({ ...DEFAULT_SETTINGS, theme })
   const [days, setDays] = useState<DayDoc[]>([])
 
@@ -158,6 +184,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const unsubClassNotes = onSnapshot(collection(db, 'users', uid, 'classNotes'), (snap) => {
       setClassNotes(snap.docs.map((item) => normalizeClassNote({ ...(item.data() as ClassNote), id: item.id })))
     })
+    const unsubAttendance = onSnapshot(collection(db, 'users', uid, 'attendance'), (snap) => {
+      setAttendanceState(snap.docs.map((item) => normalizeAttendance({ ...(item.data() as Attendance), id: item.id })))
+    })
+    const unsubLectureLogs = onSnapshot(collection(db, 'users', uid, 'lectureLogs'), (snap) => {
+      setLectureLogs(snap.docs.map((item) => normalizeLectureLog({ ...(item.data() as LectureLog), id: item.id })))
+    })
     const unsubSettings = onSnapshot(doc(db, 'users', uid, 'settings', 'app'), (snap) => {
       if (snap.exists()) {
         const incoming = snap.data() as Settings
@@ -177,6 +209,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       unsubClasses()
       unsubDeadlines()
       unsubClassNotes()
+      unsubAttendance()
+      unsubLectureLogs()
       unsubSettings()
     }
   }, [uid])
@@ -285,19 +319,106 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [remove, uid],
   )
 
+  const setAttendance = useCallback(
+    async (classId: string, date: string, status: AttendanceStatus | null) => {
+      const id = attendanceId(classId, date)
+      if (!status) {
+        setAttendanceState((prev) => prev.filter((item) => item.id !== id))
+        await remove(['attendance', id])
+        return
+      }
+      const next = normalizeAttendance({ id, classId, date, status })
+      setAttendanceState((prev) => [next, ...prev.filter((item) => item.id !== id)])
+      await write(['attendance', id], next)
+    },
+    [remove, write],
+  )
+
+  const saveLectureLog = useCallback(
+    async (classId: string, date: string, body: string) => {
+      const id = lectureLogId(classId, date)
+      const trimmed = body.trim()
+      if (!trimmed) {
+        setLectureLogs((prev) => prev.filter((item) => item.id !== id))
+        await remove(['lectureLogs', id])
+        return
+      }
+      const next = normalizeLectureLog({ id, classId, date, body: trimmed, updatedAt: Date.now() })
+      setLectureLogs((prev) => [next, ...prev.filter((item) => item.id !== id)])
+      await write(['lectureLogs', id], next)
+    },
+    [remove, write],
+  )
+
   const removeClass = useCallback(
     async (id: string) => {
       const relatedNotes = classNotes.filter((item) => item.classId === id)
       const relatedExams = deadlines.filter((item) => item.classId === id)
       const relatedTasks = tasks.filter((item) => item.classId === id)
+      const relatedAttendance = attendance.filter((item) => item.classId === id)
+      const relatedLogs = lectureLogs.filter((item) => item.classId === id)
       await Promise.all([
         ...relatedNotes.map((item) => removeClassNote(item)),
         ...relatedExams.map((item) => remove(['deadlines', item.id])),
         ...relatedTasks.map((item) => upsertTask({ ...item, classId: '' })),
+        ...relatedAttendance.map((item) => remove(['attendance', item.id])),
+        ...relatedLogs.map((item) => remove(['lectureLogs', item.id])),
       ])
       await remove(['classes', id])
     },
-    [classNotes, deadlines, remove, removeClassNote, tasks, upsertTask],
+    [attendance, classNotes, deadlines, lectureLogs, remove, removeClassNote, tasks, upsertTask],
+  )
+
+  const exportBackup = useCallback(
+    () =>
+      buildBackup({
+        tasks,
+        habits,
+        notes,
+        sessions,
+        classes,
+        deadlines,
+        classNotes,
+        attendance,
+        lectureLogs,
+        days,
+        settings: { ...settings, lockHash: '', lockSalt: '' },
+      }),
+    [attendance, classNotes, classes, days, deadlines, habits, lectureLogs, notes, sessions, settings, tasks],
+  )
+
+  const importBackup = useCallback(
+    async (raw: unknown) => {
+      const payload = parseBackup(raw)
+      const jobs: Promise<void>[] = [
+        ...payload.tasks.filter((item) => item.id && item.title).map((item) => write(['tasks', item.id], normalizeTask(item))),
+        ...payload.habits.filter((item) => item.id).map((item) => write(['habits', item.id], item)),
+        ...payload.notes.filter((item) => item.id).map((item) => write(['notes', item.id], item)),
+        ...payload.sessions.filter((item) => item.id).map((item) => write(['sessions', item.id], item)),
+        ...payload.classes.filter((item) => item.id).map((item) => write(['classes', item.id], normalizeClass(item))),
+        ...payload.deadlines
+          .filter((item) => item.id)
+          .map((item) => write(['deadlines', item.id], normalizeDeadline({ ...item, id: item.id }))),
+        ...payload.classNotes
+          .filter((item) => item.id)
+          .map((item) => write(['classNotes', item.id], normalizeClassNote({ ...item, id: item.id }))),
+        ...payload.attendance
+          .filter((item) => item.id)
+          .map((item) => write(['attendance', item.id], normalizeAttendance({ ...item, id: item.id }))),
+        ...payload.lectureLogs
+          .filter((item) => item.id)
+          .map((item) => write(['lectureLogs', item.id], normalizeLectureLog({ ...item, id: item.id }))),
+        ...payload.days.filter((item) => item.date).map((item) => write(['days', item.date], item)),
+        write(['settings', 'app'], {
+          ...payload.settings,
+          theme: settings.theme,
+          lockHash: settings.lockHash,
+          lockSalt: settings.lockSalt,
+        }),
+      ]
+      await Promise.all(jobs)
+    },
+    [settings.lockHash, settings.lockSalt, settings.theme, write],
   )
 
   const value = useMemo<StoreContextValue>(
@@ -310,6 +431,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       classes,
       deadlines,
       classNotes,
+      attendance,
+      lectureLogs,
+      days,
       settings,
       day,
       upsertTask,
@@ -326,28 +450,38 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeDeadline: (id) => remove(['deadlines', id]),
       upsertClassNote,
       removeClassNote,
+      setAttendance,
+      saveLectureLog,
       saveDay,
       saveSettings,
       resetSchedule: () => saveDay({ schedule: day.schedule.filter((slot) => slot.classId) }),
+      exportBackup,
+      importBackup,
     }),
     [
+      attendance,
       classNotes,
       completeTask,
       classes,
       day,
+      days,
       deadlines,
+      exportBackup,
       habits,
+      importBackup,
+      lectureLogs,
       notes,
       ready,
       remove,
       removeClass,
       removeClassNote,
       saveDay,
+      saveLectureLog,
       saveSettings,
       sessions,
+      setAttendance,
       settings,
       tasks,
-      uid,
       upsertClassNote,
       upsertTask,
       write,
