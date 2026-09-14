@@ -6,8 +6,7 @@ import { AttendanceToggle } from '../components/AttendanceToggle'
 import { useAuth } from '../context/AuthContext'
 import { useStore } from '../context/StoreContext'
 import { classKindLabel } from '../lib/classes'
-import { buildClassNote, classNoteSaveError, notesForClass } from '../lib/classNotes'
-import { lectureLogOn, logsForClass } from '../lib/lectureLogs'
+import { buildClassNote, classNoteSaveError, groupClassNotesByDate, notesForClass } from '../lib/classNotes'
 import { nowDate } from '../lib/clock'
 import { formatDayLabel, parseKey, todayKey } from '../lib/dates'
 import { eyebrowClass, fieldClass, titleClass } from '../lib/ui'
@@ -67,18 +66,14 @@ export function ClassNotesPage() {
 }
 
 function SubjectIndex() {
-  const { classes, classNotes, lectureLogs } = useStore()
+  const { classes, classNotes } = useStore()
   const subjects = useMemo(
     () =>
       [...classes].sort((a, b) => a.name.localeCompare(b.name)).map((item) => {
         const shots = notesForClass(classNotes, item.id)
-        const logs = logsForClass(lectureLogs, item.id)
-        const lastDate = [...shots.map((shot) => shot.date), ...logs.map((log) => log.date)].sort((a, b) =>
-          b.localeCompare(a),
-        )[0]
-        return { item, shots, cover: shots[0]?.url ?? '', count: shots.length, logs: logs.length, lastDate }
+        return { item, shots, cover: shots[0]?.url ?? '', count: shots.length }
       }),
-    [classNotes, classes, lectureLogs],
+    [classNotes, classes],
   )
 
   return (
@@ -87,7 +82,7 @@ function SubjectIndex() {
         <p className={eyebrowClass}>Library</p>
         <h1 className={titleClass}>Class notes</h1>
         <p className="mt-2 text-sm text-muted">
-          One album per subject. Add photos and typed notes against a class and date.
+          One album per subject. Add pages against a class and date; open them here any time.
         </p>
       </div>
       {subjects.length === 0 ? (
@@ -101,7 +96,7 @@ function SubjectIndex() {
         </div>
       ) : (
         <div className="space-y-3">
-          {subjects.map(({ item, cover, count, logs, lastDate }) => (
+          {subjects.map(({ item, cover, count, shots }) => (
             <Link
               key={item.id}
               to={`/class-notes/${item.id}`}
@@ -119,10 +114,8 @@ function SubjectIndex() {
                 <span className="block text-[11px] text-indigo-400">{classKindLabel(item)}</span>
                 {item.course ? <span className="block text-xs text-muted">{item.course}</span> : null}
                 <span className="mt-1 block text-xs text-faint">
-                  {count || logs
-                    ? `${count ? `${count} page${count === 1 ? '' : 's'}` : ''}${count && logs ? ' · ' : ''}${
-                        logs ? `${logs} typed` : ''
-                      }${lastDate ? ` · last ${formatDayLabel(parseKey(lastDate))}` : ''}`
+                  {count
+                    ? `${count} page${count === 1 ? '' : 's'} · last ${formatDayLabel(parseKey(shots[0].date))}`
                     : 'No pages yet'}
                 </span>
               </span>
@@ -137,31 +130,20 @@ function SubjectIndex() {
 
 function SubjectAlbum({ item }: { item: UniClass }) {
   const { user } = useAuth()
-  const { classNotes, lectureLogs, upsertClassNote, removeClassNote, saveLectureLog } = useStore()
+  const { classNotes, upsertClassNote, removeClassNote } = useStore()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const today = todayKey(nowDate())
   const lectureDate = params.get('date') || today
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [logDraft, setLogDraft] = useState('')
-  const [logHint, setLogHint] = useState('')
   const [preview, setPreview] = useState<ClassNote | null>(null)
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
   const libraryRef = useRef<HTMLInputElement>(null)
   const shots = notesForClass(classNotes, item.id)
-  const datedLogs = logsForClass(lectureLogs, item.id)
-  const savedLog = lectureLogOn(lectureLogs, item.id, lectureDate)
-  const groupDates = [...new Set([...shots.map((shot) => shot.date), ...datedLogs.map((log) => log.date)])].sort(
-    (a, b) => b.localeCompare(a),
-  )
+  const groups = groupClassNotesByDate(shots)
   const coarsePointer = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
-
-  useEffect(() => {
-    setLogDraft(savedLog?.body ?? '')
-    setLogHint('')
-  }, [lectureDate, savedLog?.body, savedLog?.id])
 
   useEffect(() => {
     return () => {
@@ -242,17 +224,13 @@ function SubjectAlbum({ item }: { item: UniClass }) {
         <h1 className={titleClass}>{item.name}</h1>
         <p className="mt-2 text-sm text-muted">
           {item.course ? `${item.course} · ` : ''}
-          {shots.length
-            ? `${shots.length} page${shots.length === 1 ? '' : 's'}`
-            : datedLogs.length
-              ? `${datedLogs.length} typed note${datedLogs.length === 1 ? '' : 's'}`
-              : 'Empty album'}
+          {shots.length ? `${shots.length} page${shots.length === 1 ? '' : 's'}` : 'Empty album'}
         </p>
       </div>
 
       <section className="glass space-y-3 rounded-3xl p-5">
         <h2 className="text-sm font-semibold text-fg">Add against a date</h2>
-        <p className="text-xs text-muted">Photos and typed notes go into {item.name}, filed under the lecture date you pick.</p>
+        <p className="text-xs text-muted">Photos go into {item.name}, filed under the lecture date you pick.</p>
         <label className="block">
           <span className="text-xs text-muted">Lecture date</span>
           <input
@@ -266,31 +244,6 @@ function SubjectAlbum({ item }: { item: UniClass }) {
           />
         </label>
         <AttendanceToggle classId={item.id} date={lectureDate} />
-        <label className="block">
-          <span className="text-xs text-muted">Typed notes</span>
-          <textarea
-            value={logDraft}
-            onChange={(event) => {
-              setLogDraft(event.target.value)
-              setLogHint('')
-            }}
-            rows={5}
-            placeholder="What was covered, formulas, reminders…"
-            className={`${fieldClass} mt-1 w-full resize-y`}
-          />
-        </label>
-        <button
-          type="button"
-          onClick={() => {
-            void saveLectureLog(item.id, lectureDate, logDraft).then(() => {
-              setLogHint(logDraft.trim() ? 'Typed notes saved.' : 'Typed notes cleared.')
-            })
-          }}
-          className="min-h-11 w-full rounded-2xl bg-field text-sm text-fg ring-1 ring-line"
-        >
-          Save typed notes
-        </button>
-        {logHint ? <p className="text-xs text-indigo-400">{logHint}</p> : null}
         <div className="flex gap-2">
           <button
             type="button"
@@ -314,19 +267,12 @@ function SubjectAlbum({ item }: { item: UniClass }) {
         {error ? <p className="text-xs text-rose-400">{error}</p> : null}
       </section>
 
-      {groupDates.length === 0 ? (
-        <p className="text-sm text-muted">No pages in {item.name} yet. Add from camera, the photo library, or typed notes.</p>
+      {shots.length === 0 ? (
+        <p className="text-sm text-muted">No pages in {item.name} yet. Add from camera or the photo library.</p>
       ) : (
-        groupDates.map((date) => {
-          const pages = shots.filter((shot) => shot.date === date)
-          const log = lectureLogOn(lectureLogs, item.id, date)
-          return (
+        groups.map(([date, pages]) => (
           <section key={date} className="space-y-3">
             <h2 className="text-sm font-semibold text-fg">{formatDayLabel(parseKey(date))}</h2>
-            {log && date !== lectureDate ? (
-              <p className="whitespace-pre-wrap rounded-2xl bg-field px-4 py-3 text-sm text-fg ring-1 ring-line">{log.body}</p>
-            ) : null}
-            {pages.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {pages.map((shot) => (
                 <div key={shot.id} className="relative">
@@ -342,12 +288,8 @@ function SubjectAlbum({ item }: { item: UniClass }) {
                 </div>
               ))}
             </div>
-            ) : date !== lectureDate ? (
-              <p className="text-xs text-faint">Typed notes only</p>
-            ) : null}
           </section>
-          )
-        })
+        ))
       )}
 
       <input

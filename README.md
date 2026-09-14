@@ -67,14 +67,13 @@ University timetable, or **Others** with a name you write.
 - Open tasks pinned to the class show on the card
 - Upcoming exam dates for that class show on the card
 - Mark **Present** or **Missed** on today’s class (My Day, Classes, Calendar, or the class-notes album). The class card shows `Present N · Missed M`
-- Deleting a class also deletes its exams, lecture photos, typed lecture notes, and attendance (pinned tasks stay, unpinned)
+- Deleting a class also deletes its exams, lecture photos, and attendance (pinned tasks stay, unpinned)
 
 ### Class notes (`/class-notes`)
 
 One album per subject.
 
 - Camera or photo library, filed under the lecture date you pick
-- Typed notes for that same class + date
 - Photos save as compressed JPEGs in Firestore (no Storage upload)
 
 ### Exams (`/deadlines`)
@@ -200,7 +199,6 @@ Typical subcollections:
 | `users/{uid}/sessions` | Focus sessions |
 | `users/{uid}/classes` | University classes |
 | `users/{uid}/classNotes` | Lecture photos (compressed JPEGs, one document per page) |
-| `users/{uid}/lectureLogs` | Typed lecture notes (`{classId}_{date}`) |
 | `users/{uid}/attendance` | Present / missed per class and date (`{classId}_{date}`) |
 | `users/{uid}/deadlines` | Exams / assignments (`classId`, syllabus, date, kind) |
 | `users/{uid}/settings/app` | Pomodoro lengths, reminder toggles (theme is **not** applied from the cloud) |

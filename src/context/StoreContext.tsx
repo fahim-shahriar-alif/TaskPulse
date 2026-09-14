@@ -18,7 +18,6 @@ import { attendanceId, normalizeAttendance } from '../lib/attendance'
 import { buildBackup, parseBackup, type BackupPayload } from '../lib/backup'
 import { deleteClassNoteFile, normalizeClassNote } from '../lib/classNotes'
 import { normalizeDeadline } from '../lib/deadlines'
-import { lectureLogId, normalizeLectureLog } from '../lib/lectureLogs'
 import type {
   Attendance,
   AttendanceStatus,
@@ -27,7 +26,6 @@ import type {
   Deadline,
   FocusSession,
   Habit,
-  LectureLog,
   Note,
   Settings,
   Status,
@@ -48,7 +46,6 @@ type StoreContextValue = {
   deadlines: Deadline[]
   classNotes: ClassNote[]
   attendance: Attendance[]
-  lectureLogs: LectureLog[]
   days: DayDoc[]
   settings: Settings
   day: DayDoc
@@ -67,7 +64,6 @@ type StoreContextValue = {
   upsertClassNote: (item: ClassNote) => Promise<void>
   removeClassNote: (item: ClassNote) => Promise<void>
   setAttendance: (classId: string, date: string, status: AttendanceStatus | null) => Promise<void>
-  saveLectureLog: (classId: string, date: string, body: string) => Promise<void>
   saveDay: (patch: Partial<DayDoc>) => Promise<void>
   saveSettings: (patch: Partial<Settings>) => Promise<void>
   resetSchedule: () => Promise<void>
@@ -116,7 +112,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [deadlines, setDeadlines] = useState<Deadline[]>([])
   const [classNotes, setClassNotes] = useState<ClassNote[]>([])
   const [attendance, setAttendanceState] = useState<Attendance[]>([])
-  const [lectureLogs, setLectureLogs] = useState<LectureLog[]>([])
   const [settings, setSettings] = useState<Settings>({ ...DEFAULT_SETTINGS, theme })
   const [days, setDays] = useState<DayDoc[]>([])
 
@@ -187,9 +182,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const unsubAttendance = onSnapshot(collection(db, 'users', uid, 'attendance'), (snap) => {
       setAttendanceState(snap.docs.map((item) => normalizeAttendance({ ...(item.data() as Attendance), id: item.id })))
     })
-    const unsubLectureLogs = onSnapshot(collection(db, 'users', uid, 'lectureLogs'), (snap) => {
-      setLectureLogs(snap.docs.map((item) => normalizeLectureLog({ ...(item.data() as LectureLog), id: item.id })))
-    })
     const unsubSettings = onSnapshot(doc(db, 'users', uid, 'settings', 'app'), (snap) => {
       if (snap.exists()) {
         const incoming = snap.data() as Settings
@@ -210,7 +202,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       unsubDeadlines()
       unsubClassNotes()
       unsubAttendance()
-      unsubLectureLogs()
       unsubSettings()
     }
   }, [uid])
@@ -334,39 +325,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [remove, write],
   )
 
-  const saveLectureLog = useCallback(
-    async (classId: string, date: string, body: string) => {
-      const id = lectureLogId(classId, date)
-      const trimmed = body.trim()
-      if (!trimmed) {
-        setLectureLogs((prev) => prev.filter((item) => item.id !== id))
-        await remove(['lectureLogs', id])
-        return
-      }
-      const next = normalizeLectureLog({ id, classId, date, body: trimmed, updatedAt: Date.now() })
-      setLectureLogs((prev) => [next, ...prev.filter((item) => item.id !== id)])
-      await write(['lectureLogs', id], next)
-    },
-    [remove, write],
-  )
-
   const removeClass = useCallback(
     async (id: string) => {
       const relatedNotes = classNotes.filter((item) => item.classId === id)
       const relatedExams = deadlines.filter((item) => item.classId === id)
       const relatedTasks = tasks.filter((item) => item.classId === id)
       const relatedAttendance = attendance.filter((item) => item.classId === id)
-      const relatedLogs = lectureLogs.filter((item) => item.classId === id)
       await Promise.all([
         ...relatedNotes.map((item) => removeClassNote(item)),
         ...relatedExams.map((item) => remove(['deadlines', item.id])),
         ...relatedTasks.map((item) => upsertTask({ ...item, classId: '' })),
         ...relatedAttendance.map((item) => remove(['attendance', item.id])),
-        ...relatedLogs.map((item) => remove(['lectureLogs', item.id])),
       ])
       await remove(['classes', id])
     },
-    [attendance, classNotes, deadlines, lectureLogs, remove, removeClassNote, tasks, upsertTask],
+    [attendance, classNotes, deadlines, remove, removeClassNote, tasks, upsertTask],
   )
 
   const exportBackup = useCallback(
@@ -380,11 +353,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         deadlines,
         classNotes,
         attendance,
-        lectureLogs,
         days,
         settings: { ...settings, lockHash: '', lockSalt: '' },
       }),
-    [attendance, classNotes, classes, days, deadlines, habits, lectureLogs, notes, sessions, settings, tasks],
+    [attendance, classNotes, classes, days, deadlines, habits, notes, sessions, settings, tasks],
   )
 
   const importBackup = useCallback(
@@ -405,9 +377,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ...payload.attendance
           .filter((item) => item.id)
           .map((item) => write(['attendance', item.id], normalizeAttendance({ ...item, id: item.id }))),
-        ...payload.lectureLogs
-          .filter((item) => item.id)
-          .map((item) => write(['lectureLogs', item.id], normalizeLectureLog({ ...item, id: item.id }))),
         ...payload.days.filter((item) => item.date).map((item) => write(['days', item.date], item)),
         write(['settings', 'app'], {
           ...payload.settings,
@@ -432,7 +401,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       deadlines,
       classNotes,
       attendance,
-      lectureLogs,
       days,
       settings,
       day,
@@ -451,7 +419,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       upsertClassNote,
       removeClassNote,
       setAttendance,
-      saveLectureLog,
       saveDay,
       saveSettings,
       resetSchedule: () => saveDay({ schedule: day.schedule.filter((slot) => slot.classId) }),
@@ -469,14 +436,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       exportBackup,
       habits,
       importBackup,
-      lectureLogs,
       notes,
       ready,
       remove,
       removeClass,
       removeClassNote,
       saveDay,
-      saveLectureLog,
       saveSettings,
       sessions,
       setAttendance,

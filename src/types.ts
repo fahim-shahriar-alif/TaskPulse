@@ -103,14 +103,6 @@ export type Attendance = {
   status: AttendanceStatus
 }
 
-export type LectureLog = {
-  id: string
-  classId: string
-  date: string
-  body: string
-  updatedAt: number
-}
-
 export type Deadline = {
   id: string
   title: string

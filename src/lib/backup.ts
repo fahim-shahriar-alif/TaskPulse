@@ -6,7 +6,6 @@ import type {
   Deadline,
   FocusSession,
   Habit,
-  LectureLog,
   Note,
   Settings,
   Task,
@@ -26,7 +25,6 @@ export type BackupPayload = {
   deadlines: Deadline[]
   classNotes: ClassNote[]
   attendance: Attendance[]
-  lectureLogs: LectureLog[]
   days: DayDoc[]
   settings: Settings
 }
@@ -52,8 +50,7 @@ export function parseBackup(raw: unknown): BackupPayload {
     data.version === BACKUP_VERSION ||
     Array.isArray(data.tasks) ||
     Array.isArray(data.classes) ||
-    Array.isArray(data.attendance) ||
-    Array.isArray(data.lectureLogs)
+    Array.isArray(data.attendance)
   if (!looksLikeBackup) throw new Error('That file is not a TaskyPulse backup.')
   const settingsRaw = data.settings && typeof data.settings === 'object' ? (data.settings as Partial<Settings>) : {}
   return {
@@ -67,7 +64,6 @@ export function parseBackup(raw: unknown): BackupPayload {
     deadlines: asArray<Deadline>(data.deadlines),
     classNotes: asArray<ClassNote>(data.classNotes),
     attendance: asArray<Attendance>(data.attendance),
-    lectureLogs: asArray<LectureLog>(data.lectureLogs),
     days: asArray<DayDoc>(data.days),
     settings: {
       ...DEFAULT_SETTINGS,
